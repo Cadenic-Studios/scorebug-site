@@ -1,0 +1,26 @@
+{
+  "applinks": {
+    "details": [
+      {
+        "appIDs": ["YOUR_APPLE_TEAM_ID.ca.scorebug.sports"],
+        "components": [
+          { "/": "/the-bleachers/*", "comment": "Fan takes and game threads" },
+          { "/": "/the-slate/*", "comment": "Live scores and schedules" },
+          { "/": "/the-vault/*", "comment": "The user's chronicle vault" },
+          { "/": "/the-docket/*", "comment": "Game Centers and the docket" },
+          { "/": "/the-news/*", "comment": "The news wire" },
+          { "/": "/the-log/*", "comment": "Rate & Chronicle flow" },
+          { "/": "/the-playbook/*", "comment": "Team pages" },
+          { "/": "/the-front-office/*", "comment": "Premium" },
+          { "/": "/player-card/*", "comment": "Profiles" },
+          { "/": "/linemates/*", "comment": "Following" },
+          { "/": "/fan/*", "comment": "Public fan profiles" },
+          { "/": "/activity/*", "comment": "Activity feed" }
+        ]
+      }
+    ]
+  },
+  "webcredentials": {
+    "apps": ["YOUR_APPLE_TEAM_ID.ca.scorebug.sports"]
+  }
+}

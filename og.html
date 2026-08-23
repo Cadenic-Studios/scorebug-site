@@ -1,0 +1,121 @@
+<!-- TEMP: source for public/og.png (screenshotted at 1200x630, then deleted). -->
+<!doctype html>
+<meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;600;700&family=Oswald:wght@500;700&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; box-sizing: border-box; }
+  body {
+    width: 1200px; height: 630px; overflow: hidden;
+    font-family: Inter, system-ui, sans-serif;
+    background:
+      radial-gradient(85% 60% at 74% -12%, rgba(248,81,73,0.26) 0%, rgba(248,81,73,0) 62%),
+      radial-gradient(58% 46% at 10% 2%, rgba(88,166,255,0.15) 0%, rgba(88,166,255,0) 58%),
+      radial-gradient(120% 90% at 50% 118%, rgba(45,212,191,0.09) 0%, rgba(45,212,191,0) 55%),
+      #0A0B0E;
+    color: #E6EDF3; display: flex; align-items: center; padding: 0 74px; gap: 56px;
+    position: relative;
+  }
+  /* floodlight bloom */
+  body::before, body::after {
+    content: ''; position: absolute; top: -14%; width: 30%; height: 60%;
+    filter: blur(46px); opacity: 0.42;
+    background: radial-gradient(closest-side, rgba(190,215,255,0.3), transparent 70%);
+  }
+  body::before { left: -4%; }
+  body::after { right: 26%; }
+  .col { position: relative; z-index: 2; }
+  .brand { display: flex; align-items: center; gap: 15px; margin-bottom: 30px; }
+  .brand img { width: 54px; height: 54px; border-radius: 13px; }
+  .brand span { font-family: Anton, 'Arial Narrow', sans-serif; font-size: 34px; letter-spacing: 1px; text-transform: uppercase; }
+  h1 {
+    font-family: Anton, 'Arial Narrow', sans-serif; text-transform: uppercase;
+    font-size: 92px; line-height: 0.86; font-weight: 400; letter-spacing: -0.5px;
+  }
+  .red { color: #F85149; text-shadow: 0 0 44px rgba(248,81,73,0.55); }
+  .sub { margin-top: 26px; font-size: 25px; color: #A8B3BF; line-height: 1.42; max-width: 520px; }
+  .chips { margin-top: 26px; display: flex; gap: 8px; flex-wrap: wrap; max-width: 540px; }
+  .chip {
+    font-size: 14px; font-weight: 800; letter-spacing: 1.6px; padding: 6px 13px; border-radius: 999px;
+    background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.16); color: #A8B3BF;
+  }
+  /* device */
+  .device {
+    position: relative; z-index: 2; width: 306px; border-radius: 40px; padding: 10px;
+    background: linear-gradient(155deg,#3A4150 0%,#171B23 34%,#0D1015 62%,#2B313D 100%);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.4), inset 0 0 0 1px rgba(255,255,255,0.12),
+                0 46px 88px -32px rgba(0,0,0,0.95), 0 0 76px -22px rgba(248,81,73,0.45);
+    transform: rotate(-3deg);
+  }
+  .screen { border-radius: 31px; background: #0A0B0E; overflow: hidden; padding: 16px 14px 18px; }
+  .kicker { font-size: 10px; font-weight: 800; letter-spacing: 2.6px; color: #F85149; text-transform: uppercase; }
+  .title { font-family: Oswald, 'Arial Narrow', sans-serif; font-size: 25px; font-weight: 700; margin-top: 3px; }
+  .matchup {
+    margin-top: 12px; border-radius: 15px; padding: 13px; text-align: center;
+    background: linear-gradient(90deg, rgba(0,142,151,0.55) 0%, rgba(10,12,17,0.9) 42%, rgba(10,12,17,0.9) 58%, rgba(90,17,29,0.62) 100%);
+    border: 1px solid rgba(255,255,255,0.17);
+  }
+  .crests { display: flex; align-items: center; justify-content: center; gap: 16px; }
+  .crest { width: 46px; height: 46px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+           font-family: Oswald, sans-serif; font-weight: 700; font-size: 13px; color: #fff; }
+  .mia { background: radial-gradient(circle at 46% 40%, #171B22 0%, #171B22 52%, #008E97 78%, #05070A 100%); border: 2px solid #008E97; box-shadow: 0 0 13px rgba(0,142,151,0.5); }
+  .wsh { background: radial-gradient(circle at 46% 40%, #171B22 0%, #171B22 52%, #5A1414 78%, #05070A 100%); border: 2px solid #7E2020; box-shadow: 0 0 13px rgba(126,32,32,0.5); }
+  .vs { font-size: 10px; letter-spacing: 3px; color: rgba(255,255,255,0.45); font-weight: 700; }
+  .score { font-family: Oswald, sans-serif; font-size: 22px; font-weight: 700; margin-top: 7px; }
+  .final { color: #3FB950; font-size: 10px; font-weight: 700; display: block; }
+  .card { margin-top: 11px; border-radius: 14px; padding: 13px;
+          background: linear-gradient(180deg, rgba(23,29,39,0.95), rgba(11,14,20,0.98));
+          border: 1px solid rgba(255,255,255,0.1); }
+  .clabel { font-size: 9px; font-weight: 800; letter-spacing: 2.4px; color: #A8B3BF; text-transform: uppercase; }
+  .rating { display: flex; align-items: center; gap: 13px; margin-top: 9px; }
+  .light { width: 34px; height: 26px; border-radius: 0 0 999px 999px;
+           background: radial-gradient(circle at 40% 28%, #FF8A80 0%, #F0413C 42%, #8E0300 100%);
+           box-shadow: 0 0 22px rgba(240,65,60,0.9); }
+  .num { font-family: Oswald, sans-serif; font-size: 40px; font-weight: 700; color: #F85149; line-height: 1; }
+  .num small { font-size: 14px; color: #7D8590; }
+  .flavor { font-size: 11px; color: #A8B3BF; margin-top: 2px; }
+  .bar { margin-top: 11px; height: 6px; border-radius: 6px; background: linear-gradient(90deg,#F0413C,#B00500); box-shadow: 0 0 10px rgba(240,65,60,0.65); }
+  .cta { margin-top: 12px; border-radius: 999px; padding: 9px; text-align: center; font-size: 12px; font-weight: 800; color: #fff;
+         background: linear-gradient(180deg,#F0413C 0%,#B00500 62%,#8E0300 100%); border: 1px solid #7A0400;
+         box-shadow: inset 0 1px 0 rgba(255,255,255,0.35); }
+</style>
+<body>
+  <div class="col">
+    <div class="brand">
+      <img src="public/app-icon.png" alt="">
+      <span>Scorebug</span>
+    </div>
+    <h1>Chronicle<br><span class="red">every game.</span></h1>
+    <p class="sub">The ultimate fan log. Track live scores, rate matchups, and save your record.</p>
+    <div class="chips">
+      <span class="chip">NHL</span><span class="chip">NFL</span><span class="chip">NBA</span>
+      <span class="chip">MLB</span><span class="chip">CFL</span><span class="chip">F1</span>
+      <span class="chip">EPL</span><span class="chip">15 LEAGUES</span>
+    </div>
+  </div>
+  <div class="device">
+    <div class="screen">
+      <div class="kicker">Log Entry</div>
+      <div class="title">Rate &amp; Chronicle</div>
+      <div class="matchup">
+        <div class="crests">
+          <span class="crest mia">MIA</span>
+          <span class="vs">VS</span>
+          <span class="crest wsh">WSH</span>
+        </div>
+        <div class="score">7 – 20 <span class="final">Final</span></div>
+      </div>
+      <div class="card">
+        <div class="clabel">Game Rating</div>
+        <div class="rating">
+          <span class="light"></span>
+          <span>
+            <span class="num">4.0 <small>/ 5.0</small></span>
+            <span class="flavor">Could not look away.</span>
+          </span>
+        </div>
+        <div class="bar"></div>
+      </div>
+      <div class="cta">✓ Log This Game</div>
+    </div>
+  </div>
+</body>

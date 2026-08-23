@@ -1,0 +1,214 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: #0a0b0e;
+  color: #e6edf3;
+  -webkit-font-smoothing: antialiased;
+  /* Nothing on this page may scroll sideways on a phone. */
+  overflow-x: hidden;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ══ MARKETING TYPOGRAPHY ══════════════════════════════════════════════════
+   The Play Store creative sets its headlines in an ultra-condensed heavy face,
+   uppercase, with the tracking pulled in and the leading crushed — sports
+   editorial, not app UI. Anton is that voice. The app's own Oswald stays for
+   text INSIDE the device mockups, so the marketing speaks in the store's voice
+   while the screens speak in the product's. */
+.headline {
+  font-family: var(--font-anton), 'Arial Narrow', sans-serif;
+  text-transform: uppercase;
+  line-height: 0.86;
+  letter-spacing: -0.005em;
+  font-weight: 400; /* Anton ships one weight; faux-bolding it smears the stems. */
+}
+
+/* ══ ENAMELED DARK GLASS ═══════════════════════════════════════════════════ */
+
+.glass-card {
+  background: linear-gradient(180deg, rgba(23, 29, 39, 0.94) 0%, rgba(11, 14, 20, 0.97) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-top-color: rgba(255, 255, 255, 0.16);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 20px 40px -24px rgba(0, 0, 0, 0.85);
+}
+
+.enamel-red {
+  background: linear-gradient(180deg, #f0413c 0%, #b00500 62%, #8e0300 100%);
+  border: 1px solid #7a0400;
+  border-top-color: rgba(255, 255, 255, 0.55);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.35),
+    0 4px 14px rgba(0, 0, 0, 0.5),
+    0 0 22px -6px rgba(225, 6, 0, 0.65);
+}
+
+/* The Front Office twin. Same enamel construction, struck in gold. */
+.enamel-gold {
+  background: linear-gradient(180deg, #f7d879 0%, #d9a323 55%, #a97a10 100%);
+  border: 1px solid #7d5906;
+  border-top-color: rgba(255, 255, 255, 0.7);
+  color: #1a1206;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.5),
+    0 4px 14px rgba(0, 0, 0, 0.5),
+    0 0 24px -6px rgba(229, 181, 60, 0.6);
+}
+
+.glass-btn {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-top-color: rgba(255, 255, 255, 0.22);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.glass-pill {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-top-color: rgba(255, 255, 255, 0.24);
+  letter-spacing: 0.18em;
+}
+
+/* ══ STADIUM LIGHTING ══════════════════════════════════════════════════════
+   Every section in the store creative sits under a differently-lit sky: red
+   over the chronicle work, gold over the premium tier, blue over the schedule.
+   Gradients only — a repeating pattern would moiré on a phone. */
+.lit-red {
+  background:
+    radial-gradient(85% 55% at 50% -8%, rgba(248, 81, 73, 0.20) 0%, rgba(248, 81, 73, 0) 62%),
+    radial-gradient(60% 45% at 12% 4%, rgba(88, 166, 255, 0.10) 0%, rgba(88, 166, 255, 0) 58%);
+}
+.lit-gold {
+  background:
+    radial-gradient(85% 60% at 50% -8%, rgba(229, 181, 60, 0.22) 0%, rgba(229, 181, 60, 0) 62%),
+    radial-gradient(70% 50% at 85% 10%, rgba(201, 146, 22, 0.12) 0%, rgba(201, 146, 22, 0) 60%);
+}
+.lit-blue {
+  background:
+    radial-gradient(85% 55% at 50% -8%, rgba(88, 166, 255, 0.18) 0%, rgba(88, 166, 255, 0) 62%),
+    radial-gradient(60% 45% at 88% 6%, rgba(45, 212, 191, 0.10) 0%, rgba(45, 212, 191, 0) 58%);
+}
+
+/* Twin floodlight bloom + a horizon line — the "stadium at night" read. */
+.floodlights::before,
+.floodlights::after {
+  content: '';
+  position: absolute;
+  top: -12%;
+  width: 34%;
+  height: 62%;
+  pointer-events: none;
+  filter: blur(38px);
+  opacity: 0.5;
+}
+.floodlights::before {
+  left: -6%;
+  background: radial-gradient(closest-side, rgba(190, 215, 255, 0.28), transparent 70%);
+}
+.floodlights::after {
+  right: -6%;
+  background: radial-gradient(closest-side, rgba(190, 215, 255, 0.24), transparent 70%);
+}
+
+/* ══ DEVICE FRAME ══════════════════════════════════════════════════════════
+   A phone shell: brushed rail, glass bezel, and a screen that clips its
+   content. Sized by the parent's width so it scales on a phone. */
+.device {
+  position: relative;
+  border-radius: 2.6rem;
+  /* Exactly 10px so PhoneFrame can derive the screen scale arithmetically. */
+  padding: 10px;
+  background: linear-gradient(155deg, #3a4150 0%, #171b23 34%, #0d1015 62%, #2b313d 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.4),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.12),
+    0 48px 90px -34px rgba(0, 0, 0, 0.95),
+    0 0 70px -26px rgba(248, 81, 73, 0.4);
+}
+.device-gold {
+  background: linear-gradient(155deg, #6b5a2c 0%, #241d10 34%, #12100b 62%, #5a4a23 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 226, 150, 0.55),
+    inset 0 0 0 1px rgba(229, 181, 60, 0.3),
+    0 48px 90px -34px rgba(0, 0, 0, 0.95),
+    0 0 70px -26px rgba(229, 181, 60, 0.42);
+}
+.device-screen {
+  position: relative;
+  overflow: hidden;
+  border-radius: 2.05rem;
+  background: #0a0b0e;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.07);
+}
+/* Dynamic-island pill, drawn rather than imaged. */
+.device-island {
+  position: absolute;
+  top: 0.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 5.2rem;
+  height: 1.25rem;
+  border-radius: 999px;
+  background: #05070a;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+  z-index: 5;
+}
+/* The reflective floor the devices rest on in the store creative. */
+.device-floor {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.055) 0%, rgba(255, 255, 255, 0) 74%);
+  -webkit-mask-image: linear-gradient(180deg, #000 0%, transparent 76%);
+  mask-image: linear-gradient(180deg, #000 0%, transparent 76%);
+}
+
+/* ══ IN-MOCKUP APP CHROME (mirrors the real app's own primitives) ══════════ */
+.app-card {
+  background: linear-gradient(180deg, rgba(23, 29, 39, 0.95) 0%, rgba(11, 14, 20, 0.98) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-top-color: rgba(255, 255, 255, 0.14);
+  border-radius: 0.85rem;
+}
+.app-chip {
+  border-radius: 999px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+/* ══ FAQ ACCORDION ═════════════════════════════════════════════════════════ */
+details.faq[open] .faq-chevron {
+  transform: rotate(90deg);
+}
+details.faq summary {
+  list-style: none;
+}
+details.faq summary::-webkit-details-marker {
+  display: none;
+}
+
+/* Focus visibility — keyboard users must never lose the caret on dark glass. */
+a:focus-visible,
+button:focus-visible,
+summary:focus-visible {
+  outline: 2px solid #58a6ff;
+  outline-offset: 3px;
+  border-radius: 4px;
+}
