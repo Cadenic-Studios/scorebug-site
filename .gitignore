@@ -5,5 +5,13 @@ out/
 next-env.d.ts
 .vercel
 .DS_Store
-shot*.png
+
+# Local screenshot/preview harnesses — regenerate as needed, never committed.
 shot.mjs
+og-shot.mjs
+og.html
+site-*.png
+mob-*.png
+tab-*.png
+shot-*.png
+start.log

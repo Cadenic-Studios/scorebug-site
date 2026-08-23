@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { Anton, Inter, Oswald } from 'next/font/google'
 import { FAQS } from './faqs'
+import { SITE, PLAY_URL } from './config'
 import './globals.css'
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter', display: 'swap' })
@@ -9,16 +10,16 @@ const inter = Inter({ subsets: ['latin'], variable: '--font-inter', display: 'sw
 const oswald = Oswald({ subsets: ['latin'], variable: '--font-oswald', display: 'swap' })
 const anton = Anton({ subsets: ['latin'], weight: '400', variable: '--font-anton', display: 'swap' })
 
-const SITE = 'https://getscorebug.app'
-
 export const metadata: Metadata = {
   metadataBase: new URL(SITE),
   title: {
     default: 'Scorebug — Chronicle Every Game',
     template: '%s · Scorebug',
   },
+  // ~150 chars: long enough to earn the click, short enough that Google shows
+  // all of it rather than cutting mid-sentence.
   description:
-    'The ultimate fan log. Track live scores, rate matchups and save your record across 15 leagues — NHL, NFL, NBA, MLB, CFL, college football and basketball, MLS, the European leagues and Formula 1.',
+    'The ultimate fan log. Track live scores, rate every matchup out of 5, and build a permanent archive of every game you watch — across 15 leagues.',
   keywords: [
     'sports tracking app', 'log sports games', 'rate sports games',
     'Letterboxd for sports', 'sports diary', 'game journal', 'fan log',
@@ -64,9 +65,10 @@ const JSON_LD = {
       alternateName: 'Scorebug — Chronicle Every Game',
       description:
         'The ultimate fan log. Track live scores, rate matchups out of 5, and build a permanent archive of every game you watch across 15 leagues.',
-      operatingSystem: 'Android',
+      // The same product runs at getscorebug.app, which the page links to.
+      operatingSystem: 'Android, Web',
       applicationCategory: 'SportsApplication',
-      installUrl: 'https://play.google.com/store/apps/details?id=ca.scorebug.sports',
+      installUrl: PLAY_URL,
       // The app itself is free; The Front Office is an in-app subscription.
       offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
       url: SITE,
@@ -96,10 +98,13 @@ const JSON_LD = {
       url: SITE,
       name: 'Scorebug',
       publisher: { '@id': `${SITE}/#org` },
+      about: { '@id': `${SITE}/#app` },
     },
     {
       '@type': 'FAQPage',
       '@id': `${SITE}/#faq`,
+      url: SITE,
+      isPartOf: { '@id': `${SITE}/#site` },
       mainEntity: FAQS.map(f => ({
         '@type': 'Question',
         name: f.q,

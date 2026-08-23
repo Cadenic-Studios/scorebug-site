@@ -106,7 +106,31 @@ curl -i https://getscorebug.app/.well-known/apple-app-site-association
 
 Both must return `200` with `Content-Type: application/json`.
 
-## 6. Post-launch SEO checklist
+## 6. Before you publish — two content decisions
+
+**The Front Office price is shown on the page.** `$3.99/month · $19.99/year`
+appears in the gold section and in the FAQ. In the app source those numbers
+live in a **fallback catalogue explicitly marked `placeholder: true`**
+(`lib/services/billing.ts`), because the real prices come from RevenueCat /
+Play Billing at runtime. The page therefore carries the qualifier *"Planned
+rates shown; Google Play confirms the live price in your currency at
+checkout."*
+
+Before launch, either:
+- confirm those are the prices you configure in Play Console, or
+- change them in **two** places — `app/page.tsx` (gold section fine print) and
+  `app/faqs.ts` (the "Is Scorebug free?" answer, which also feeds the FAQPage
+  schema).
+
+**The claims on this page were fact-checked against the app source.** Several
+lines from the original brief were corrected because the code did not support
+them — photos are private, The Wire is not "completely tailored", there is no
+"draft" mechanic, Discord finds fellow fans by shared server rather than
+syncing your friend list, and per-team alerts are free rather than a Front
+Office perk. If you edit the copy, re-check it the same way; this page is the
+text answer engines will quote.
+
+## 7. Post-launch SEO checklist
 
 - Google Search Console: add the `getscorebug.app` **domain property** (DNS
   TXT verification), submit `https://getscorebug.app/sitemap.xml`.

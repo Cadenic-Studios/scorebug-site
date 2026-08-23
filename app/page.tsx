@@ -1,11 +1,10 @@
 import Image from 'next/image'
 import { FAQS } from './faqs'
+import { PLAY_URL, PRICING, PRICE_NOTE, APP_LINKS } from './config'
 import {
   RateChronicleScreen, VaultScreen, SlateScreen,
   FrontOfficeScreen, BleachersScreen, FranchiseScreen, WireScreen,
 } from './components/Screens'
-
-const PLAY_URL = 'https://play.google.com/store/apps/details?id=ca.scorebug.sports'
 
 /* Every screen mockup is authored at this logical size and scaled to fit. */
 const BASE_W = 316
@@ -148,7 +147,9 @@ function FeatureCard({
         style={{ background: `radial-gradient(85% 45% at 50% 0%, ${accent}1F 0%, transparent 62%)` }}
       />
       <div className="relative">
-        <div className="flex justify-center overflow-hidden" style={{ height: 210 }}>
+        {/* items-start: the default `stretch` pulled the device shell to the
+            wrapper height and squared off its rounded corners. */}
+        <div className="flex items-start justify-center overflow-hidden" style={{ height: 210 }}>
           {screen}
         </div>
         <p className="mt-5 text-[10.5px] font-black uppercase tracking-[0.22em]" style={{ color: accent }}>{kicker}</p>
@@ -171,7 +172,7 @@ export default function Home() {
           <span className="headline text-2xl text-ink">Scorebug</span>
         </a>
         <nav className="flex items-center gap-2.5">
-          <a href="/the-slate" className="glass-btn hidden rounded-full px-4 py-2 text-[13px] font-bold text-ink-2 transition hover:text-ink sm:inline-block">
+          <a href={APP_LINKS.slate} className="glass-btn hidden rounded-full px-4 py-2 text-[13px] font-bold text-ink-2 transition hover:text-ink sm:inline-block">
             Open the web app
           </a>
           <a href={PLAY_URL} className="enamel-red rounded-full px-4 py-2 text-[13px] font-black text-white transition active:scale-95">
@@ -196,7 +197,7 @@ export default function Home() {
             <StoreButtons className="mt-8" />
             <p className="mt-5 text-[13px] text-ink-3">
               Free to download · 15 leagues · or{' '}
-              <a href="/the-slate" className="whitespace-nowrap font-bold text-sb-teal underline-offset-2 hover:underline">use it in your browser →</a>
+              <a href={APP_LINKS.slate} className="whitespace-nowrap font-bold text-sb-teal underline-offset-2 hover:underline">use it in your browser →</a>
             </p>
           </div>
 
@@ -355,16 +356,15 @@ export default function Home() {
               Get Scorebug and see the plans →
             </a>
             <p className="mt-3 max-w-md text-[12px] leading-relaxed text-ink-3">
-              $3.99/month, or $19.99/year — about $1.67 a month. Cancel any time. Planned
-              rates shown; Google Play confirms the live price in your currency at checkout.
-              Android at launch.
+              {PRICING.monthly}/month, or {PRICING.yearly}/year — about{' '}
+              {PRICING.perMonthEquivalent} a month. Cancel any time. {PRICE_NOTE} Android at launch.
             </p>
           </div>
 
           <div className="flex justify-center">
             <div className="relative">
               <PhoneFrame screenW={286} gold>
-                <FrontOfficeScreen price="$3.99" cadence="/ month" />
+                <FrontOfficeScreen price={PRICING.monthly} cadence={PRICING.monthlyCadence} yearly={PRICING.yearly} />
               </PhoneFrame>
               <span aria-hidden className="device-floor absolute inset-x-[-14%] top-full h-24 rounded-[50%]" />
             </div>
@@ -402,7 +402,7 @@ export default function Home() {
             </h2>
             <StoreButtons className="mt-9 justify-center" />
             <p className="mt-5 text-[12.5px] text-ink-3">
-              Also on the web — <a href="/the-slate" className="font-bold text-sb-teal underline-offset-2 hover:underline">open The Slate</a>
+              Also on the web — <a href={APP_LINKS.slate} className="font-bold text-sb-teal underline-offset-2 hover:underline">open The Slate</a>
             </p>
           </div>
         </div>
@@ -416,8 +416,8 @@ export default function Home() {
             <span className="text-[13px] font-bold text-ink-2">Scorebug</span>
           </div>
           <nav className="flex items-center gap-5 text-[13px] font-semibold text-ink-3">
-            <a href="/privacy" className="hover:text-ink-2">Privacy</a>
-            <a href="/terms" className="hover:text-ink-2">Terms</a>
+            <a href={APP_LINKS.privacy} className="hover:text-ink-2">Privacy</a>
+            <a href={APP_LINKS.terms} className="hover:text-ink-2">Terms</a>
             <a href={PLAY_URL} className="hover:text-ink-2">Google Play</a>
           </nav>
           <p className="text-[12px] text-ink-3">© {new Date().getFullYear()} Scorebug™ · Made in Canada</p>

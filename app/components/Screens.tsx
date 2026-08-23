@@ -8,8 +8,8 @@
  * are the real stops), so they stay crisp at any density and can be corrected
  * in a diff rather than a re-shoot.
  *
- * Authored to read correctly at ~300–330px wide — the width of the device
- * frames on this page. Every string here is verbatim from the product.
+ * Authored at 316x664 and rendered between 210px and 286px wide (66%-91% of
+ * natural size) by PhoneFrame. Every string here is verbatim from the product.
  */
 
 const OSWALD = "var(--font-oswald), 'Arial Narrow', sans-serif"
@@ -313,7 +313,7 @@ export function VaultScreen() {
           { lg: 'MLB', c: '#D29922', a: 'ATL', ac: '#CE1141', h: 'STL', hc: '#C41E3A', s: '1-4', d: 'Fri, Jul 17, 2026', note: 'Big fan of the Falcons so I figured I’d give another Atlanta team a go…', g: '3.0', gl: 'Perfectly watchable.' },
           { lg: 'NHL', c: '#58A6FF', a: 'EDM', ac: '#FC7C39', h: 'FLA', hc: '#C8102E', s: '4-3', d: 'Tue, Jun 9, 2026', note: 'Overtime. Again. I have never been this tired and this happy at once.', g: '5.0', gl: 'An instant classic.' },
         ].map(e => (
-          <div key={e.lg + e.a} className="app-card p-2">
+          <div key={`${e.lg}-${e.a}-${e.h}-${e.d}`} className="app-card p-2">
             <div className="flex items-center gap-1.5">
               <LeagueChip league={e.lg} color={e.c} />
               <span className="text-[6.5px]" style={{ color: '#7D8590' }}>⊙ Broadcast</span>
@@ -431,7 +431,7 @@ export function SlateScreen() {
 
 /* ── 4. The Front Office ───────────────────────────────────────────────── */
 
-export function FrontOfficeScreen({ price, cadence }: { price: string; cadence: string }) {
+export function FrontOfficeScreen({ price, cadence, yearly }: { price: string; cadence: string; yearly: string }) {
   return (
     <div className="flex h-full flex-col">
       <StatusBar tint="#B39544" />
@@ -495,7 +495,7 @@ export function FrontOfficeScreen({ price, cadence }: { price: string; cadence: 
             {price}
             <span className="ml-1 text-[9px]" style={{ color: '#8A8578' }}>{cadence}</span>
           </p>
-          <p className="mt-[2px] text-[6px]" style={{ color: '#8A8578' }}>Cancel anytime · or $19.99/yr</p>
+          <p className="mt-[2px] text-[6px]" style={{ color: '#8A8578' }}>Cancel anytime · or {yearly}/yr</p>
         </div>
         <div className="enamel-gold mt-2 rounded-full py-2 text-center text-[9px] font-black">
           ✦ Unlock The Front Office
