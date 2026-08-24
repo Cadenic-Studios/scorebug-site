@@ -2,20 +2,17 @@ import type { MetadataRoute } from 'next'
 import { SITE } from './config'
 
 /**
- * The marketing surface, plus the two legal pages.
+ * ONE URL, and that is correct.
  *
- * The authenticated app routes (/the-slate, /the-vault, …) are deliberately
- * absent and are blocked in robots.ts — they render a login wall to a bot.
- * /privacy and /terms are proxied from the app deployment but are public,
- * indexable, and required reading for a Play Store listing, so they belong
- * here. Listed WITHOUT trailing slashes, matching how the page links them and
- * what this deployment serves without a redirect.
+ * This deployment serves exactly one indexable document. Every app route —
+ * including /privacy and /terms — now 307s to app.getscorebug.app (see the
+ * redirects block in next.config.js), and a sitemap must never list a URL that
+ * redirects: it tells a crawler the address is canonical when the server
+ * immediately says it is not. The legal pages belong in the app deployment's
+ * own sitemap, on the host that actually serves them.
  */
 export default function sitemap(): MetadataRoute.Sitemap {
-  const lastModified = new Date()
   return [
-    { url: SITE, lastModified, changeFrequency: 'weekly', priority: 1 },
-    { url: `${SITE}/privacy`, lastModified, changeFrequency: 'yearly', priority: 0.3 },
-    { url: `${SITE}/terms`, lastModified, changeFrequency: 'yearly', priority: 0.3 },
+    { url: SITE, lastModified: new Date(), changeFrequency: 'weekly', priority: 1 },
   ]
 }
