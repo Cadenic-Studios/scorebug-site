@@ -27,3 +27,7 @@ v-*.png
 dbg-*.png
 ipad-*.png
 final*.png
+proxytest.mjs
+prep-shots-peek.mjs
+proxy.png
+peek.png
