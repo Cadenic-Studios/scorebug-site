@@ -1,6 +1,7 @@
 import Image from 'next/image'
 import { FAQS } from './faqs'
-import { PLAY_URL, WEB_APP, PRICING, PRICE_NOTE, APP_LINKS } from './config'
+import { androidCta, WEB_APP, PRICING, PRICE_NOTE, APP_LINKS } from './config'
+import Waitlist from './components/Waitlist'
 import Showcase from './components/Showcase'
 
 /* ── Call-to-action cluster ───────────────────────────────────────────────────
@@ -46,18 +47,25 @@ function AppleGlyph({ size = 18 }: { size?: number }) {
   )
 }
 
-/** Secondary tier: the two native stores. */
+/**
+ * Secondary tier: the two native platforms.
+ *
+ * The Android button is NOT a store link while LAUNCH_STAGE is 'waitlist' —
+ * see the note on `androidCta` in config.ts. It scrolls to the signup form
+ * instead, because the listing it used to point at returns Google's 404 page.
+ */
 function StoreButtons({ className = '' }: { className?: string }) {
+  const android = androidCta()
   return (
     <div className={`flex flex-wrap items-center gap-2.5 ${className}`}>
       <a
-        href={PLAY_URL}
+        href={android.href}
         className="glass-btn flex items-center gap-2.5 rounded-xl px-4 py-2.5 text-ink-2 transition hover:text-ink active:scale-[0.98]"
       >
         <PlayGlyph />
         <span className="text-left leading-tight">
-          <span className="block text-[9px] font-semibold uppercase tracking-wide text-ink-3">Get it on</span>
-          <span className="block text-[14px] font-bold">Google Play</span>
+          <span className="block text-[9px] font-semibold uppercase tracking-wide text-ink-3">{android.caption}</span>
+          <span className="block text-[14px] font-bold">{android.label}</span>
         </span>
       </a>
       {/* Not a link: there is no iOS build to send anyone to yet. A dead App
@@ -172,8 +180,8 @@ export default function Home() {
           <span className="headline hidden text-2xl text-ink sm:inline">Scorebug</span>
         </a>
         <nav aria-label="Primary" className="flex flex-shrink-0 items-center gap-2.5">
-          <a href={PLAY_URL} className="glass-btn hidden rounded-full px-4 py-2 text-[13px] font-bold text-ink-2 transition hover:text-ink sm:inline-block">
-            Google Play
+          <a href={androidCta().href} className="glass-btn hidden rounded-full px-4 py-2 text-[13px] font-bold text-ink-2 transition hover:text-ink sm:inline-block">
+            {androidCta().label}
           </a>
           <LaunchWebApp size="md" />
         </nav>
@@ -201,7 +209,7 @@ export default function Home() {
 
               <div className="mt-6">
                 <p className="mb-2.5 text-[10px] font-black uppercase tracking-[0.2em] text-ink-3">
-                  Or get the mobile app
+                  Or get it on mobile
                 </p>
                 <StoreButtons />
               </div>
@@ -371,8 +379,8 @@ export default function Home() {
                 ))}
               </ul>
 
-              <a href={PLAY_URL} className="enamel-gold mt-8 inline-block rounded-full px-7 py-3 text-[15px] font-black transition active:scale-95">
-                Get Scorebug and see the plans →
+              <a href={WEB_APP} className="enamel-gold mt-8 inline-block rounded-full px-7 py-3 text-[15px] font-black transition active:scale-95">
+                Open Scorebug and see the plans →
               </a>
               <p className="mt-3 max-w-md text-[12px] leading-relaxed text-ink-3">
                 {PRICING.us.monthly} {PRICING.us.currency}/month or {PRICING.us.yearly}{' '}
@@ -398,6 +406,14 @@ export default function Home() {
               />
             </div>
           </div>
+        </section>
+
+        {/* ══ Android waitlist ══
+            Sits ABOVE the FAQ, not below it. Every Android CTA on the page
+            (nav, hero, footer) targets #waitlist, and a scroll target that
+            lands past the FAQ makes those buttons feel like they overshot. */}
+        <section id="waitlist" className="scroll-mt-8 px-5 py-24">
+          <Waitlist />
         </section>
 
         {/* ══ FAQ ══ */}
@@ -448,7 +464,7 @@ export default function Home() {
             <a href={APP_LINKS.slate} className="py-2 -my-2 hover:text-ink-2">The Slate</a>
             <a href={APP_LINKS.privacy} className="py-2 -my-2 hover:text-ink-2">Privacy</a>
             <a href={APP_LINKS.terms} className="py-2 -my-2 hover:text-ink-2">Terms</a>
-            <a href={PLAY_URL} className="py-2 -my-2 hover:text-ink-2">Google Play</a>
+            <a href={androidCta().href} className="py-2 -my-2 hover:text-ink-2">{androidCta().label}</a>
           </nav>
           <p className="text-[12px] text-ink-3">© {new Date().getFullYear()} Scorebug™ · Made in Canada</p>
         </div>

@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import { Anton, Inter, Oswald } from 'next/font/google'
 import { FAQS } from './faqs'
-import { SITE, PLAY_URL } from './config'
+import { SITE, WEB_APP } from './config'
 import './globals.css'
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter', display: 'swap' })
@@ -66,9 +66,18 @@ const JSON_LD = {
       description:
         'The ultimate fan log. Track live scores, rate matchups out of 5, and build a permanent archive of every game you watch across 15 leagues.',
       // The same product runs at getscorebug.app, which the page links to.
-      operatingSystem: 'Android, Web',
+      // 'Web' only, and that is not modesty. `operatingSystem` is a claim about
+      // where a visitor can RUN this today; the Android build is in closed
+      // testing and cannot be installed by the public, so listing it invites
+      // Google to surface an install intent that dead-ends. Add 'Android' back
+      // the day the listing is public.
+      operatingSystem: 'Web',
       applicationCategory: 'SportsApplication',
-      installUrl: PLAY_URL,
+      // `installUrl` pointed at a Play listing that does not exist yet and
+      // answers 404. Structured data is a machine-readable factual claim —
+      // a bad installUrl is exactly the kind of thing that gets rich results
+      // suppressed. The web app is the real, working install target.
+      installUrl: WEB_APP,
       // The app itself is free; The Front Office is an in-app subscription.
       offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
       url: SITE,

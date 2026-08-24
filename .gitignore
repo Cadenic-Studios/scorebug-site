@@ -31,3 +31,8 @@ proxytest.mjs
 prep-shots-peek.mjs
 proxy.png
 peek.png
+
+# Local env — the anon/publishable key is safe in a client bundle, but this
+# file is where a service_role key would eventually get pasted by accident.
+.env.local
+.env*.local

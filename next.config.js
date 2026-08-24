@@ -52,7 +52,7 @@ const nextConfig = {
       'activity', 'admin', 'auth', 'fan', 'go', 'linemates', 'player-card',
       'privacy', 'terms', 'the-almanac', 'the-bleachers', 'the-docket',
       'the-franchise', 'the-front-office', 'the-log', 'the-news',
-      'the-playbook', 'the-rafters', 'the-slate', 'the-vault',
+      'the-playbook', 'the-rafters', 'the-slate', 'the-vault', 'the-pro-shop'
     ]
     const APP = 'https://app.getscorebug.app'
     // Two rules per route: the bare path, and everything beneath it.

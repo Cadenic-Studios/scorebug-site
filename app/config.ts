@@ -8,8 +8,83 @@
 
 export const SITE = 'https://getscorebug.app'
 
+/**
+ * ─── WHERE ANDROID ACTUALLY IS ───────────────────────────────────────────────
+ *
+ * This is the ONE switch that changes every Android call to action on the site:
+ * the nav button, the hero, the Front Office CTA and the footer all read it.
+ *
+ * It exists because the site was advertising a Play Store listing that does not
+ * exist yet. Every "Get it on Google Play" button pointed at
+ * play.google.com/store/apps/details?id=ca.scorebug.sports, which today answers
+ * with Google's "we're sorry, the requested URL was not found" page. That is
+ * worse than no button: a visitor who taps it concludes the product is dead,
+ * and it was also being fed to Google as `installUrl` in the page's structured
+ * data, which is a factual claim about availability.
+ *
+ *   'waitlist' — no public build yet. CTAs open the signup form below the hero.
+ *   'testing'  — a Play closed/open test exists. Fill PLAY_TESTING_URL and the
+ *                CTAs point straight at the opt-in page.
+ *   'live'     — publicly listed. CTAs revert to PLAY_URL.
+ *
+ * Flip the stage, fill the URL, deploy. Nothing else needs editing.
+ */
+export type LaunchStage = 'waitlist' | 'testing' | 'live'
+
+export const LAUNCH_STAGE: LaunchStage = 'waitlist'
+
+/**
+ * The Play Console opt-in link for a closed or open test. Looks like
+ * https://play.google.com/apps/testing/ca.scorebug.sports for a closed test,
+ * or a normal store URL for an open one. Only read when LAUNCH_STAGE is
+ * 'testing' — leaving it empty in that stage falls back to the waitlist rather
+ * than shipping a dead button.
+ */
+export const PLAY_TESTING_URL = ''
+
+/** The public listing. Only read when LAUNCH_STAGE is 'live'. */
 export const PLAY_URL =
   'https://play.google.com/store/apps/details?id=ca.scorebug.sports'
+
+/** The in-page signup section. Every waitlist-stage CTA targets this. */
+export const WAITLIST_ANCHOR = '#waitlist'
+
+/**
+ * Resolve the Android CTA for the current stage — one place, so the nav and the
+ * footer can never disagree with the hero about whether the app is out.
+ */
+export function androidCta(): { href: string; label: string; caption: string } {
+  if (LAUNCH_STAGE === 'live') {
+    return { href: PLAY_URL, label: 'Google Play', caption: 'Get it on' }
+  }
+  if (LAUNCH_STAGE === 'testing' && PLAY_TESTING_URL) {
+    return { href: PLAY_TESTING_URL, label: 'Become a tester', caption: 'Android early access' }
+  }
+  return { href: WAITLIST_ANCHOR, label: 'Join the test', caption: 'Android early access' }
+}
+
+/**
+ * Supabase, for the waitlist form only.
+ *
+ * The anon key is publishable by design — it is the browser-side key every
+ * Supabase web app ships, and it is powerless without a Row Level Security
+ * policy granting something. The service_role key must never appear here.
+ *
+ * Unset ⇒ the form renders a mailto fallback instead of throwing, so a missing
+ * env var in one deploy degrades to "email us" rather than a blank section.
+ */
+export const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL ?? ''
+export const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? ''
+
+/**
+ * Where the magic link lands. The web app, NOT this site — this domain has no
+ * auth callback route, and Supabase will refuse any redirect target that is not
+ * in its allow-list (Dashboard → Authentication → URL Configuration).
+ */
+export const AUTH_CALLBACK = 'https://app.getscorebug.app/auth/callback/'
+
+/** Reachable contact, used by the waitlist fallback and the confirmation mail. */
+export const CONTACT_EMAIL = 'hello@getscorebug.app'
 
 /**
  * The web app, linked as the PRIMARY call to action.
