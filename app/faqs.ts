@@ -32,7 +32,7 @@ export const FAQS: { q: string; a: string }[] = [
   },
   {
     q: 'Is Scorebug free?',
-    a: 'Scorebug is free to download and use. The Front Office is an optional in-app subscription that adds the full Analytics Desk, an extended lineup of up to 25 teams, an unlimited Docket and Clippings, Vault export, 20 accent themes and an app with no ads. Planned rates are $3.99 per month or $19.99 per year, and Google Play confirms the live price in your currency at checkout.',
+    a: 'Scorebug is free to download and use. The Front Office is an optional in-app subscription that adds the full Analytics Desk, an extended lineup of up to 25 teams, an unlimited Docket and Clippings, Vault export, 20 accent themes and an app with no ads. In the United States it is $3.99 USD per month or $19.99 USD per year; in Canada it is $5 CAD per month or $20 CAD per year — about $1.67 a month either way. You can cancel any time, and Google Play confirms your local price at checkout.',
   },
   {
     q: 'What platforms is Scorebug available on?',

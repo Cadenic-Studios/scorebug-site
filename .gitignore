@@ -6,12 +6,24 @@ next-env.d.ts
 .vercel
 .DS_Store
 
-# Local screenshot/preview harnesses — regenerate as needed, never committed.
+# Local screenshot/verification harnesses — scratch tooling, never committed.
 shot.mjs
+sweep.mjs
+verify.mjs
+posters.mjs
 og-shot.mjs
+dbg.mjs
 og.html
+*.log
+
+# Harness output.
 site-*.png
 mob-*.png
 tab-*.png
 shot-*.png
-start.log
+new-*.png
+fin-*.png
+v-*.png
+dbg-*.png
+ipad-*.png
+final*.png
