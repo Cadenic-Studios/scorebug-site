@@ -495,7 +495,7 @@ export function FrontOfficeScreen({ price, cadence, yearly }: { price: string; c
             {price}
             <span className="ml-1 text-[9px]" style={{ color: '#8A8578' }}>{cadence}</span>
           </p>
-          <p className="mt-[2px] text-[6px]" style={{ color: '#8A8578' }}>Cancel anytime · or {yearly}/yr</p>
+          <p className="mt-[2px] text-[6px]" style={{ color: '#8A8578' }}>Planned · cancel anytime · or {yearly}/yr</p>
         </div>
         <div className="enamel-gold mt-2 rounded-full py-2 text-center text-[9px] font-black">
           ✦ Unlock The Front Office

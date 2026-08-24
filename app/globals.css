@@ -81,10 +81,16 @@ body {
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 
+/* MOSTLY OPAQUE, deliberately. These pills carry the section kickers in
+   saturated accent colours, and they sit on top of the .lit-* washes and the
+   floodlight bloom — which lighten the ground unpredictably. At 6% white the
+   red kicker measured 2.8:1 against the brightest spot under the bloom. An
+   85% dark base makes the ground effectively fixed, so every kicker holds
+   >=5.2:1 wherever it lands. */
 .glass-pill {
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  border-top-color: rgba(255, 255, 255, 0.24);
+  background: rgba(12, 15, 21, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-top-color: rgba(255, 255, 255, 0.26);
   letter-spacing: 0.18em;
 }
 

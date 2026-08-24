@@ -36,6 +36,6 @@ export const FAQS: { q: string; a: string }[] = [
   },
   {
     q: 'What platforms is Scorebug available on?',
-    a: 'Scorebug is available for Android on Google Play, with the full experience also on the web at getscorebug.app. An iOS version is coming.',
+    a: 'Scorebug is available for Android on Google Play, and in any browser at getscorebug.app — the web app tracks, rates and logs games just the same, though the Front Office subscription is purchased in the Android app. An iOS version is coming.',
   },
 ]

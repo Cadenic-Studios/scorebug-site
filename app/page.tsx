@@ -70,17 +70,19 @@ function StoreButtons({ className = '' }: { className?: string }) {
       >
         <PlayGlyph size={22} />
         <span className="text-left leading-tight">
-          <span className="block text-[10px] font-semibold uppercase tracking-wide text-white/75">Get it on</span>
+          <span className="block text-[10px] font-semibold uppercase tracking-wide text-white">Get it on</span>
           <span className="block text-[17px] font-bold">Google Play</span>
         </span>
       </a>
       {/* Not a link: there is no iOS build to send anyone to yet. A dead App
-          Store button is the single most common lie on an app landing page. */}
-      <span className="glass-btn flex cursor-default items-center gap-3 rounded-2xl px-5 py-3 opacity-60">
-        <span className="text-ink-2"><AppleGlyph size={20} /></span>
+          Store button is the single most common lie on an app landing page.
+          Dimmed with COLOUR, not opacity — `opacity-60` composited the label
+          and its own fill toward the page and measured 2.4:1. */}
+      <span className="glass-btn flex cursor-default items-center gap-3 rounded-2xl px-5 py-3">
+        <span className="text-ink-3"><AppleGlyph size={20} /></span>
         <span className="text-left leading-tight">
           <span className="block text-[10px] font-semibold uppercase tracking-wide text-ink-3">Coming to</span>
-          <span className="block text-[17px] font-bold text-ink">iOS</span>
+          <span className="block text-[17px] font-bold text-ink-2">iOS</span>
         </span>
       </span>
     </div>
@@ -126,7 +128,7 @@ function FeatureRow({
       <div className="flex justify-center">
         <div className="relative">
           {screen}
-          <span aria-hidden className="device-floor absolute inset-x-[-14%] top-full h-24 rounded-[50%]" />
+          <span aria-hidden className="device-floor absolute inset-x-0 top-full h-24 rounded-[50%]" />
         </div>
       </div>
     </div>
@@ -164,26 +166,39 @@ function FeatureCard({
 
 export default function Home() {
   return (
-    <main>
-      {/* ══ Nav ══ */}
+    // header / main / footer are SIBLINGS. Nested inside <main>, a <header>
+    // maps to a generic group rather than role="banner" and a <footer> to
+    // generic rather than role="contentinfo", so the page exposes no banner or
+    // contentinfo landmark at all and skip-to-content never lands anywhere.
+    <>
+    {/* ══ Nav ══ */}
       <header className="mx-auto flex max-w-6xl items-center justify-between px-5 py-5">
-        <a href="/" className="flex items-center gap-2.5">
-          <Image src="/app-icon.png" alt="" width={36} height={36} className="rounded-[9px]" priority />
-          <span className="headline text-2xl text-ink">Scorebug</span>
+      <a href="/" className="flex items-center gap-2.5">
+        <Image src="/app-icon.png" alt="" width={36} height={36} className="rounded-[9px]" priority />
+        <span className="headline text-2xl text-ink">Scorebug</span>
+      </a>
+      <nav aria-label="Primary" className="flex items-center gap-2.5">
+        <a href={APP_LINKS.slate} className="glass-btn hidden rounded-full px-4 py-2 text-[13px] font-bold text-ink-2 transition hover:text-ink sm:inline-block">
+          Open the web app
         </a>
-        <nav className="flex items-center gap-2.5">
-          <a href={APP_LINKS.slate} className="glass-btn hidden rounded-full px-4 py-2 text-[13px] font-bold text-ink-2 transition hover:text-ink sm:inline-block">
-            Open the web app
-          </a>
-          <a href={PLAY_URL} className="enamel-red rounded-full px-4 py-2 text-[13px] font-black text-white transition active:scale-95">
-            Get the app
-          </a>
-        </nav>
+        <a href={PLAY_URL} className="enamel-red rounded-full px-4 py-2 text-[13px] font-black text-white transition active:scale-95">
+          Get the app
+        </a>
+      </nav>
       </header>
+
+      <main>
 
       {/* ══ Hero ══ */}
       <section className="lit-red floodlights relative overflow-hidden">
-        <div className="mx-auto grid max-w-6xl items-center gap-12 px-5 pb-16 pt-10 md:grid-cols-[1fr_auto] md:pb-20 md:pt-12">
+        {/* TWO COLUMNS ONLY FROM lg. The `[1fr_auto]` track list resolves the
+              1fr to minmax(auto, 1fr) — an auto MINIMUM — so the text column
+              can never shrink below the word "CHRONICLE", and the phone stack
+              is flexShrink:0 at 470px. Below ~853px the pair simply did not
+              fit and the Vault phone was sliced off at the viewport edge
+              (body's overflow-x:hidden hid the scrollbar, not the damage).
+              768-1023px now gets the stacked hero that already works. */}
+          <div className="mx-auto grid max-w-6xl items-center gap-12 px-5 pb-16 pt-10 lg:grid-cols-[1fr_auto] lg:pb-20 lg:pt-12">
           <div className="relative z-10">
             <Kicker>Chronicle your sports</Kicker>
             <h1 className="headline mt-5 text-[3.6rem] text-white sm:text-[4.6rem] lg:text-[5.4rem]">
@@ -197,7 +212,7 @@ export default function Home() {
             <StoreButtons className="mt-8" />
             <p className="mt-5 text-[13px] text-ink-3">
               Free to download · 15 leagues · or{' '}
-              <a href={APP_LINKS.slate} className="whitespace-nowrap font-bold text-sb-teal underline-offset-2 hover:underline">use it in your browser →</a>
+              <a href={APP_LINKS.slate} className="whitespace-nowrap font-bold text-sb-teal underline underline-offset-2">use it in your browser →</a>
             </p>
           </div>
 
@@ -206,7 +221,7 @@ export default function Home() {
               read as a stack, little enough that the Vault's stat row and its
               first two entries stay legible, which is the whole reason the
               second phone is there. */}
-          <div className="relative flex justify-center md:justify-end">
+          <div className="relative flex justify-center lg:justify-end">
             <div className="relative flex items-start">
               <PhoneFrame screenW={238} className="relative z-10 rotate-[-3deg] sm:mt-6 sm:-mr-[34px]">
                 <RateChronicleScreen />
@@ -217,7 +232,7 @@ export default function Home() {
               <PhoneFrame screenW={226} className="hidden rotate-[5deg] opacity-95 sm:block">
                 <VaultScreen />
               </PhoneFrame>
-              <span aria-hidden className="device-floor absolute inset-x-[-10%] top-full h-24 rounded-[50%]" />
+              <span aria-hidden className="device-floor absolute inset-x-0 top-full h-24 rounded-[50%]" />
             </div>
           </div>
         </div>
@@ -238,6 +253,11 @@ export default function Home() {
 
       {/* ══ Marquee features ══ */}
       <section className="mx-auto flex max-w-6xl flex-col gap-28 px-5 pb-28" id="features">
+        {/* Visually hidden: the three feature rows below are h3s and need an
+            h2 to belong to. The hook section above reads as their heading to a
+            sighted visitor, but it lives in a different <section>. */}
+        <h2 className="sr-only">What Scorebug does</h2>
+
         <FeatureRow
           kicker="The core loop"
           accent="#F85149"
@@ -292,12 +312,16 @@ export default function Home() {
             </h2>
           </div>
 
-          <div className="mt-14 grid gap-5 md:grid-cols-3">
+          {/* Each card needs 230px of phone + 48px padding = 278px of column,
+              so three abreast needs ~914px. At md the column shrank to ~247px
+              and the phones were chopped through their bezels on both flanks.
+              Two-up in the middle band, three-up only when it genuinely fits. */}
+          <div className="mt-14 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             <FeatureCard
               kicker="The news desk"
               accent="#D29922"
               title="The Wire"
-              body="A dedicated sports news desk that builds itself around your teams. Pin a club or a league to My Wire, or let it follow your Starting Lineup automatically — with every league a tab away."
+              body="A dedicated sports news desk that builds itself around your teams. Pin a club or a league to My Wire, or let it follow your Starting Lineup automatically — with a tab for every league you follow."
               screen={<PhoneFrame screenW={210}><WireScreen /></PhoneFrame>}
             />
             <FeatureCard
@@ -311,7 +335,7 @@ export default function Home() {
               kicker="Your clubs"
               accent="#3FB950"
               title="The Franchise"
-              body="Build your Starting Lineup. Pick up to 5 clubs across every league — 25 with The Front Office — and track their combined win-loss-tie record for the season in one unified dashboard."
+              body="Build your Starting Lineup. Pick up to 5 clubs across all fourteen team leagues — 25 with The Front Office — and track their combined win-loss-tie record for the season in one unified dashboard."
               screen={<PhoneFrame screenW={210}><FranchiseScreen /></PhoneFrame>}
             />
           </div>
@@ -366,7 +390,7 @@ export default function Home() {
               <PhoneFrame screenW={286} gold>
                 <FrontOfficeScreen price={PRICING.monthly} cadence={PRICING.monthlyCadence} yearly={PRICING.yearly} />
               </PhoneFrame>
-              <span aria-hidden className="device-floor absolute inset-x-[-14%] top-full h-24 rounded-[50%]" />
+              <span aria-hidden className="device-floor absolute inset-x-0 top-full h-24 rounded-[50%]" />
             </div>
           </div>
         </div>
@@ -402,27 +426,27 @@ export default function Home() {
             </h2>
             <StoreButtons className="mt-9 justify-center" />
             <p className="mt-5 text-[12.5px] text-ink-3">
-              Also on the web — <a href={APP_LINKS.slate} className="font-bold text-sb-teal underline-offset-2 hover:underline">open The Slate</a>
+              Also on the web — <a href={APP_LINKS.slate} className="font-bold text-sb-teal underline underline-offset-2">open The Slate</a>
             </p>
           </div>
         </div>
       </section>
+      </main>
 
-      {/* ══ Footer ══ */}
       <footer className="border-t border-white/10 px-5 py-10">
         <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 sm:flex-row">
           <div className="flex items-center gap-2.5">
             <Image src="/app-icon.png" alt="" width={26} height={26} className="rounded-[7px]" />
             <span className="text-[13px] font-bold text-ink-2">Scorebug</span>
           </div>
-          <nav className="flex items-center gap-5 text-[13px] font-semibold text-ink-3">
-            <a href={APP_LINKS.privacy} className="hover:text-ink-2">Privacy</a>
-            <a href={APP_LINKS.terms} className="hover:text-ink-2">Terms</a>
-            <a href={PLAY_URL} className="hover:text-ink-2">Google Play</a>
+          <nav aria-label="Footer" className="flex items-center gap-5 text-[13px] font-semibold text-ink-3">
+            <a href={APP_LINKS.privacy} className="py-2 -my-2 hover:text-ink-2">Privacy</a>
+            <a href={APP_LINKS.terms} className="py-2 -my-2 hover:text-ink-2">Terms</a>
+            <a href={PLAY_URL} className="py-2 -my-2 hover:text-ink-2">Google Play</a>
           </nav>
           <p className="text-[12px] text-ink-3">© {new Date().getFullYear()} Scorebug™ · Made in Canada</p>
         </div>
       </footer>
-    </main>
+    </>
   )
 }
