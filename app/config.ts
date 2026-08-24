@@ -45,18 +45,16 @@ export const PRICE_NOTE =
   'Cancel any time. Google Play confirms your local price at checkout.'
 
 /**
- * Links into the web app.
+ * Links into the web app, served through this domain by the fallback rewrite.
  *
- * TRAILING SLASHES ARE LOAD-BEARING. The app deployment is a static export
- * with `trailingSlash: true`, so a request for `/the-slate` answers with a 308
- * to `/the-slate/`. Our fallback rewrite proxies the first request, but the
- * browser follows that redirect itself — to `app.getscorebug.app/the-slate/`,
- * putting the visitor on the subdomain and out of the marketing domain. Asking
- * for the slashed form up front means the proxy serves the document directly
- * and the URL bar stays on getscorebug.app.
+ * NO TRAILING SLASHES HERE, and that is deliberate. This deployment runs on
+ * Next's default `trailingSlash: false`, so `/the-slate/` is answered with a
+ * 308 that strips the slash before the rewrite is even considered. Linking the
+ * bare form skips that hop; next.config.js re-adds the slash on the way OUT to
+ * the upstream, which is the side that requires it.
  */
 export const APP_LINKS = {
-  slate: '/the-slate/',
-  privacy: '/privacy/',
-  terms: '/terms/',
+  slate: '/the-slate',
+  privacy: '/privacy',
+  terms: '/terms',
 } as const
