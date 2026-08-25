@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { SITE } from '../config'
 import { GEAR_TEAMS, GEAR_LEAGUES } from '../lib/teams'
 import Sponsored from '../components/Sponsored'
+import { SiteHeader, SiteFooter, Breadcrumbs, BreadcrumbNav } from '../components/SiteChrome'
 
 const TITLE = 'Team gear and memorabilia'
 const DESCRIPTION =
@@ -12,7 +13,8 @@ export const metadata: Metadata = {
   title: TITLE,
   description: DESCRIPTION,
   alternates: { canonical: `${SITE}/gear` },
-  openGraph: { type: 'website', url: `${SITE}/gear`, title: TITLE, description: DESCRIPTION },
+  openGraph: { type: 'website', url: `${SITE}/gear`, title: TITLE, description: DESCRIPTION, images: [{ url: '/og.png', width: 1200, height: 630, alt: 'Scorebug' }], },
+  twitter: { card: 'summary_large_image', title: TITLE, description: DESCRIPTION },
 }
 
 /**
@@ -26,8 +28,12 @@ export const metadata: Metadata = {
  */
 export default function GearIndex() {
   return (
-    <main className="lit-blue floodlights relative overflow-hidden">
+    <>
+      <Breadcrumbs trail={[{ name: 'Scorebug', url: SITE }, { name: 'Gear' }]} />
+      <SiteHeader />
+      <main className="lit-blue floodlights relative overflow-hidden">
       <div className="relative z-10 mx-auto max-w-6xl px-5 pb-24 pt-14">
+        <BreadcrumbNav trail={[{ name: 'Scorebug', href: '/' }, { name: 'Gear' }]} />
         <p className="glass-pill inline-flex items-center gap-2 rounded-full px-3.5 py-1.5 text-[11px] font-black uppercase" style={{ color: '#58A6FF' }}>
           <span aria-hidden className="inline-block h-1.5 w-1.5 rounded-full" style={{ background: '#58A6FF', boxShadow: '0 0 8px #58A6FF' }} />
           Fan gear
@@ -77,6 +83,8 @@ export default function GearIndex() {
           )
         })}
       </div>
-    </main>
+      </main>
+      <SiteFooter />
+    </>
   )
 }

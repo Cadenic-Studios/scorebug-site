@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { SITE, WEB_APP, SUPABASE_URL, SUPABASE_ANON_KEY } from '../config'
 import { ticketNetworkTeamUrl } from '../lib/affiliates'
 import Sponsored, { AffiliateLink } from '../components/Sponsored'
+import { SiteHeader, SiteFooter, Breadcrumbs, BreadcrumbNav } from '../components/SiteChrome'
 
 const TITLE = 'The Wire · Sports headlines'
 const DESCRIPTION =
@@ -12,7 +13,8 @@ export const metadata: Metadata = {
   title: TITLE,
   description: DESCRIPTION,
   alternates: { canonical: `${SITE}/news` },
-  openGraph: { type: 'website', url: `${SITE}/news`, title: TITLE, description: DESCRIPTION },
+  openGraph: { type: 'website', url: `${SITE}/news`, title: TITLE, description: DESCRIPTION, images: [{ url: '/og.png', width: 1200, height: 630, alt: 'Scorebug' }], },
+  twitter: { card: 'summary_large_image', title: TITLE, description: DESCRIPTION },
 }
 
 export const revalidate = 900
@@ -108,8 +110,12 @@ export default async function NewsPage() {
   const leagues = Object.keys(byLeague).sort((a, b) => byLeague[b].length - byLeague[a].length)
 
   return (
-    <main className="lit-gold floodlights relative overflow-hidden">
+    <>
+      <Breadcrumbs trail={[{ name: 'Scorebug', url: SITE }, { name: 'News' }]} />
+      <SiteHeader />
+      <main className="lit-gold floodlights relative overflow-hidden">
       <div className="relative z-10 mx-auto max-w-4xl px-5 pb-24 pt-14">
+        <BreadcrumbNav trail={[{ name: 'Scorebug', href: '/' }, { name: 'News' }]} />
         <p className="glass-pill inline-flex items-center gap-2 rounded-full px-3.5 py-1.5 text-[11px] font-black uppercase" style={{ color: '#E5B53C' }}>
           <span aria-hidden className="inline-block h-1.5 w-1.5 rounded-full" style={{ background: '#E5B53C', boxShadow: '0 0 8px #E5B53C' }} />
           The news desk
@@ -183,7 +189,9 @@ export default async function NewsPage() {
           to the outlets that wrote them. <Link href="/terms" className="underline hover:text-ink-2">Terms</Link>
         </p>
       </div>
-    </main>
+      </main>
+      <SiteFooter />
+    </>
   )
 }
 

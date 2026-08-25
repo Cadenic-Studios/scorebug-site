@@ -3,9 +3,10 @@ import Image from 'next/image'
 import { SITE, WEB_APP } from '../config'
 import {
   getProducts, isShopifyConfigured, shopifyProductUrl,
-  formatPriceRange, formatMoney, categoryLabel, isApparel,
+  formatPriceRange, categoryLabel, isApparel,
   type ShopifyProduct,
 } from '../lib/shopify'
+import { SiteHeader, SiteFooter, Breadcrumbs, BreadcrumbNav } from '../components/SiteChrome'
 
 /**
  * /shop — the PUBLIC, crawlable storefront.
@@ -38,7 +39,11 @@ import {
  * surfaces. One cart, one checkout, two shop fronts.
  */
 
-const TITLE = 'Scorebug Pro Shop · Official gear'
+/* NOT "Scorebug Pro Shop" — app/layout.tsx sets a title template of
+   '%s · Scorebug', so that rendered as "Scorebug Pro Shop · Official gear ·
+   Scorebug". The brand is appended for you; a page title should only carry the
+   part the template does not. */
+const TITLE = 'Pro Shop · Official gear'
 const DESCRIPTION =
   'Official Scorebug apparel and accessories, printed to order and shipped worldwide. Tees, hoodies and gear for the fan who logs every game.'
 
@@ -154,6 +159,10 @@ export default async function ShopPage() {
 
   return (
     <>
+      <Breadcrumbs trail={[
+        { name: 'Scorebug', url: SITE },
+        { name: 'Pro Shop' },
+      ]} />
       {jsonLd && (
         <script
           type="application/ld+json"
@@ -161,8 +170,10 @@ export default async function ShopPage() {
         />
       )}
 
+      <SiteHeader />
       <main className="lit-red floodlights relative overflow-hidden">
         <div className="relative z-10 mx-auto max-w-6xl px-5 pb-24 pt-14">
+          <BreadcrumbNav trail={[{ name: 'Scorebug', href: '/' }, { name: 'Pro Shop' }]} />
           <p className="glass-pill inline-flex items-center gap-2 rounded-full px-3.5 py-1.5 text-[11px] font-black uppercase" style={{ color: '#F85149' }}>
             <span aria-hidden className="inline-block h-1.5 w-1.5 rounded-full" style={{ background: '#F85149', boxShadow: '0 0 8px #F85149' }} />
             Official gear
@@ -213,7 +224,8 @@ export default async function ShopPage() {
             </>
           )}
         </div>
-      </main>
+        </main>
+      <SiteFooter />
     </>
   )
 }

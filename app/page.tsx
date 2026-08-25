@@ -3,6 +3,7 @@ import { FAQS } from './faqs'
 import { androidCta, WEB_APP, PRICING, PRICE_NOTE, APP_LINKS } from './config'
 import { LEAGUE_COUNT, TEAM_LEAGUE_COUNT } from './leagues'
 import Waitlist from './components/Waitlist'
+import { SiteHeader, SiteFooter, LaunchWebApp } from './components/SiteChrome'
 import LeagueBar from './components/LeagueBar'
 import Showcase from './components/Showcase'
 
@@ -12,25 +13,6 @@ import Showcase from './components/Showcase'
    install and no platform gate. The store buttons sit beside it in a visibly
    lower tier — outlined glass rather than enamel — so the hierarchy is legible
    before anyone reads a word. */
-
-function LaunchWebApp({ size = 'lg', className = '' }: { size?: 'lg' | 'md'; className?: string }) {
-  const lg = size === 'lg'
-  return (
-    <a
-      href={WEB_APP}
-      className={`enamel-red inline-flex items-center gap-3 whitespace-nowrap rounded-2xl font-black text-white transition active:scale-[0.98] ${
-        lg ? 'px-7 py-4 text-[17px]' : 'px-5 py-3 text-[14px]'
-      } ${className}`}
-    >
-      <svg width={lg ? 20 : 17} height={lg ? 20 : 17} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-        <circle cx="12" cy="12" r="9" />
-        <path d="M3 12h18M12 3c2.6 3 2.6 15 0 18M12 3c-2.6 3-2.6 15 0 18" />
-      </svg>
-      Launch Web App
-      <span aria-hidden className="text-[1.1em] leading-none opacity-80">›</span>
-    </a>
-  )
-}
 
 function PlayGlyph({ size = 18 }: { size?: number }) {
   return (
@@ -190,29 +172,7 @@ export default function Home() {
     // generic rather than role="contentinfo", so the page would expose no
     // banner or contentinfo landmark at all.
     <>
-      <header className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-5 py-5">
-        <a href="/" aria-label="Scorebug home" className="flex min-w-0 items-center gap-2.5">
-          <Image src="/app-icon.png" alt="" width={36} height={36} className="rounded-[9px]" priority />
-          {/* Icon only below sm. The wordmark and a full-width "Launch Web App"
-              cannot both fit a 360px bar, and a truncated "SCORE…" is worse
-              than no wordmark beside a logo that already says it. */}
-          <span className="headline headline-sm hidden text-2xl text-ink sm:inline">Scorebug</span>
-        </a>
-        <nav aria-label="Primary" className="flex flex-shrink-0 items-center gap-2.5">
-          {/* Pro Shop is `md:` while the test link is `sm:` — at 640px the bar
-              already carries a wordmark, a CTA pill and the enamel button, and
-              a third link there pushes "Launch Web App" off a 360px phone. The
-              shop is also in the footer, which is where a browsing visitor
-              looks for it; this is the impulse placement, not the only one. */}
-          <a href={APP_LINKS.proShop} className="glass-btn hidden rounded-full px-4 py-2 text-[13px] font-bold text-ink-2 transition hover:text-ink md:inline-block">
-            Pro Shop
-          </a>
-          <a href={androidCta().href} className="glass-btn hidden rounded-full px-4 py-2 text-[13px] font-bold text-ink-2 transition hover:text-ink sm:inline-block">
-            {androidCta().label}
-          </a>
-          <LaunchWebApp size="md" />
-        </nav>
-      </header>
+      <SiteHeader />
 
       <main>
         {/* ══ Hero ══ */}
@@ -552,24 +512,7 @@ export default function Home() {
         </section>
       </main>
 
-      <footer className="border-t border-white/10 px-5 py-10">
-        <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 sm:flex-row">
-          <div className="flex items-center gap-2.5">
-            <Image src="/app-icon.png" alt="" width={26} height={26} className="rounded-[7px]" />
-            <span className="text-[13px] font-bold text-ink-2">Scorebug</span>
-          </div>
-          <nav aria-label="Footer" className="flex flex-wrap items-center justify-center gap-5 text-[13px] font-semibold text-ink-3">
-            <a href={APP_LINKS.slate} className="py-2 -my-2 hover:text-ink-2">The Slate</a>
-            <a href={APP_LINKS.proShop} className="py-2 -my-2 hover:text-ink-2">Pro Shop</a>
-            <a href="/gear" className="py-2 -my-2 hover:text-ink-2">Gear</a>
-            <a href="/news" className="py-2 -my-2 hover:text-ink-2">News</a>
-            <a href={APP_LINKS.privacy} className="py-2 -my-2 hover:text-ink-2">Privacy</a>
-            <a href={APP_LINKS.terms} className="py-2 -my-2 hover:text-ink-2">Terms</a>
-            <a href={androidCta().href} className="py-2 -my-2 hover:text-ink-2">{androidCta().label}</a>
-          </nav>
-          <p className="text-[12px] text-ink-3">© {new Date().getFullYear()} Scorebug™ · Made in Canada</p>
-        </div>
-      </footer>
+      <SiteFooter />
     </>
   )
 }
