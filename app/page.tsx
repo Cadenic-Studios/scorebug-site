@@ -1,7 +1,9 @@
 import Image from 'next/image'
 import { FAQS } from './faqs'
 import { androidCta, WEB_APP, PRICING, PRICE_NOTE, APP_LINKS } from './config'
+import { LEAGUE_COUNT, TEAM_LEAGUE_COUNT } from './leagues'
 import Waitlist from './components/Waitlist'
+import LeagueBar from './components/LeagueBar'
 import Showcase from './components/Showcase'
 
 /* ── Call-to-action cluster ───────────────────────────────────────────────────
@@ -223,7 +225,8 @@ export default function Home() {
                 every game.
               </h1>
               <p className="mt-6 max-w-md text-lg leading-relaxed text-ink-2">
-                Rate every game you watch out of 5.0 and write the take. It all lands in your Vault.
+                A sports logbook for the games you actually watch. Grade each one out of 5.0,
+                write the take, and keep the record for good.
               </p>
 
               <div className="mt-9">
@@ -238,10 +241,28 @@ export default function Home() {
                 <StoreButtons />
               </div>
 
-              <p className="mt-6 text-[13px] text-ink-3">Free to use · 15 leagues · logs back to 2002</p>
+              <p className="mt-6 text-[13px] text-ink-3">Free to use · {LEAGUE_COUNT} leagues · logs back to 2002</p>
             </div>
 
-            <div className="flex justify-center lg:justify-end">
+            {/* ── League bar ──────────────────────────────────────────────
+                DOM order is copy -> leagues -> artwork, and the lg placement
+                then puts it back under BOTH columns.
+
+                It has to be in this position in the markup because on a phone
+                the hero stacks in DOM order, and with the bar after the grid it
+                landed 1,105px down — a full screen below the fold, behind the
+                artwork. "Which leagues" is the first question a visitor has, so
+                it must beat the picture to the reader.
+
+                On lg it is explicitly placed at row 2 spanning both tracks,
+                which is why the artwork below carries an explicit row 1 / col 2:
+                once one grid item is placed by hand, leaving its siblings on
+                auto-placement is how you get items stacked in the same cell. */}
+            <div className="relative z-10 min-w-0 lg:col-span-2 lg:col-start-1 lg:row-start-2">
+              <LeagueBar />
+            </div>
+
+            <div className="flex justify-center lg:col-start-2 lg:row-start-1 lg:justify-end">
               <Showcase
                 src="/shots/hero.png"
                 alt="A game rating dial set to 4.0 out of 5 with half-step buttons and viewing options, beside a Vault of logged games and their grades."
@@ -295,9 +316,9 @@ export default function Home() {
               past about 75. The section stays 3xl so the heading can run wider
               than the paragraph under it. */}
           <p className="mx-auto mt-5 max-w-[36rem] text-[17px] leading-relaxed text-ink-2">
-            Scorebug is a logbook for the games you watch. A game goes final, you grade it out
-            of 5.0 and write what you thought, and it stays in your Vault. Scores run live
-            across 15 leagues, and you can log finals back to the 2002 season.
+            Scorebug is a sports logbook app. A game goes final, you grade it out of 5.0 and
+            write what you thought, and it stays in your personal sports vault. Live scores run
+            across {LEAGUE_COUNT} leagues, and you can log finals back to the 2002 season.
           </p>
         </section>
 
@@ -330,7 +351,7 @@ export default function Home() {
             kicker="Live scores · every league"
             accent="#2DD4BF"
             title="The Slate"
-            body="The day's games across your leagues, in one list. When a game goes final, you log it from the same card."
+            body="Every game on today's card across your leagues, with scores that update while you watch. When one goes final you log it from the same card, so tracking and logging are the same motion."
             bullets={[
               'NHL, NFL, NBA, MLB, CFL, college football and men’s college basketball',
               'MLS, the Premier League, La Liga, Serie A, Bundesliga, Ligue 1 and the Champions League',
@@ -345,7 +366,7 @@ export default function Home() {
             kicker="Everything you've logged"
             accent="#58A6FF"
             title="The Vault"
-            body="Every game you have logged sits here, with the grade you gave it and the note you wrote. Your running average sits at the top."
+            body="Your personal sports vault: every game you have logged, the grade you gave it and the note you wrote, with your running average on top. It is the record of what you actually watched, season after season."
             bullets={[
               'Every game you have ever logged, with no time limit',
               'Sort by most recent, highest-rated or lowest-rated',
@@ -398,7 +419,7 @@ export default function Home() {
                 kicker="Your teams"
                 accent="#3FB950"
                 title="The Franchise"
-                body="Your Starting Lineup holds up to 5 teams across the 14 team leagues, or 25 with a Front Office membership. Scorebug keeps their combined win-loss-tie record for the season."
+                body={`Your Starting Lineup holds up to 5 teams across the ${TEAM_LEAGUE_COUNT} team leagues, or 25 with a Front Office membership. Scorebug keeps their combined win-loss-tie record for the season.`}
                 src="/shots/franchise.png"
                 alt="The Franchise: your teams' combined win-loss-tie record for the season, with recent results beneath."
               />

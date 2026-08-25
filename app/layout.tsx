@@ -14,7 +14,7 @@ import './globals.css'
  * already carries the trust strip and the footer.
  */
 const DESCRIPTION =
-  'Scorebug is Letterboxd for sports: track live scores across 15 leagues and rate every game you watch out of 5.0.'
+  'Scorebug is a sports logbook app: track live scores across 15 leagues, rate every game you watch out of 5.0, and keep it all in a permanent personal sports vault.'
 
 const TITLE = 'Scorebug · Chronicle every game'
 
@@ -31,10 +31,20 @@ export const metadata: Metadata = {
     template: '%s · Scorebug',
   },
   description: DESCRIPTION,
+  /**
+   * `keywords` carries no ranking weight at Google and has not for years. It is
+   * kept because it is still read by several smaller engines and by some
+   * answer-engine crawlers, and because it costs nothing — but the SEO work that
+   * matters is in the visible copy and the JSON-LD below, not here. The terms
+   * are the high-intent ones the page is actually written to answer, so they
+   * stay in step with the headings rather than being a wishlist.
+   */
   keywords: [
-    'sports tracking app', 'log sports games', 'rate sports games',
-    'Letterboxd for sports', 'sports diary', 'game journal', 'fan log',
-    'NHL tracker', 'NFL tracker', 'F1 race log', 'sports social network',
+    'sports logbook app', 'game memory journal', 'personal sports vault',
+    'track sports stats watched', 'sports diary app', 'rate games you watch',
+    'log every game you watch', 'Letterboxd for sports', 'sports watch history',
+    'fan game journal', 'NHL game log', 'NFL game log', 'F1 race log',
+    'college football game tracker', 'Premier League match log',
   ],
   alternates: { canonical: SITE },
   openGraph: {
