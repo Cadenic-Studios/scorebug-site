@@ -130,7 +130,13 @@ export const PRICE_NOTE =
  */
 export const APP_LINKS = {
   slate: '/the-slate',
-  proShop: '/the-pro-shop',
+  /**
+   * /shop, NOT /the-pro-shop. The latter 307s to the app AND is caught by
+   * robots.txt's `Disallow: /the-` prefix rule, so linking it from the header
+   * and footer was pointing the site's two most-crawled links at a URL no
+   * crawler is allowed to follow. /shop is a real page in this deployment.
+   */
+  proShop: '/shop',
   privacy: '/privacy',
   terms: '/terms',
 } as const

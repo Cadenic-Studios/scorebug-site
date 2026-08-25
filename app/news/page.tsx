@@ -1,0 +1,213 @@
+import type { Metadata } from 'next'
+import Link from 'next/link'
+import { SITE, WEB_APP, SUPABASE_URL, SUPABASE_ANON_KEY } from '../config'
+import { ticketNetworkTeamUrl } from '../lib/affiliates'
+import Sponsored, { AffiliateLink } from '../components/Sponsored'
+
+const TITLE = 'The Wire · Sports headlines'
+const DESCRIPTION =
+  'Headlines from around the NHL, NFL, NBA, MLB, CFL and the major football leagues, with a link straight to the source. Then log the game you just watched.'
+
+export const metadata: Metadata = {
+  title: TITLE,
+  description: DESCRIPTION,
+  alternates: { canonical: `${SITE}/news` },
+  openGraph: { type: 'website', url: `${SITE}/news`, title: TITLE, description: DESCRIPTION },
+}
+
+export const revalidate = 900
+
+/**
+ * /news — the public headline hub.
+ *
+ * ─── READ THIS BEFORE TREATING IT AS AN SEO ASSET ────────────────────────────
+ * This page lists headlines aggregated from other publishers (ESPN, BBC Sport,
+ * CFL.ca and others) and links out to them. Two things follow from that, and
+ * neither is a reason not to ship it — but both are reasons not to build a
+ * traffic strategy on it:
+ *
+ *   1. Google's spam policies name "scraped content" — material copied from
+ *      other sites and republished without adding value — as a violation. A page
+ *      of other outlets' headlines is close to that line no matter how it is
+ *      styled, so it is unlikely to rank, and at worst it is a quality signal
+ *      attached to a domain that also hosts /shop and the landing page.
+ *   2. Publisher terms of service generally prohibit redistribution.
+ *
+ * The build here is the defensible end of that range, on purpose:
+ *   • HEADLINE AND SOURCE ONLY. The `description` and `summary_tldr` columns
+ *     exist in news_cache and are deliberately NOT rendered. A headline plus
+ *     attribution plus a link out is what a link aggregator does; reprinting the
+ *     publisher's own summary is what a scraper does, and it is the part that
+ *     draws complaints.
+ *   • Every item links to the ORIGINAL article, credited by name.
+ *   • The page's own value is the grouping and the Scorebug hook, not the text.
+ *
+ * If this is ever meant to carry real organic traffic, the thing that earns it
+ * is original writing — your own take on the game — not more of someone else's.
+ */
+
+type Article = {
+  id: string
+  title: string
+  source: string | null
+  url: string | null
+  league: string | null
+  team_acronym: string | null
+  published_at: string | null
+}
+
+/**
+ * Read the shared cache with the anon key.
+ *
+ * This works because `news_cache` is anonymously readable — verified against the
+ * live project, not assumed. If RLS is ever tightened, this returns an empty
+ * array and the page renders its empty state rather than throwing.
+ *
+ * Column selection is explicit and EXCLUDES description/summary_tldr, so the
+ * excerpt text cannot reach this page even by accident later.
+ */
+async function getHeadlines(): Promise<Article[]> {
+  if (!SUPABASE_URL || !SUPABASE_ANON_KEY) return []
+  try {
+    const res = await fetch(
+      `${SUPABASE_URL}/rest/v1/news_cache` +
+        `?select=id,title,source,url,league,team_acronym,published_at` +
+        `&order=published_at.desc&limit=60`,
+      {
+        headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${SUPABASE_ANON_KEY}` },
+        next: { revalidate: 900 },
+      },
+    )
+    if (!res.ok) return []
+    const rows = (await res.json()) as Article[]
+    return Array.isArray(rows) ? rows.filter(r => r.title && r.url) : []
+  } catch {
+    return []
+  }
+}
+
+function timeAgo(iso: string | null): string {
+  if (!iso) return ''
+  const then = Date.parse(iso)
+  if (!Number.isFinite(then)) return ''
+  const mins = Math.max(1, Math.round((Date.now() - then) / 60000))
+  if (mins < 60) return `${mins}m ago`
+  const hrs = Math.round(mins / 60)
+  if (hrs < 24) return `${hrs}h ago`
+  return `${Math.round(hrs / 24)}d ago`
+}
+
+export default async function NewsPage() {
+  const articles = await getHeadlines()
+
+  const byLeague = articles.reduce<Record<string, Article[]>>((acc, a) => {
+    const k = (a.league || 'Other').toUpperCase()
+    ;(acc[k] ||= []).push(a)
+    return acc
+  }, {})
+  const leagues = Object.keys(byLeague).sort((a, b) => byLeague[b].length - byLeague[a].length)
+
+  return (
+    <main className="lit-gold floodlights relative overflow-hidden">
+      <div className="relative z-10 mx-auto max-w-4xl px-5 pb-24 pt-14">
+        <p className="glass-pill inline-flex items-center gap-2 rounded-full px-3.5 py-1.5 text-[11px] font-black uppercase" style={{ color: '#E5B53C' }}>
+          <span aria-hidden className="inline-block h-1.5 w-1.5 rounded-full" style={{ background: '#E5B53C', boxShadow: '0 0 8px #E5B53C' }} />
+          The news desk
+        </p>
+
+        <h1 className="headline headline-display mt-7 text-[3.2rem] text-white sm:text-[4rem]">
+          The Wire
+        </h1>
+        <p className="mt-6 max-w-[36rem] text-lg leading-relaxed text-ink-2">
+          Headlines from around the leagues, each one linking straight to the outlet
+          that wrote it. In the app, The Wire follows the teams in your Starting Lineup.
+        </p>
+
+        {articles.length === 0 ? (
+          <div className="glass-card mt-12 rounded-2xl px-7 py-12 text-center">
+            <h2 className="headline text-3xl text-white">Nothing on the wire</h2>
+            <p className="mx-auto mt-3 max-w-sm text-[14.5px] leading-relaxed text-ink-2">
+              The desk is quiet right now. Try again shortly.
+            </p>
+          </div>
+        ) : (
+          leagues.map(lg => (
+            <section key={lg} className="mt-12">
+              <h2 className="headline text-3xl text-ink sm:text-4xl">{lg}</h2>
+              <ul className="mt-5 space-y-2.5">
+                {byLeague[lg].slice(0, 12).map(a => (
+                  <li key={a.id}>
+                    <a
+                      href={a.url!}
+                      target="_blank"
+                      /* A normal outbound credit link. NOT rel="sponsored" —
+                         these are editorial links to the publisher and nobody is
+                         paid for them; marking them sponsored would be a false
+                         declaration in the other direction. */
+                      rel="noopener noreferrer"
+                      className="glass-card block rounded-xl px-5 py-4 transition hover:border-white/20"
+                    >
+                      <p className="text-[15.5px] font-bold leading-snug text-ink">{a.title}</p>
+                      <p className="mt-1.5 text-[12px] text-ink-3">
+                        {a.source || 'Source'}
+                        {a.published_at ? ` · ${timeAgo(a.published_at)}` : ''}
+                        {a.team_acronym ? ` · ${a.team_acronym}` : ''}
+                      </p>
+                    </a>
+                  </li>
+                ))}
+              </ul>
+
+              {/* One ticket unit per league block, keyed off the league rather
+                  than a specific fixture: this page has no schedule data, and a
+                  CTA that promises a named game it cannot link to is worse than
+                  a general one. Disclosed and rel-tagged like every paid link. */}
+              <TicketRow league={lg} />
+            </section>
+          ))
+        )}
+
+        <div className="glass-card mt-14 rounded-2xl p-7 text-center">
+          <h2 className="headline text-2xl text-ink sm:text-3xl">Read it, then log it</h2>
+          <p className="mx-auto mt-3 max-w-md text-[14.5px] leading-relaxed text-ink-2">
+            Scorebug keeps the news for the teams you follow next to the games you
+            rated, so the story and the scoreline sit in the same place.
+          </p>
+          <a href={WEB_APP} className="enamel-red mt-6 inline-block rounded-2xl px-7 py-3.5 text-[15px] font-black text-white transition active:scale-[0.98]">
+            Open the web app
+          </a>
+        </div>
+
+        <p className="mt-10 text-center text-[12px] leading-relaxed text-ink-3">
+          Headlines are aggregated and link to the original publisher. All rights belong
+          to the outlets that wrote them. <Link href="/terms" className="underline hover:text-ink-2">Terms</Link>
+        </p>
+      </div>
+    </main>
+  )
+}
+
+function TicketRow({ league }: { league: string }) {
+  const href = ticketNetworkTeamUrl(`${league} tickets`)
+  if (!href) return null
+  return (
+    <div className="glass-card mt-4 flex items-center justify-between gap-4 rounded-xl px-5 py-4">
+      <div className="min-w-0">
+        <div className="flex items-center gap-2.5">
+          <p className="text-[11px] font-black uppercase tracking-[0.16em]" style={{ color: '#E5B53C' }}>
+            TicketNetwork
+          </p>
+          <Sponsored />
+        </div>
+        <p className="mt-1.5 text-[13.5px] text-ink-2">Resale seats for upcoming {league} fixtures.</p>
+      </div>
+      <AffiliateLink
+        href={href}
+        ariaLabel={`Find ${league} tickets on TicketNetwork (opens in a new tab)`}
+        className="glass-btn flex-shrink-0 rounded-xl px-4 py-2.5 text-[13px] font-bold text-ink-2 transition hover:text-ink"
+      >
+        Find seats
+      </AffiliateLink>
+    </div>
+  )
+}

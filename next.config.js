@@ -82,8 +82,61 @@ const nextConfig = {
     ])
   },
 
+  /**
+   * Shopify product photography is served from cdn.shopify.com. Without this,
+   * next/image refuses the host outright ("hostname is not configured") and the
+   * whole /shop route 500s rather than degrading to a missing image.
+   *
+   * Narrowed to the exact CDN host and the image path prefix rather than a
+   * bare wildcard: `remotePatterns` is an allowlist for a server-side fetcher
+   * that will retrieve and re-encode whatever it is pointed at, so it should
+   * name what it actually needs.
+   */
+  images: {
+    remotePatterns: [
+      { protocol: 'https', hostname: 'cdn.shopify.com', pathname: '/s/files/**' },
+    ],
+  },
+
   async headers() {
     return [
+      {
+        /**
+         * The site shipped with NO security headers at all, and no CSP — the
+         * brief assumed a vercel.json CSP existed here to be widened for
+         * Shopify. There is no vercel.json on this project; headers come from
+         * this file, and nothing was blocking anything.
+         *
+         * Adding one is worth doing on its own merits, but note what it must
+         * permit: Next injects inline bootstrap scripts and inline styles, so
+         * 'unsafe-inline' is unavoidable without a nonce middleware, and dev
+         * builds need 'unsafe-eval'. connect-src covers Supabase (the waitlist
+         * form posts an OTP request) and Shopify (the /shop catalogue fetch is
+         * server-side today, but a future client cart would need it).
+         */
+        source: '/(.*)',
+        headers: [
+          { key: 'X-Content-Type-Options', value: 'nosniff' },
+          { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
+          { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=()' },
+          { key: 'Strict-Transport-Security', value: 'max-age=63072000; includeSubDomains; preload' },
+          {
+            key: 'Content-Security-Policy',
+            value: [
+              "default-src 'self'",
+              "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
+              "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+              "font-src 'self' https://fonts.gstatic.com data:",
+              "img-src 'self' data: blob: https:",
+              "connect-src 'self' https://*.myshopify.com https://*.supabase.co",
+              "frame-ancestors 'none'",
+              "object-src 'none'",
+              "base-uri 'self'",
+              "form-action 'self' https://*.myshopify.com",
+            ].join('; '),
+          },
+        ],
+      },
       {
         // Both stores fetch these with strict content-type expectations, and
         // Apple's CDN caches aggressively — say exactly what they are.

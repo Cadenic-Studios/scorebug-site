@@ -561,6 +561,8 @@ export default function Home() {
           <nav aria-label="Footer" className="flex flex-wrap items-center justify-center gap-5 text-[13px] font-semibold text-ink-3">
             <a href={APP_LINKS.slate} className="py-2 -my-2 hover:text-ink-2">The Slate</a>
             <a href={APP_LINKS.proShop} className="py-2 -my-2 hover:text-ink-2">Pro Shop</a>
+            <a href="/gear" className="py-2 -my-2 hover:text-ink-2">Gear</a>
+            <a href="/news" className="py-2 -my-2 hover:text-ink-2">News</a>
             <a href={APP_LINKS.privacy} className="py-2 -my-2 hover:text-ink-2">Privacy</a>
             <a href={APP_LINKS.terms} className="py-2 -my-2 hover:text-ink-2">Terms</a>
             <a href={androidCta().href} className="py-2 -my-2 hover:text-ink-2">{androidCta().label}</a>
