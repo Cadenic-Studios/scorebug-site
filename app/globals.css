@@ -32,13 +32,56 @@ body {
    uppercase, with the tracking pulled in and the leading crushed — sports
    editorial, not app UI. Anton is that voice. The app's own Oswald stays for
    text INSIDE the device mockups, so the marketing speaks in the store's voice
-   while the screens speak in the product's. */
-.headline {
+   while the screens speak in the product's.
+
+   HERITAGE BUG, do not re-crush this: the leading used to be 0.86. Anton's cap
+   height is 1760/2048 = 0.859375em, so 0.86 leading is numerically IDENTICAL to
+   the cap height — on any multi-line all-caps headline the cap tops of line 2
+   land within 0.05px of line 1's baseline and the lines physically touch. 0.95
+   is the floor that keeps a constant ~10.5%-of-cap gap at every size here.
+
+   The base tracking is 0 on purpose. Anton is already ultra-condensed; negative
+   tracking is invisible at display size but closes the counters of O/C/G/S at
+   24-30px, which is what made the small headlines read as clotted. Tighten only
+   where it is actually wanted (.headline-display) and OPEN where the face is
+   small (.headline-sm).
+
+   WHY THE SELECTORS ARE DOUBLED (.headline.headline)
+   Tailwind v3 does NOT emit real CSS cascade layers, so a single `.headline`
+   (0,1,0) ties with `.text-5xl` (0,1,0) and source order decides. Base
+   utilities are emitted before this block and lose; RESPONSIVE ones
+   (`sm:text-5xl`) are emitted after it and WIN — and every Tailwind font-size
+   utility ships its own line-height. Measured before this fix: `.headline-sm`
+   headings honoured 0.95 while `text-4xl sm:text-5xl` headings silently
+   rendered at 1.0, so the page had two leading systems depending on whether a
+   heading happened to use a responsive size. Doubling the class costs nothing,
+   adds no !important, and makes the leading deterministic.
+
+   A `leading-*` / `tracking-*` utility in the JSX therefore does nothing here.
+   Change the value in this block or add a modifier class below. */
+.headline.headline {
   font-family: var(--font-anton), 'Arial Narrow', sans-serif;
   text-transform: uppercase;
-  line-height: 0.86;
-  letter-spacing: -0.005em;
+  /* 1.0, not 0.95. 0.95 was the collision floor; the brief was that titles felt
+     cramped, so this takes the deliberate step up the audit costed out — a
+     14.1% of-cap gap (6.8px at 48px) rather than 9%. It also happens to be what
+     the big headings were already rendering by accident via sm:text-5xl, so
+     nothing on the page moves except the small tier, which gains air. */
+  line-height: 1;
+  letter-spacing: 0;
   font-weight: 400; /* Anton ships one weight; faux-bolding it smears the stems. */
+}
+/* Hero only. Tighter than the section tier because at 83px the optical
+   tightening is real and the counters survive it — but 0.94, not 0.92, so the
+   cap-to-cap gap (6.7px) matches the 48px tier's 6.8px instead of reading
+   tighter than the headings below it. */
+.headline.headline-display {
+  line-height: 0.94;
+  letter-spacing: -0.018em;
+}
+/* Headlines at or under 30px: the counters need air, not compression. */
+.headline.headline-sm {
+  letter-spacing: 0.014em;
 }
 
 /* ══ ENAMELED DARK GLASS ═══════════════════════════════════════════════════ */
@@ -114,7 +157,18 @@ body {
     radial-gradient(60% 45% at 88% 6%, rgba(45, 212, 191, 0.10) 0%, rgba(45, 212, 191, 0) 58%);
 }
 
-/* Twin floodlight bloom + a horizon line — the "stadium at night" read. */
+/* Twin floodlight bloom + a horizon line — the "stadium at night" read.
+
+   The bloom must sit BEHIND the phone plates. Unpositioned in z, these pseudos
+   painted over the artwork: a blurred haze in front of the glass reads as fog on
+   the lens, not stage light, and it washes the mockup's own accent out. Negative
+   z puts them exactly where stage light belongs — after the section's background
+   and before all in-flow content. `isolation` is what makes that safe: it forces
+   the section to be its own stacking context, so z-index:-1 stops at the section
+   instead of escaping behind its .lit-* wash (or behind the page) and vanishing. */
+.floodlights {
+  isolation: isolate;
+}
 .floodlights::before,
 .floodlights::after {
   content: '';
@@ -122,6 +176,7 @@ body {
   top: -12%;
   width: 34%;
   height: 62%;
+  z-index: -1;
   pointer-events: none;
   filter: blur(38px);
   opacity: 0.5;
@@ -133,6 +188,15 @@ body {
 .floodlights::after {
   right: -6%;
   background: radial-gradient(closest-side, rgba(190, 215, 255, 0.24), transparent 70%);
+}
+/* Colour temperature has to follow the sky. The blue-white rig above is stadium
+   arc light and belongs over .lit-red / .lit-blue; hung over the gold section it
+   collides with the warm wash and greys it. Same lamps, warmer gel. */
+.lit-gold.floodlights::before {
+  background: radial-gradient(closest-side, rgba(255, 226, 163, 0.28), transparent 70%);
+}
+.lit-gold.floodlights::after {
+  background: radial-gradient(closest-side, rgba(255, 218, 146, 0.24), transparent 70%);
 }
 
 /* ══ DEVICE FRAME ══════════════════════════════════════════════════════════

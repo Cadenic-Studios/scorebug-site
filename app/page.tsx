@@ -104,18 +104,29 @@ function Kicker({ children, accent = '#F85149' }: { children: React.ReactNode; a
  * never has to survive a narrow column.
  */
 function FeatureRow({
-  kicker, accent, title, body, bullets, src, alt, flip = false,
+  kicker, accent, title, body, bullets, src, alt, flip = false, aspect, objectPosition,
 }: {
   kicker: string; accent: string; title: string; body: string
   bullets: string[]; src: string; alt: string; flip?: boolean
+  /** Only set where the poster's baked headline duplicates the <h3> beside it.
+   *  Left undefined the plate shows the full artwork, which is the default and
+   *  the right answer for a poster whose headline differs from the heading. */
+  aspect?: string; objectPosition?: string
 }) {
   return (
     <div className="grid items-center gap-14 lg:grid-cols-2 lg:gap-16">
       <div className={flip ? 'lg:order-2' : ''}>
         <Kicker accent={accent}>{kicker}</Kicker>
-        <h3 className="headline mt-4 text-4xl text-ink sm:text-5xl">{title}</h3>
-        <p className="mt-4 max-w-md text-[16px] leading-relaxed text-ink-2">{body}</p>
-        <ul className="mt-5 space-y-2.5">
+        {/* One rhythm for the whole page: kicker→heading 20px, heading→body
+            20px, body→bullets 24px. These three pairs used to be mt-4/mt-4/mt-5
+            here and different numbers again in the gold and FAQ blocks, which
+            is why the headings read as clotted no matter the type size. */}
+        <h3 className="headline mt-5 text-4xl text-ink sm:text-5xl">{title}</h3>
+        <p className="mt-5 max-w-md text-[16px] leading-relaxed text-ink-2">{body}</p>
+        {/* max-w-md matches the paragraph above it. Without it the bullets set
+            to the column width and rag past the paragraph's right edge, which
+            reads as two different text blocks rather than one. */}
+        <ul className="mt-6 max-w-md space-y-2.5">
           {bullets.map(b => (
             <li key={b} className="flex items-start gap-2.5 text-[14.5px] leading-snug text-ink-2">
               <span aria-hidden className="mt-[7px] inline-block h-1.5 w-1.5 flex-shrink-0 rounded-full" style={{ background: accent, boxShadow: `0 0 7px ${accent}` }} />
@@ -130,6 +141,8 @@ function FeatureRow({
           alt={alt}
           accent={accent}
           tilt={flip ? 'left' : 'right'}
+          aspect={aspect}
+          objectPosition={objectPosition}
           className="w-full max-w-[300px] sm:max-w-[360px]"
           sizes="(max-width: 1023px) 78vw, 360px"
         />
@@ -153,9 +166,13 @@ function FeatureCard({
         style={{ background: `radial-gradient(85% 45% at 50% 0%, ${accent}1F 0%, transparent 62%)` }}
       />
       <div className="relative">
-        <Showcase src={src} alt={alt} accent={accent} tilt="flat" aspect="4 / 5" sizes="(max-width: 639px) 80vw, (max-width: 1023px) 42vw, 30vw" />
+        {/* objectPosition pins the 4:5 crop to the BOTTOM of the poster. These
+            three plates are campaign artwork: logo lockup and a baked headline
+            up top, product UI underneath. Cropping from the top (the default)
+            showed the marketing, not the app. */}
+        <Showcase src={src} alt={alt} accent={accent} tilt="flat" aspect="4 / 5" objectPosition="50% 100%" sizes="(max-width: 639px) 80vw, (max-width: 1023px) 42vw, 30vw" />
         <p className="mt-8 text-[10.5px] font-black uppercase tracking-[0.22em]" style={{ color: accent }}>{kicker}</p>
-        <h3 className="headline mt-1.5 text-3xl text-ink">{title}</h3>
+        <h3 className="headline headline-sm mt-1.5 text-3xl text-ink">{title}</h3>
         <p className="mt-2.5 text-[14.5px] leading-relaxed text-ink-2">{body}</p>
       </div>
     </div>
@@ -177,7 +194,7 @@ export default function Home() {
           {/* Icon only below sm. The wordmark and a full-width "Launch Web App"
               cannot both fit a 360px bar, and a truncated "SCORE…" is worse
               than no wordmark beside a logo that already says it. */}
-          <span className="headline hidden text-2xl text-ink sm:inline">Scorebug</span>
+          <span className="headline headline-sm hidden text-2xl text-ink sm:inline">Scorebug</span>
         </a>
         <nav aria-label="Primary" className="flex flex-shrink-0 items-center gap-2.5">
           <a href={androidCta().href} className="glass-btn hidden rounded-full px-4 py-2 text-[13px] font-bold text-ink-2 transition hover:text-ink sm:inline-block">
@@ -190,21 +207,28 @@ export default function Home() {
       <main>
         {/* ══ Hero ══ */}
         <section className="lit-red floodlights relative overflow-hidden">
-          <div className="mx-auto grid max-w-6xl items-center gap-14 px-5 pb-20 pt-10 lg:grid-cols-[1fr_auto] lg:pb-24 lg:pt-14">
+          <div className="mx-auto grid max-w-6xl items-center gap-14 px-5 pb-24 pt-10 lg:grid-cols-[1fr_auto] lg:pt-14">
             <div className="relative z-10">
-              <Kicker>Chronicle your sports</Kicker>
-              <h1 className="headline mt-5 text-[3.6rem] text-white sm:text-[4.6rem] lg:text-[5.2rem]">
+              {/* The kicker used to read "Chronicle your sports", which is the
+                  <h1> again in different clothes. A kicker sitting two lines
+                  above the headline has to earn its space with a fact. */}
+              <Kicker>Now live on the web</Kicker>
+              {/* headline-display only here: the negative tracking is an optical
+                  correction that is real at 83px and closes Anton's counters at
+                  anything smaller. 28px of air under the kicker, not 20, because
+                  the cap height below it is three times taller. */}
+              <h1 className="headline headline-display mt-7 text-[3.6rem] text-white sm:text-[4.6rem] lg:text-[5.2rem]">
                 Chronicle
                 <br />
                 every game.
               </h1>
               <p className="mt-6 max-w-md text-lg leading-relaxed text-ink-2">
-                The ultimate fan log. Track live scores, rate matchups, and save your record.
+                Rate every game you watch out of 5.0 and write the take. It all lands in your Vault.
               </p>
 
               <div className="mt-9">
                 <LaunchWebApp />
-                <p className="mt-2.5 text-[12.5px] text-ink-3">No install — start logging in your browser.</p>
+                <p className="mt-2.5 text-[12.5px] text-ink-3">No install. The full app runs in your browser.</p>
               </div>
 
               <div className="mt-6">
@@ -214,13 +238,13 @@ export default function Home() {
                 <StoreButtons />
               </div>
 
-              <p className="mt-6 text-[13px] text-ink-3">Free to use · 15 leagues · back to 2002</p>
+              <p className="mt-6 text-[13px] text-ink-3">Free to use · 15 leagues · logs back to 2002</p>
             </div>
 
             <div className="flex justify-center lg:justify-end">
               <Showcase
                 src="/shots/hero.png"
-                alt="The Scorebug app rating a Dolphins–Commanders final 4.0 out of 5, beside a Vault of previously logged games."
+                alt="A game rating dial set to 4.0 out of 5 with half-step buttons and viewing options, beside a Vault of logged games and their grades."
                 accent="#F85149"
                 tilt="right"
                 priority
@@ -231,13 +255,33 @@ export default function Home() {
                 // image carries no lockup at all.
                 width={1440}
                 height={1645}
-                // Cut from the chronicle artwork, below its lockup — the <h1>
-                // beside it already says "Chronicle every game." Framed as an
-                // aspect box so a future replacement is cropped, not squashed.
-                aspect="1440 / 1645"
-                objectPosition="50% 50%"
-                className="w-full max-w-[380px] sm:max-w-[470px]"
-                sizes="(max-width: 1023px) 84vw, 470px"
+                //
+                // ── WHY THIS CROP IS NOT NEGOTIABLE ──────────────────────────
+                // hero.png has "Weshington Commanders" MISSPELLED, baked into
+                // the pixels of the left phone's matchup card, at y≈467-513 of
+                // the 1440x1645 source. It cannot be fixed in CSS and it was
+                // sitting above the fold. Until the artwork is re-rendered, the
+                // frame starts BELOW that card.
+                //
+                // 1440/1030 is the widest-possible vertical crop: object-cover
+                // only crops the axis the container is longer on, so any ratio
+                // wider than the source's 1440/1645 trims top and bottom and
+                // nothing else. 1030 leaves exactly 615px to cut, and
+                // objectPosition 100% spends all 615 off the TOP — landing the
+                // cut at y=615, in the gap between the misspelled card (ends
+                // y≈612) and the GAME RATING panel (starts y≈648).
+                //
+                // Both handsets keep their side rails, bottom bezels and floor
+                // reflection, so they still read as phones rather than as flat
+                // screenshots. Do not raise 1030 without re-checking y=615:
+                // 1125 puts the "Weshington" label back on the page.
+                aspect="1440 / 1030"
+                objectPosition="50% 100%"
+                // Wider than the old portrait plate because the frame is now
+                // landscape; at max-w-[470px] it rendered only 336px tall and
+                // lost the hero.
+                className="w-full max-w-[420px] sm:max-w-[520px]"
+                sizes="(max-width: 1023px) 86vw, 520px"
               />
             </div>
           </div>
@@ -245,17 +289,24 @@ export default function Home() {
 
         {/* ══ The hook ══ */}
         <section className="mx-auto max-w-3xl px-5 py-24 text-center">
-          <h2 className="headline text-4xl text-ink sm:text-5xl">Your sports. Your record.</h2>
-          <p className="mt-6 text-[17px] leading-relaxed text-ink-2">
-            Welcome to Scorebug, the ultimate journal for the dedicated sports fan. Stop just
-            checking the box scores and letting incredible sports moments fade away. Scorebug
-            is built to let you track live action, read breaking news, and log every game you
-            watch — building a permanent archive of your lifetime in sports.
+          <h2 className="headline text-4xl text-ink sm:text-5xl">What you watched, on the record.</h2>
+          {/* max-w-[36rem], NOT the section's max-w-3xl. Centred 17px copy across
+              48rem sets ~90 characters a line; the eye loses the return sweep
+              past about 75. The section stays 3xl so the heading can run wider
+              than the paragraph under it. */}
+          <p className="mx-auto mt-5 max-w-[36rem] text-[17px] leading-relaxed text-ink-2">
+            Scorebug is a logbook for the games you watch. A game goes final, you grade it out
+            of 5.0 and write what you thought, and it stays in your Vault. Scores run live
+            across 15 leagues, and you can log finals back to the 2002 season.
           </p>
         </section>
 
         {/* ══ Marquee features ══ */}
-        <section className="mx-auto flex max-w-6xl flex-col gap-28 px-5 pb-28" id="features">
+        {/* No top padding, on purpose. Every other seam on this page is 192px
+            (two py-24 sections meeting); this one is 96px because the hook
+            above is the sentence these three rows are the evidence for, and a
+            full seam breaks that into two unrelated thoughts. */}
+        <section className="mx-auto flex max-w-6xl flex-col gap-28 px-5 pb-24" id="features">
           {/* Visually hidden: the rows below are h3s and need an h2 to belong to. */}
           <h2 className="sr-only">What Scorebug does</h2>
 
@@ -263,10 +314,10 @@ export default function Home() {
             kicker="The core loop"
             accent="#F85149"
             title="Rate & chronicle"
-            body="Watched a legendary game? Once it's final, log it. Give the matchup a rating out of 5.0, write your personal takes, and add your own photos to keep the night exactly as you remember it."
+            body="Once a game is final, you grade it and say why. The rating, the note and the photos all attach to that one game and stay attached."
             bullets={[
-              'A goal-light rating in half-point steps, from 1.0 to 5.0',
-              'Record how you watched — broadcast, at the venue, out watching, or a watch party',
+              'A goal-light dial, 1.0 to 5.0, in half-point steps',
+              'Record how you watched: broadcast, at the venue, out watching, or a watch party',
               'Photos and ticket stubs stay private to your Vault, always',
               'Choose per game whether your rating and review go public',
             ]}
@@ -279,7 +330,7 @@ export default function Home() {
             kicker="Live scores · every league"
             accent="#2DD4BF"
             title="The Slate"
-            body="Your customized schedule. Live scores and game status across 15 leagues, so you can track the action and easily find the games you want to log."
+            body="The day's games across your leagues, in one list. When a game goes final, you log it from the same card."
             bullets={[
               'NHL, NFL, NBA, MLB, CFL, college football and men’s college basketball',
               'MLS, the Premier League, La Liga, Serie A, Bundesliga, Ligue 1 and the Champions League',
@@ -287,22 +338,29 @@ export default function Home() {
               'Scores refresh on their own while games are in progress',
             ]}
             src="/shots/slate.png"
-            alt="The Slate: a day of finals across leagues, each matchup card washed in both clubs' colours with a Log this game action."
+            alt="The Slate: a day of finals across leagues, each matchup card washed in both teams' colours with a Log this game action."
           />
 
           <FeatureRow
-            kicker="Your lifetime archive"
+            kicker="Everything you've logged"
             accent="#58A6FF"
             title="The Vault"
-            body="Your lifetime fan archive. Look back at your entire history of logged games, your average grade, and the notes you wrote — then sort the whole thing to relive the best games, and the ones you'd rather forget."
+            body="Every game you have logged sits here, with the grade you gave it and the note you wrote. Your running average sits at the top."
             bullets={[
               'Every game you have ever logged, with no time limit',
               'Sort by most recent, highest-rated or lowest-rated',
-              'The Time Machine reaches back to 2002, so old classics still count',
+              'The Time Machine logs finished games back to the 2002 season',
               'Filter by league, or search your own notes',
             ]}
             src="/shots/vault.png"
-            alt="The Vault: lifetime tiles for games logged, average grade and win rate, above a scrollable history of chronicled games."
+            alt="The Scorebug home screen with the calendar and an upcoming Docket, beside the Rate and Chronicle screen part-way through a grade."
+            // The ONE poster whose baked headline is word for word the copy
+            // beside it. 1440/1750 against a 1440x2559 source cuts 809px off
+            // the top (objectPosition 100% spends the whole overflow there),
+            // which is exactly the lockup and the headline. Same treatment the
+            // hero and the Front Office plate already get.
+            aspect="1440 / 1750"
+            objectPosition="50% 100%"
           />
         </section>
 
@@ -310,9 +368,9 @@ export default function Home() {
         <section className="lit-blue">
           <div className="mx-auto max-w-6xl px-5 py-24">
             <div className="text-center">
-              <Kicker accent="#58A6FF">And the rest of the ballpark</Kicker>
-              <h2 className="headline mx-auto mt-4 max-w-2xl text-4xl text-ink sm:text-5xl">
-                Context, community, and your clubs
+              <Kicker accent="#58A6FF">Also in the app</Kicker>
+              <h2 className="headline mx-auto mt-5 max-w-2xl text-4xl text-ink sm:text-5xl">
+                The rest of the ballpark.
               </h2>
             </div>
 
@@ -321,7 +379,7 @@ export default function Home() {
                 kicker="The news desk"
                 accent="#D29922"
                 title="The Wire"
-                body="A dedicated sports news desk that builds itself around your teams. Pin a club or a league to My Wire, or let it follow your Starting Lineup automatically — with a tab for every league you follow."
+                body="Headlines from the leagues you follow, with a tab for each one. Pin a team to My Wire, or let it track your Starting Lineup on its own."
                 src="/shots/wire.png"
                 alt="The Wire: a news feed filtered to the teams you follow, with a tab for each league."
               />
@@ -329,17 +387,20 @@ export default function Home() {
                 kicker="The social layer"
                 accent="#F85149"
                 title="The Bleachers"
-                body="Read the room. Browse community reviews, see how other fans rated the game, connect Discord to find fellow fans from the servers you share, and share your own takes."
+                // The Discord line that used to live here is gone deliberately.
+                // It claimed server-matched fan discovery, which the app does
+                // not do. Everything left is on screen in bleachers.png.
+                body="Ratings and written takes from everyone else who watched. Pick your sections on the seat map, and post your own review when you want it seen."
                 src="/shots/bleachers.png"
                 alt="The Bleachers: a stadium seat-picker for choosing sport sections, above community takes on a finished game."
               />
               <FeatureCard
-                kicker="Your clubs"
+                kicker="Your teams"
                 accent="#3FB950"
                 title="The Franchise"
-                body="Build your Starting Lineup. Pick up to 5 clubs across all fourteen team leagues — 25 with The Front Office — and track their combined win-loss-tie record for the season in one unified dashboard."
+                body="Your Starting Lineup holds up to 5 teams across the 14 team leagues, or 25 with a Front Office membership. Scorebug keeps their combined win-loss-tie record for the season."
                 src="/shots/franchise.png"
-                alt="The Franchise: your clubs' combined win-loss-tie record for the season, with recent results beneath."
+                alt="The Franchise: your teams' combined win-loss-tie record for the season, with recent results beneath."
               />
             </div>
           </div>
@@ -350,30 +411,35 @@ export default function Home() {
           <div className="mx-auto grid max-w-6xl items-center gap-14 px-5 py-24 lg:grid-cols-2 lg:gap-16">
             <div>
               <Kicker accent="#E5B53C">Membership</Kicker>
-              <h2 className="headline mt-4 text-4xl sm:text-5xl" style={{ color: '#F4E3B0' }}>
-                Unlock the
+              <h2 className="headline mt-5 text-4xl sm:text-5xl" style={{ color: '#F4E3B0' }}>
+                Inside the
                 <br />
                 Front Office.
               </h2>
+              {/* One statement of what it is, once. This paragraph used to sell
+                  the same thing three times in three lines (Unlock / Go deeper /
+                  Elevate), which is how you make a real product sound invented. */}
               <p className="mt-5 max-w-md text-[16px] leading-relaxed text-ink-2">
-                Go deeper with a Front Office membership — an in-app subscription in the
-                Scorebug mobile app. Elevate your fandom with the full Analytics Desk, an
-                unlimited Docket and Clippings, twenty accent themes, and no ads.
+                The Front Office is a subscription bought inside the Scorebug Android app. It
+                lifts the free tier&rsquo;s caps and opens the Analytics Desk.
               </p>
 
-              <ul className="mt-6 space-y-2.5">
+              <ul className="mt-6 max-w-md space-y-2.5">
                 {[
-                  ['The Analytics Desk', 'A dozen cuts of your own data, season-over-season trends, rivalry splits by opponent, and your attendance ledger.'],
-                  ['Extended Lineup', 'Expand from 5 teams to 25. Every team you love, tracked on your home screen and profile.'],
-                  ['Unlimited Docket & Clippings', 'No 25-game Docket cap, no 10-story Clippings limit.'],
-                  ['Export Your Vault', 'Every game, rating and note you have written, as CSV or JSON.'],
-                  ['Aesthetic Control', '20 accent palettes that recolour the whole app — buttons, highlights and your profile.'],
-                  ['Zero Ads', 'Every banner and rewarded prompt disappears the moment you join.'],
+                  ['The Analytics Desk', 'Season-over-season trends, rivalry splits by opponent, and your attendance ledger.'],
+                  ['Extended lineup', 'Your Starting Lineup goes from 5 teams to 25.'],
+                  ['Unlimited Docket and Clippings', 'The 25-game Docket cap and the 10-story Clippings cap both come off.'],
+                  ['Vault export', 'Every game, rating and note you have written, as CSV or JSON.'],
+                  ['Accent themes', '20 of them, and each one recolours the whole app.'],
+                  ['No ads', 'Banners and rewarded prompts stop the moment you subscribe.'],
                 ].map(([t, d]) => (
                   <li key={t} className="flex items-start gap-3">
                     <span aria-hidden className="mt-[3px] flex h-4 w-4 flex-shrink-0 items-center justify-center rounded-full text-[9px] font-black" style={{ background: 'rgba(229,181,60,0.18)', color: '#E5B53C', border: '1px solid rgba(229,181,60,0.42)' }}>◆</span>
                     <span className="text-[14.5px] leading-snug text-ink-2">
-                      <span className="font-bold" style={{ color: '#F4E3B0' }}>{t}</span> — {d}
+                      {/* Colon, not an em dash. "**Term** — definition" six
+                          times in a row is the most recognisable machine-written
+                          list shape there is; the colon reads as a spec sheet. */}
+                      <span className="font-bold" style={{ color: '#F4E3B0' }}>{t}</span>: {d}
                     </span>
                   </li>
                 ))}
@@ -385,7 +451,7 @@ export default function Home() {
               <p className="mt-3 max-w-md text-[12px] leading-relaxed text-ink-3">
                 {PRICING.us.monthly} {PRICING.us.currency}/month or {PRICING.us.yearly}{' '}
                 {PRICING.us.currency}/year. In Canada, {PRICING.ca.monthly} {PRICING.ca.currency}/month
-                or {PRICING.ca.yearly} {PRICING.ca.currency}/year — about{' '}
+                or {PRICING.ca.yearly} {PRICING.ca.currency}/year. That is about{' '}
                 {PRICING.perMonthEquivalent} a month either way. {PRICE_NOTE} Android at launch.
               </p>
             </div>
@@ -393,7 +459,7 @@ export default function Home() {
             <div className="flex justify-center">
               <Showcase
                 src="/shots/front-office.png"
-                alt="The Front Office: a gold-framed membership screen listing the Analytics Desk, extended lineup, unlimited Docket and Clippings, and an ad-free app."
+                alt="The Front Office: a gold-framed membership screen listing the Analytics Desk, extended lineup, unlimited Docket and Clippings, and an app with no ads."
                 accent="#E5B53C"
                 tilt="right"
                 // Cropped past the lockup: this poster's headline is word for
@@ -418,8 +484,10 @@ export default function Home() {
 
         {/* ══ FAQ ══ */}
         <section className="mx-auto max-w-3xl px-5 py-24" id="faq">
-          <Kicker accent="#58A6FF">Questions</Kicker>
-          <h2 className="headline mt-4 text-4xl text-ink sm:text-5xl">Frequently asked</h2>
+          {/* The kicker used to say "Questions" above a heading that says
+              "Frequently asked" — the same word twice. It carries a fact now. */}
+          <Kicker accent="#58A6FF">Checked against the app</Kicker>
+          <h2 className="headline mt-5 text-4xl text-ink sm:text-5xl">Frequently asked</h2>
           <div className="mt-8 space-y-3">
             {FAQS.map(f => (
               <details key={f.q} className="faq glass-card group rounded-2xl">
@@ -427,27 +495,28 @@ export default function Home() {
                   {f.q}
                   <span className="faq-chevron text-sb-red transition-transform" aria-hidden>›</span>
                 </summary>
-                <p className="px-5 pb-5 text-[15px] leading-relaxed text-ink-2">{f.a}</p>
+                {/* Capped at 33rem: the accordion is 48rem wide and these
+                    answers were setting ~96 characters a line, which is well
+                    past the point where the eye finds the next line reliably. */}
+                <p className="max-w-[33rem] px-5 pb-5 text-[15px] leading-relaxed text-ink-2">{f.a}</p>
               </details>
             ))}
           </div>
         </section>
 
         {/* ══ Final CTA — mirrors the hero's hierarchy for anyone who scrolled ══ */}
-        <section className="lit-red floodlights relative overflow-hidden px-5 pb-28 pt-4">
+        <section className="lit-red floodlights relative overflow-hidden px-5 pb-28 pt-24">
           <div className="glass-card relative mx-auto max-w-4xl overflow-hidden rounded-3xl px-6 py-16 text-center">
             <span aria-hidden className="pointer-events-none absolute inset-0"
               style={{ background: 'radial-gradient(80% 90% at 50% -30%, rgba(248,81,73,0.22) 0%, transparent 65%)' }} />
             <div className="relative">
               <h2 className="headline mx-auto max-w-2xl text-4xl text-ink sm:text-5xl">
-                Stop just watching the game.
-                <br />
-                Start building your record.
+                The Vault starts empty.
               </h2>
               <div className="mt-9 flex justify-center">
                 <LaunchWebApp />
               </div>
-              <p className="mt-2.5 text-[12.5px] text-ink-3">Opens in your browser — nothing to install.</p>
+              <p className="mt-2.5 text-[12.5px] text-ink-3">Opens in your browser. Nothing to install.</p>
               <StoreButtons className="mt-7 justify-center" />
             </div>
           </div>

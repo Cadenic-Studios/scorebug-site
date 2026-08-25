@@ -1,11 +1,13 @@
 [
   {
-    "relation": ["delegate_permission/common.handle_all_urls"],
+    "relation": [
+      "delegate_permission/common.handle_all_urls"
+    ],
     "target": {
       "namespace": "android_app",
       "package_name": "ca.scorebug.sports",
       "sha256_cert_fingerprints": [
-        "A2:E4:CC:43:B3:3A:D8:B1:45:27:19:78:74:7D:B1:F9:65:46:5D:5B:DD:44:1A:66:16:E5:D2:01:E7:ED:DC:DB"
+        "37:D8:D5:0F:8F:F0:40:BB:B6:A9:D3:CE:D7:CB:16:4B:39:F1:77:B7:F3:EC:88:C6:62:C1:EB:17:99:C0:C0:0D"
       ]
     }
   }

@@ -47,10 +47,29 @@ const nextConfig = {
   // Mirrors the top-level route folders in the app (`ls app/*/` there). Keep
   // the two in step: a folder added there and forgotten here is a link that
   // 404s on the marketing domain.
+  //
+  // ─── THE THREE EXCEPTIONS: /privacy, /terms, /account-deletion ────────────
+  // These exist as real pages in THIS deployment and must never be added to
+  // the list below, even though the app has routes by the same names.
+  //
+  // Google Play (and every other store console) takes a policy URL as a
+  // typed-in field and fetches it themselves, out of band, with no browser and
+  // no patience. A 307 to a different host is a fragile answer to that fetch:
+  // it depends on a second deployment being up, it crosses an origin, and a
+  // reviewer who follows it sees an address bar that no longer matches the URL
+  // they submitted. Either failure reads as "policy URL unreachable", which
+  // blocks the release. Play also requires the account-deletion URL to be
+  // publicly reachable without signing in — a redirect into the app is exactly
+  // the wrong shape for that.
+  //
+  // So the marketing domain owns the legal pages outright. Because `redirects`
+  // runs BEFORE the filesystem, keeping them in APP_ROUTES would make the
+  // local pages permanently unreachable — the pages would build and deploy and
+  // still never be served.
   async redirects() {
     const APP_ROUTES = [
       'activity', 'admin', 'auth', 'fan', 'go', 'linemates', 'player-card',
-      'privacy', 'terms', 'the-almanac', 'the-bleachers', 'the-docket',
+      'the-almanac', 'the-bleachers', 'the-docket',
       'the-franchise', 'the-front-office', 'the-log', 'the-news',
       'the-playbook', 'the-rafters', 'the-slate', 'the-vault', 'the-pro-shop'
     ]

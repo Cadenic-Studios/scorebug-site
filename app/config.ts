@@ -133,3 +133,47 @@ export const APP_LINKS = {
   privacy: '/privacy',
   terms: '/terms',
 } as const
+
+/* ── Legal ──────────────────────────────────────────────────────────────────
+ *
+ * NOTE ON APP_LINKS ABOVE: `privacy` and `terms` are no longer app routes.
+ * They are served by THIS deployment (app/privacy, app/terms) and have been
+ * removed from the APP_ROUTES allow-list in next.config.js, so those two
+ * entries now resolve to the local pages. The paths are identical either way,
+ * which is why the footer needed no change.
+ */
+
+/**
+ * The three documents the stores fetch. Listed here because the sitemap and
+ * all three pages cross-link to each other, and a legal page that links to a
+ * sibling with a typo is a broken policy URL in a store console.
+ */
+export const LEGAL_PATHS = {
+  privacy: '/privacy',
+  terms: '/terms',
+  accountDeletion: '/account-deletion',
+} as const
+
+/**
+ * The operating entity.
+ *
+ * Earlier drafts of the legal copy said "Scorebug Inc.", which is not a
+ * verified registered entity — naming a company that does not exist in a
+ * privacy policy is worse than naming none. Scorebug is operated by Cadenic
+ * Studios; that is the name that belongs on anything legally binding.
+ */
+export const COMPANY = 'Cadenic Studios'
+export const COMPANY_LOCATION = 'Calgary, Alberta, Canada'
+/** Alberta is the governing jurisdiction named in the Terms. */
+export const COMPANY_JURISDICTION = 'the Province of Alberta, Canada'
+
+/**
+ * The effective date shown on all three legal pages. One constant so they can
+ * never disagree about when the terms last changed — a reviewer comparing two
+ * documents with two dates reads it as one of them being stale.
+ *
+ * Bump BOTH when the substance changes. The ISO form feeds <time dateTime>
+ * and the sitemap's lastModified; the display form is what people read.
+ */
+export const LEGAL_UPDATED = 'August 24, 2026'
+export const LEGAL_UPDATED_ISO = '2026-08-24'

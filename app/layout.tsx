@@ -4,6 +4,20 @@ import { FAQS } from './faqs'
 import { SITE, WEB_APP } from './config'
 import './globals.css'
 
+/**
+ * ONE description, reused verbatim by the meta tag, the OG card, the Twitter
+ * card and the JSON-LD. There used to be four different ones and they
+ * disagreed about what the product is; a crawler that sees four answers to
+ * "what is this" picks the shortest, which was the worst of them. Keep it
+ * under ~150 chars so Google shows all of it, and keep it identical in all
+ * four places. Middot, not em dash: the middot is the house separator and
+ * already carries the trust strip and the footer.
+ */
+const DESCRIPTION =
+  'Scorebug is Letterboxd for sports: track live scores across 15 leagues and rate every game you watch out of 5.0.'
+
+const TITLE = 'Scorebug · Chronicle every game'
+
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter', display: 'swap' })
 // Oswald mirrors the app's own display face, so text inside the device mockups
 // reads as the product. Anton is the store creative's headline voice.
@@ -13,13 +27,10 @@ const anton = Anton({ subsets: ['latin'], weight: '400', variable: '--font-anton
 export const metadata: Metadata = {
   metadataBase: new URL(SITE),
   title: {
-    default: 'Scorebug — Chronicle Every Game',
+    default: TITLE,
     template: '%s · Scorebug',
   },
-  // ~150 chars: long enough to earn the click, short enough that Google shows
-  // all of it rather than cutting mid-sentence.
-  description:
-    'The ultimate fan log. Track live scores, rate every matchup out of 5, and build a permanent archive of every game you watch — across 15 leagues.',
+  description: DESCRIPTION,
   keywords: [
     'sports tracking app', 'log sports games', 'rate sports games',
     'Letterboxd for sports', 'sports diary', 'game journal', 'fan log',
@@ -30,16 +41,14 @@ export const metadata: Metadata = {
     type: 'website',
     url: SITE,
     siteName: 'Scorebug',
-    title: 'Scorebug — Chronicle Every Game',
-    description:
-      'The ultimate fan log. Rate the classics, journal the heartbreaks, and build a permanent archive of your lifetime in sports.',
-    images: [{ url: '/og.png', width: 1200, height: 630, alt: 'Scorebug — chronicle every game' }],
+    title: TITLE,
+    description: DESCRIPTION,
+    images: [{ url: '/og.png', width: 1200, height: 630, alt: TITLE }],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Scorebug — Chronicle Every Game',
-    description:
-      'The ultimate fan log. Track live scores, rate matchups, and save your record across 15 leagues.',
+    title: TITLE,
+    description: DESCRIPTION,
     images: ['/og.png'],
   },
   robots: {
@@ -62,9 +71,8 @@ const JSON_LD = {
       '@type': 'MobileApplication',
       '@id': `${SITE}/#app`,
       name: 'Scorebug',
-      alternateName: 'Scorebug — Chronicle Every Game',
-      description:
-        'The ultimate fan log. Track live scores, rate matchups out of 5, and build a permanent archive of every game you watch across 15 leagues.',
+      alternateName: TITLE,
+      description: DESCRIPTION,
       // The same product runs at getscorebug.app, which the page links to.
       // 'Web' only, and that is not modesty. `operatingSystem` is a claim about
       // where a visitor can RUN this today; the Android build is in closed
@@ -84,7 +92,7 @@ const JSON_LD = {
       screenshot: `${SITE}/og.png`,
       publisher: { '@id': `${SITE}/#org` },
       featureList: [
-        'The Slate: live scores and schedules across 15 leagues — NHL, NFL, NBA, MLB, CFL, NCAA football and men’s basketball, MLS, the Premier League, La Liga, Serie A, Bundesliga, Ligue 1, the Champions League and Formula 1',
+        'The Slate: live scores and schedules across 15 leagues (NHL, NFL, NBA, MLB, CFL, NCAA football and men’s basketball, MLS, the Premier League, La Liga, Serie A, Bundesliga, Ligue 1, the Champions League and Formula 1)',
         'Rate & Chronicle: grade any finished game out of 5.0, write your take, and add private photos',
         'The Time Machine: chronicle any final back to 2002',
         'The Vault: your lifetime archive, sortable by highest- and lowest-rated',
