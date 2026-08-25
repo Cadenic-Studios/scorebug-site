@@ -41,12 +41,13 @@ export default function Sponsored({ className = '' }: { className?: string }) {
  * `noopener noreferrer` is the standard tabnabbing guard for any _blank target.
  */
 export function AffiliateLink({
-  href, children, className = '', ariaLabel,
+  href, children, className = '', ariaLabel, style,
 }: {
   href: string | null
   children: React.ReactNode
   className?: string
   ariaLabel?: string
+  style?: React.CSSProperties
 }) {
   if (!href) return null
   return (
@@ -56,6 +57,7 @@ export function AffiliateLink({
       rel="sponsored noopener noreferrer"
       aria-label={ariaLabel}
       className={className}
+      style={style}
     >
       {children}
     </a>

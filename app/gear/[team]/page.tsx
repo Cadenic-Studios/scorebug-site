@@ -58,10 +58,22 @@ function Row({
         </div>
         <Sponsored className="mt-1" />
       </div>
+      {/* Tinted per network rather than four identical red enamel buttons.
+          Stacked, they read as one repeated control and give the page no
+          hierarchy — the Fanatics row is the highest-intent link on it and
+          looked exactly like the third eBay row. The accent is the network's
+          own, and the ink is picked against it rather than assumed white:
+          on the gold TicketNetwork fill, white measures ~2.3:1. */}
       <AffiliateLink
         href={href}
         ariaLabel={`${cta} (opens ${label} in a new tab)`}
-        className="enamel-red mt-5 inline-block rounded-xl px-6 py-3 text-[14px] font-black text-white transition active:scale-[0.98]"
+        className="mt-5 inline-block rounded-xl px-6 py-3 text-[14px] font-black transition active:scale-[0.98]"
+        style={{
+          background: `linear-gradient(180deg, ${accent} 0%, ${accent}CC 100%)`,
+          color: accent === '#E5B53C' ? '#1A1206' : '#FFFFFF',
+          border: `1px solid ${accent}`,
+          boxShadow: `inset 0 1px 0 rgba(255,255,255,0.35), 0 0 20px -8px ${accent}`,
+        }}
       >
         {cta}
       </AffiliateLink>
@@ -117,15 +129,15 @@ export default function TeamGearPage({ params }: { params: { team: string } }) {
             href={fanaticsTeamUrl(t.name, 'gear', t.league)}
           />
           <Row
-            label="eBay"
+            label="eBay · Memorabilia"
             accent="#58A6FF"
-            blurb={`${t.short} trading cards, autographs, game-used pieces and vintage memorabilia, scoped to eBay's sports category.`}
+            blurb={`${t.short} autographs, game-used pieces and vintage memorabilia, scoped to eBay's sports category.`}
             cta={`Hunt ${t.short} collectibles`}
             href={ebayTeamUrl(t.name)}
           />
           <Row
-            label="eBay"
-            accent="#58A6FF"
+            label="eBay · Trading cards"
+            accent="#3FB950"
             blurb={`Rookie cards and graded singles for ${t.short} players.`}
             cta={`Browse ${t.short} cards`}
             href={ebayPlayerCardUrl(t.name, 'rookie card')}

@@ -105,7 +105,16 @@ function ProductCard({ p }: { p: ShopifyProduct }) {
 
       <span className="flex flex-1 flex-col gap-1.5 p-4">
         <span className="text-[15px] font-bold leading-snug text-ink">{p.title}</span>
-        <span className="text-[15px] font-black tabular-nums text-ink">{formatPriceRange(p)}</span>
+        <span className="flex items-center justify-between gap-3">
+          <span className="text-[15px] font-black tabular-nums text-ink">{formatPriceRange(p)}</span>
+          {/* The card is a link to Shopify's own product page (see the note at
+              the top on why there is no cart here). Without a visible
+              affordance it reads as a static tile and nobody clicks it — the
+              arrow is the only thing telling a visitor this goes somewhere. */}
+          <span aria-hidden className="text-[13px] font-bold text-ink-3 transition group-hover:text-ink-2">
+            View ›
+          </span>
+        </span>
       </span>
     </a>
   )

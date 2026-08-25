@@ -1,7 +1,9 @@
 import Image from 'next/image'
+import Link from 'next/link'
 import { FAQS } from './faqs'
 import { androidCta, WEB_APP, PRICING, PRICE_NOTE, APP_LINKS } from './config'
 import { LEAGUE_COUNT, TEAM_LEAGUE_COUNT } from './leagues'
+import { GEAR_TEAM_COUNT } from './lib/teams'
 import Waitlist from './components/Waitlist'
 import { SiteHeader, SiteFooter, LaunchWebApp } from './components/SiteChrome'
 import LeagueBar from './components/LeagueBar'
@@ -489,6 +491,54 @@ export default function Home() {
                     past the point where the eye finds the next line reliably. */}
                 <p className="max-w-[33rem] px-5 pb-5 text-[15px] leading-relaxed text-ink-2">{f.a}</p>
               </details>
+            ))}
+          </div>
+        </section>
+
+        {/* ══ Also on Scorebug ═══════════════════════════════════════════════
+            Internal links to /shop, /gear and /news from the BODY of the page,
+            not only the header and footer.
+
+            This is not decoration. /shop, /gear and its 32 team pages, and
+            /news were all reachable from the chrome alone — and a link that
+            appears identically on every page of a site is discounted as
+            boilerplate: it gets the URL crawled, but it passes very little
+            about what the page is FOR. A contextual link inside the content,
+            with descriptive anchor text, is the signal that actually
+            associates "team gear" and "sports headlines" with those URLs.
+            It is also the only route a reader has to them without going back
+            up to the nav. ══════════════════════════════════════════════════ */}
+        <section className="mx-auto max-w-5xl px-5 pb-8" aria-labelledby="also-heading">
+          <h2 id="also-heading" className="headline text-3xl text-ink sm:text-4xl">
+            Also on Scorebug
+          </h2>
+          <div className="mt-7 grid gap-4 sm:grid-cols-3">
+            {[
+              { href: '/shop', kicker: 'Pro Shop', accent: '#F85149',
+                title: 'Scorebug apparel',
+                blurb: 'Tees, hoodies and gear, printed to order and shipped worldwide.' },
+              { href: '/gear', kicker: 'Fan gear', accent: '#58A6FF',
+                title: 'Team gear and memorabilia',
+                blurb: `Jerseys, cards and collectibles for ${GEAR_TEAM_COUNT} clubs across the NHL, NFL, NBA and MLB.` },
+              { href: '/news', kicker: 'The Wire', accent: '#E5B53C',
+                title: 'Sports headlines',
+                blurb: 'Today’s stories from around the leagues, linked to the outlets that wrote them.' },
+            ].map(c => (
+              <Link
+                key={c.href}
+                href={c.href}
+                className="glass-card group flex flex-col rounded-2xl p-6 transition hover:border-white/20"
+              >
+                <span className="flex items-center gap-2 text-[11px] font-black uppercase tracking-[0.16em]" style={{ color: c.accent }}>
+                  <span aria-hidden className="inline-block h-1.5 w-1.5 rounded-full" style={{ background: c.accent, boxShadow: `0 0 8px ${c.accent}` }} />
+                  {c.kicker}
+                </span>
+                <span className="mt-3 text-[16px] font-bold leading-snug text-ink">{c.title}</span>
+                <span className="mt-2 flex-1 text-[13.5px] leading-relaxed text-ink-2">{c.blurb}</span>
+                <span aria-hidden className="mt-4 text-[13px] font-bold text-ink-3 transition group-hover:text-ink-2">
+                  Open ›
+                </span>
+              </Link>
             ))}
           </div>
         </section>

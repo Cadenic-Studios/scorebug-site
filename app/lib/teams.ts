@@ -77,6 +77,9 @@ export const GEAR_TEAMS: GearTeam[] = [
   { slug: 'houston-astros',       name: 'Houston Astros',       short: 'Astros',      league: 'MLB', color: '#EB6E1F' },
 ]
 
+/** Derived, never hand-typed: the number in the copy cannot drift from the list. */
+export const GEAR_TEAM_COUNT = GEAR_TEAMS.length
+
 export function getGearTeam(slug: string): GearTeam | undefined {
   return GEAR_TEAMS.find(t => t.slug === slug)
 }
