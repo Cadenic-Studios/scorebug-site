@@ -31,7 +31,7 @@ export const SITE = 'https://getscorebug.app'
  */
 export type LaunchStage = 'waitlist' | 'testing' | 'live'
 
-export const LAUNCH_STAGE: LaunchStage = 'waitlist'
+export const LAUNCH_STAGE: LaunchStage = 'testing'
 
 /**
  * The Play Console opt-in link for a closed or open test. Looks like
@@ -40,7 +40,7 @@ export const LAUNCH_STAGE: LaunchStage = 'waitlist'
  * 'testing' — leaving it empty in that stage falls back to the waitlist rather
  * than shipping a dead button.
  */
-export const PLAY_TESTING_URL = ''
+export const PLAY_TESTING_URL = 'https://play.google.com/apps/testing/ca.scorebug.sports'
 
 /** The public listing. Only read when LAUNCH_STAGE is 'live'. */
 export const PLAY_URL =
@@ -130,6 +130,7 @@ export const PRICE_NOTE =
  */
 export const APP_LINKS = {
   slate: '/the-slate',
+  proShop: '/the-pro-shop',
   privacy: '/privacy',
   terms: '/terms',
 } as const

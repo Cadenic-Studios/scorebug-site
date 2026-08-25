@@ -199,6 +199,14 @@ export default function Home() {
           <span className="headline headline-sm hidden text-2xl text-ink sm:inline">Scorebug</span>
         </a>
         <nav aria-label="Primary" className="flex flex-shrink-0 items-center gap-2.5">
+          {/* Pro Shop is `md:` while the test link is `sm:` — at 640px the bar
+              already carries a wordmark, a CTA pill and the enamel button, and
+              a third link there pushes "Launch Web App" off a 360px phone. The
+              shop is also in the footer, which is where a browsing visitor
+              looks for it; this is the impulse placement, not the only one. */}
+          <a href={APP_LINKS.proShop} className="glass-btn hidden rounded-full px-4 py-2 text-[13px] font-bold text-ink-2 transition hover:text-ink md:inline-block">
+            Pro Shop
+          </a>
           <a href={androidCta().href} className="glass-btn hidden rounded-full px-4 py-2 text-[13px] font-bold text-ink-2 transition hover:text-ink sm:inline-block">
             {androidCta().label}
           </a>
@@ -552,6 +560,7 @@ export default function Home() {
           </div>
           <nav aria-label="Footer" className="flex flex-wrap items-center justify-center gap-5 text-[13px] font-semibold text-ink-3">
             <a href={APP_LINKS.slate} className="py-2 -my-2 hover:text-ink-2">The Slate</a>
+            <a href={APP_LINKS.proShop} className="py-2 -my-2 hover:text-ink-2">Pro Shop</a>
             <a href={APP_LINKS.privacy} className="py-2 -my-2 hover:text-ink-2">Privacy</a>
             <a href={APP_LINKS.terms} className="py-2 -my-2 hover:text-ink-2">Terms</a>
             <a href={androidCta().href} className="py-2 -my-2 hover:text-ink-2">{androidCta().label}</a>
