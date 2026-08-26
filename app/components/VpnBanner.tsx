@@ -101,7 +101,7 @@ export default function VpnBanner({ className = '' }: { className?: string }) {
           target="_blank"
           rel="sponsored noopener noreferrer"
           aria-label="Get NordVPN (sponsored, opens in a new tab)"
-          className="inline-flex flex-shrink-0 items-center justify-center whitespace-nowrap rounded-xl px-5 py-3 text-[14px] font-black transition active:scale-[0.98]"
+          className="sb-cta inline-flex flex-shrink-0 items-center justify-center whitespace-nowrap rounded-xl px-5 py-3 text-[14px] font-black"
           style={{
             background: `linear-gradient(180deg, ${ACCENT} 0%, ${ACCENT}C4 100%)`,
             color: '#FFFFFF',

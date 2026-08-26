@@ -77,7 +77,7 @@ function ProductCard({ p }: { p: ShopifyProduct }) {
        * opens a new tab and an un-guarded `_blank` is a tabnabbing vector.
        */
       rel="noopener noreferrer"
-      className="glass-card group flex flex-col overflow-hidden rounded-2xl transition active:scale-[0.99]"
+      className="sb-product glass-card group flex flex-col overflow-hidden rounded-2xl"
     >
       <span
         className="relative block w-full overflow-hidden"

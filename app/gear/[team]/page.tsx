@@ -66,7 +66,7 @@ function Row({
       <AffiliateLink
         href={href}
         ariaLabel={`${cta} (opens ${label} in a new tab)`}
-        className="mt-5 inline-block rounded-xl px-6 py-3 text-[14px] font-black transition active:scale-[0.98]"
+        className="sb-cta mt-5 inline-block rounded-xl px-6 py-3 text-[14px] font-black"
         style={{
           background: `linear-gradient(180deg, ${accent} 0%, ${accent}CC 100%)`,
           color: accent === '#E5B53C' ? '#1A1206' : '#FFFFFF',

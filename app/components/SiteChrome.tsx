@@ -33,7 +33,7 @@ export function AppCta({ line, className = '' }: { line: string; className?: str
         <div className="flex flex-shrink-0 flex-wrap items-center gap-2.5">
           <a
             href={WEB_APP}
-            className="enamel-red inline-flex items-center gap-2 whitespace-nowrap rounded-xl px-5 py-3 text-[14px] font-black text-white transition active:scale-[0.98]"
+            className="sb-cta enamel-red inline-flex items-center gap-2 whitespace-nowrap rounded-xl px-5 py-3 text-[14px] font-black text-white"
           >
             Launch web app
             <span aria-hidden className="opacity-80">›</span>

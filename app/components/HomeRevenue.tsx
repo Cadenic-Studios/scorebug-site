@@ -55,7 +55,7 @@ export default async function HomeRevenue() {
               href={shopifyProductUrl(p.handle)}
               target="_blank"
               rel="noopener noreferrer"
-              className="glass-card group flex flex-col overflow-hidden rounded-2xl transition active:scale-[0.99]"
+              className="sb-product glass-card group flex flex-col overflow-hidden rounded-2xl"
             >
               <span className="relative block w-full overflow-hidden" style={{ aspectRatio: '1 / 1', background: 'rgba(255,255,255,0.04)' }}>
                 {p.featuredImage?.url ? (

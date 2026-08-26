@@ -364,3 +364,70 @@ body {
     radial-gradient(120% 55% at 50% 0%, rgba(88, 108, 140, 0.07) 0%, rgba(88, 108, 140, 0) 60%),
     radial-gradient(90% 40% at 50% 100%, rgba(120, 92, 92, 0.05) 0%, rgba(120, 92, 92, 0) 62%);
 }
+
+/* ══ Commerce CTA micro-interaction ════════════════════════════════════════
+   Applied to every paid/outbound CTA (ticket units, gear network buttons, the
+   VPN banner). Two jobs:
+
+   1. HOVER LIFT — a 1px rise plus a slightly warmer glow. Enough to read as
+      "this is the action", not enough to shift neighbouring layout: the
+      transform is composited, so it never triggers reflow and never moves the
+      card it sits in.
+   2. ACTIVE PRESS — the button drops back down and the glow collapses. That
+      beat is the one that matters on mobile, where there is no hover at all:
+      an outbound affiliate click hands off to a new tab (or the in-app
+      browser), which can take a moment on a slow connection. Without a press
+      state the fan gets no acknowledgement and taps again — a double click on
+      an affiliate link is a wasted impression and, on some networks, a
+      duplicate that gets scrubbed.
+
+   Deliberately transform/box-shadow only, so it costs one composited layer and
+   cannot cause layout shift (this site measures CLS 0 and must stay there). */
+.sb-cta {
+  transition: transform 140ms cubic-bezier(0.2, 0.7, 0.3, 1),
+              box-shadow 140ms ease,
+              filter 140ms ease;
+  will-change: transform;
+}
+@media (hover: hover) and (pointer: fine) {
+  .sb-cta:hover {
+    transform: translateY(-1px);
+    filter: brightness(1.06);
+  }
+}
+.sb-cta:active {
+  transform: translateY(0);
+  filter: brightness(0.97);
+}
+/* Keyboard parity: a focused CTA must be as obvious as a hovered one. */
+.sb-cta:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.85);
+  outline-offset: 2px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .sb-cta { transition: none; }
+  .sb-cta:hover, .sb-cta:active { transform: none; }
+}
+
+/* ══ Product card: image zoom + card lift ═════════════════════════════════
+   The /shop and homepage product tiles are LINKS to Shopify, but they were
+   styled as static tiles: no hover response at all beyond a 1% active scale.
+   A product grid that does not react to the cursor reads as a catalogue
+   photo rather than something clickable, and the "View ›" affordance alone
+   was doing all the work.
+
+   The image scale is on the <img> INSIDE a fixed-aspect, overflow-hidden
+   frame, so the card's own box never changes size — the zoom happens entirely
+   within the existing bounds and cannot shift the grid (CLS stays 0). */
+.sb-product { transition: transform 160ms cubic-bezier(0.2, 0.7, 0.3, 1), border-color 160ms ease; }
+.sb-product img { transition: transform 320ms cubic-bezier(0.2, 0.7, 0.3, 1); }
+@media (hover: hover) and (pointer: fine) {
+  .sb-product:hover { transform: translateY(-2px); }
+  .sb-product:hover img { transform: scale(1.04); }
+}
+.sb-product:active { transform: translateY(0) scale(0.995); }
+.sb-product:focus-visible { outline: 2px solid rgba(255,255,255,0.85); outline-offset: 3px; }
+@media (prefers-reduced-motion: reduce) {
+  .sb-product, .sb-product img { transition: none; }
+  .sb-product:hover, .sb-product:hover img, .sb-product:active { transform: none; }
+}

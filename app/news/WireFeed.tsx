@@ -189,10 +189,25 @@ function TicketRow({ league }: { league: string }) {
         </div>
         <p className="mt-1.5 text-[13.5px] text-ink-2">Resale seats for upcoming {league} fixtures.</p>
       </div>
+      {/* Network-accented, not a ghost button. This was `glass-btn` +
+          `text-ink-2`: a 5%-white pill with secondary ink, which is the
+          treatment used for OPTIONAL navigation elsewhere on the site — so the
+          one paid action in this unit was styled less prominently than the
+          "Pro Shop" link in the header. It also read as disabled next to the
+          saturated gold TicketNetwork label directly above it.
+          Now it carries the network's own accent, matching the per-network CTA
+          system on /gear/[team]. Dark ink because white on this gold measures
+          ~2.3:1. */}
       <AffiliateLink
         href={href}
         ariaLabel={`Find ${league} tickets on TicketNetwork (opens in a new tab)`}
-        className="glass-btn flex-shrink-0 rounded-xl px-4 py-2.5 text-[13px] font-bold text-ink-2 transition hover:text-ink"
+        className="sb-cta flex-shrink-0 rounded-xl px-5 py-2.5 text-[13px] font-black transition"
+        style={{
+          background: 'linear-gradient(180deg, #E5B53C 0%, #E5B53CCC 100%)',
+          color: '#1A1206',
+          border: '1px solid #E5B53C',
+          boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.35), 0 0 20px -8px #E5B53C',
+        }}
       >
         Find seats
       </AffiliateLink>
