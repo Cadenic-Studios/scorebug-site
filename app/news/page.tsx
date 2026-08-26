@@ -1,9 +1,8 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { SITE, WEB_APP, SUPABASE_URL, SUPABASE_ANON_KEY } from '../config'
-import { ticketNetworkTeamUrl } from '../lib/affiliates'
-import Sponsored, { AffiliateLink } from '../components/Sponsored'
 import { SiteHeader, SiteFooter, Breadcrumbs, BreadcrumbNav } from '../components/SiteChrome'
+import WireFeed from './WireFeed'
 
 const TITLE = 'The Wire · Sports headlines'
 const DESCRIPTION =
@@ -88,26 +87,9 @@ async function getHeadlines(): Promise<Article[]> {
   }
 }
 
-function timeAgo(iso: string | null): string {
-  if (!iso) return ''
-  const then = Date.parse(iso)
-  if (!Number.isFinite(then)) return ''
-  const mins = Math.max(1, Math.round((Date.now() - then) / 60000))
-  if (mins < 60) return `${mins}m ago`
-  const hrs = Math.round(mins / 60)
-  if (hrs < 24) return `${hrs}h ago`
-  return `${Math.round(hrs / 24)}d ago`
-}
 
 export default async function NewsPage() {
   const articles = await getHeadlines()
-
-  const byLeague = articles.reduce<Record<string, Article[]>>((acc, a) => {
-    const k = (a.league || 'Other').toUpperCase()
-    ;(acc[k] ||= []).push(a)
-    return acc
-  }, {})
-  const leagues = Object.keys(byLeague).sort((a, b) => byLeague[b].length - byLeague[a].length)
 
   return (
     <>
@@ -137,40 +119,11 @@ export default async function NewsPage() {
             </p>
           </div>
         ) : (
-          leagues.map(lg => (
-            <section key={lg} className="mt-12">
-              <h2 className="headline text-3xl text-ink sm:text-4xl">{lg}</h2>
-              <ul className="mt-5 space-y-2.5">
-                {byLeague[lg].slice(0, 12).map(a => (
-                  <li key={a.id}>
-                    <a
-                      href={a.url!}
-                      target="_blank"
-                      /* A normal outbound credit link. NOT rel="sponsored" —
-                         these are editorial links to the publisher and nobody is
-                         paid for them; marking them sponsored would be a false
-                         declaration in the other direction. */
-                      rel="noopener noreferrer"
-                      className="glass-card block rounded-xl px-5 py-4 transition hover:border-white/20"
-                    >
-                      <p className="text-[15.5px] font-bold leading-snug text-ink">{a.title}</p>
-                      <p className="mt-1.5 text-[12px] text-ink-3">
-                        {a.source || 'Source'}
-                        {a.published_at ? ` · ${timeAgo(a.published_at)}` : ''}
-                        {a.team_acronym ? ` · ${a.team_acronym}` : ''}
-                      </p>
-                    </a>
-                  </li>
-                ))}
-              </ul>
-
-              {/* One ticket unit per league block, keyed off the league rather
-                  than a specific fixture: this page has no schedule data, and a
-                  CTA that promises a named game it cannot link to is worse than
-                  a general one. Disclosed and rel-tagged like every paid link. */}
-              <TicketRow league={lg} />
-            </section>
-          ))
+          /* The interactive feed (league chips + Latest/By-league sort). Articles
+             are fetched here on the server, so every headline and credit link is
+             in the initial HTML; WireFeed only filters and reorders them. The
+             ticket units and the app CTA live inside it. */
+          <WireFeed articles={articles} />
         )}
 
         <div className="glass-card mt-14 rounded-2xl p-7 text-center">
@@ -195,27 +148,3 @@ export default async function NewsPage() {
   )
 }
 
-function TicketRow({ league }: { league: string }) {
-  const href = ticketNetworkTeamUrl(`${league} tickets`)
-  if (!href) return null
-  return (
-    <div className="glass-card mt-4 flex items-center justify-between gap-4 rounded-xl px-5 py-4">
-      <div className="min-w-0">
-        <div className="flex items-center gap-2.5">
-          <p className="text-[11px] font-black uppercase tracking-[0.16em]" style={{ color: '#E5B53C' }}>
-            TicketNetwork
-          </p>
-          <Sponsored />
-        </div>
-        <p className="mt-1.5 text-[13.5px] text-ink-2">Resale seats for upcoming {league} fixtures.</p>
-      </div>
-      <AffiliateLink
-        href={href}
-        ariaLabel={`Find ${league} tickets on TicketNetwork (opens in a new tab)`}
-        className="glass-btn flex-shrink-0 rounded-xl px-4 py-2.5 text-[13px] font-bold text-ink-2 transition hover:text-ink"
-      >
-        Find seats
-      </AffiliateLink>
-    </div>
-  )
-}

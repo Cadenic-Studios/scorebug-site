@@ -4,6 +4,7 @@ import { FAQS } from './faqs'
 import { androidCta, WEB_APP, PRICING, PRICE_NOTE, APP_LINKS } from './config'
 import { LEAGUE_COUNT, TEAM_LEAGUE_COUNT } from './leagues'
 import { GEAR_TEAM_COUNT } from './lib/teams'
+import HomeRevenue from './components/HomeRevenue'
 import Waitlist from './components/Waitlist'
 import { SiteHeader, SiteFooter, LaunchWebApp } from './components/SiteChrome'
 import LeagueBar from './components/LeagueBar'
@@ -173,7 +174,7 @@ function FeatureCard({
 
 /* ── Page ─────────────────────────────────────────────────────────────────── */
 
-export default function Home() {
+export default async function Home() {
   return (
     // header / main / footer are SIBLINGS. Nested inside <main>, a <header>
     // maps to a generic group rather than role="banner" and a <footer> to
@@ -492,6 +493,11 @@ export default function Home() {
           </div>
         </section>
 
+        {/* ══ Revenue teaser — real Pro Shop products + trending gear ══════════
+            Placed after the value props rather than under the hero; see the
+            note in HomeRevenue.tsx on why that is the conversion-correct spot. */}
+        <HomeRevenue />
+
         {/* ══ Also on Scorebug ═══════════════════════════════════════════════
             Internal links to /shop, /gear and /news from the BODY of the page,
             not only the header and footer.
@@ -516,7 +522,7 @@ export default function Home() {
                 blurb: 'Tees, hoodies and gear, printed to order and shipped worldwide.' },
               { href: '/gear', kicker: 'Fan gear', accent: '#58A6FF',
                 title: 'Team gear and memorabilia',
-                blurb: `Jerseys, cards and collectibles for ${GEAR_TEAM_COUNT} clubs across the NHL, NFL, NBA and MLB.` },
+                blurb: `Jerseys, cards and collectibles for ${GEAR_TEAM_COUNT} clubs across the NHL, NFL, NBA, MLB and MLS.` },
               { href: '/news', kicker: 'The Wire', accent: '#E5B53C',
                 title: 'Sports headlines',
                 blurb: 'Today’s stories from around the leagues, linked to the outlets that wrote them.' },

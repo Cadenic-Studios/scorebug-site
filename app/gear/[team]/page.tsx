@@ -1,11 +1,10 @@
 import type { Metadata } from 'next'
-import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { SITE, WEB_APP } from '../../config'
+import { SITE } from '../../config'
 import { GEAR_TEAMS, getGearTeam } from '../../lib/teams'
 import { fanaticsTeamUrl, ebayTeamUrl, ebayPlayerCardUrl, ticketNetworkTeamUrl } from '../../lib/affiliates'
 import Sponsored, { AffiliateLink } from '../../components/Sponsored'
-import { SiteHeader, SiteFooter, Breadcrumbs, BreadcrumbNav } from '../../components/SiteChrome'
+import { SiteHeader, SiteFooter, Breadcrumbs, BreadcrumbNav, AppCta } from '../../components/SiteChrome'
 
 /**
  * /gear/[team] — one static page per club.
@@ -85,6 +84,30 @@ export default function TeamGearPage({ params }: { params: { team: string } }) {
   const t = getGearTeam(params.team)
   if (!t) notFound()
 
+  /**
+   * CollectionPage, NOT Product.
+   *
+   * The directive asked for Product JSON-LD, and it is deliberately not used
+   * here: these are affiliate CATEGORY links (a Fanatics search, an eBay
+   * category), not individual products with a price and availability. Google's
+   * Product markup requires a real `offers.price`, and asserting one we don't
+   * have is the exact structured-data-doesn't-match-content violation that gets
+   * rich results suppressed or earns a manual action — the same reason the app
+   * schema in layout.tsx avoids faking a rating. A CollectionPage that honestly
+   * describes the page as a curated set of outbound shopping links is the valid
+   * schema for what this page actually is. Priced Product markup belongs on
+   * /shop, where the prices are real and server-rendered.
+   */
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'CollectionPage',
+    name: `${t.name} gear and memorabilia`,
+    description: `Shop ${t.name} jerseys, hats, cards, collectibles and tickets.`,
+    url: `${SITE}/gear/${t.slug}`,
+    isPartOf: { '@type': 'WebSite', '@id': `${SITE}/#site` },
+    about: { '@type': 'SportsTeam', name: t.name, sport: t.league },
+  }
+
   return (
     <>
       <Breadcrumbs trail={[
@@ -92,6 +115,7 @@ export default function TeamGearPage({ params }: { params: { team: string } }) {
         { name: 'Gear', url: `${SITE}/gear` },
         { name: t.name },
       ]} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <SiteHeader />
       <main className="lit-blue floodlights relative overflow-hidden">
       <div className="relative z-10 mx-auto max-w-4xl px-5 pb-24 pt-14">
@@ -152,19 +176,10 @@ export default function TeamGearPage({ params }: { params: { team: string } }) {
         </div>
 
         {/* The point of the page is not the commission — it is the app. */}
-        <div className="glass-card mt-10 rounded-2xl p-7 text-center">
-          <h2 className="headline text-2xl text-ink sm:text-3xl">Log the games too</h2>
-          <p className="mx-auto mt-3 max-w-md text-[14.5px] leading-relaxed text-ink-2">
-            Add {t.short} to your Starting Lineup and Scorebug keeps their record, their
-            headlines and every game you rate, in one place.
-          </p>
-          <a
-            href={WEB_APP}
-            className="enamel-red mt-6 inline-block rounded-2xl px-7 py-3.5 text-[15px] font-black text-white transition active:scale-[0.98]"
-          >
-            Open the web app
-          </a>
-        </div>
+        <AppCta
+          className="mt-10"
+          line={`Add ${t.short} to your Starting Lineup — Scorebug keeps their record, their headlines and every game you rate, in one place.`}
+        />
       </div>
       </main>
       <SiteFooter />

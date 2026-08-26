@@ -1,13 +1,13 @@
 import type { Metadata } from 'next'
-import Link from 'next/link'
 import { SITE } from '../config'
-import { GEAR_TEAMS, GEAR_LEAGUES } from '../lib/teams'
+import { GEAR_TEAMS, GEAR_TEAM_COUNT } from '../lib/teams'
 import Sponsored from '../components/Sponsored'
 import { SiteHeader, SiteFooter, Breadcrumbs, BreadcrumbNav } from '../components/SiteChrome'
+import GearBrowser from './GearBrowser'
 
 const TITLE = 'Team gear and memorabilia'
 const DESCRIPTION =
-  'Jerseys, hats and memorabilia for 32 clubs across the NHL, NFL, NBA and MLB. Pick your team, then shop apparel or hunt cards and collectibles.'
+  'Jerseys, hats and memorabilia for 154 clubs across the NHL, NFL, NBA, MLB and MLS. Search your team, then shop apparel or hunt cards and collectibles.'
 
 export const metadata: Metadata = {
   title: TITLE,
@@ -46,7 +46,8 @@ export default function GearIndex() {
         </h1>
         <p className="mt-6 max-w-[36rem] text-lg leading-relaxed text-ink-2">
           Jerseys and hats from Fanatics, cards and collectibles from eBay, and tickets
-          when your club is on the road. Pick a team.
+          when your club is on the road — for {GEAR_TEAM_COUNT} clubs across five leagues.
+          Search your team.
         </p>
 
         <p className="mt-5 flex items-center gap-2.5 text-[13px] text-ink-3">
@@ -54,34 +55,11 @@ export default function GearIndex() {
           Scorebug earns a commission on purchases made through these links. It costs you nothing extra.
         </p>
 
-        {GEAR_LEAGUES.map(lg => {
-          const teams = GEAR_TEAMS.filter(t => t.league === lg)
-          if (!teams.length) return null
-          return (
-            <section key={lg} className="mt-14">
-              <h2 className="headline text-3xl text-ink sm:text-4xl">{lg}</h2>
-              <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-                {teams.map(t => (
-                  <Link
-                    key={t.slug}
-                    href={`/gear/${t.slug}`}
-                    className="glass-card group flex items-center gap-3 rounded-xl px-4 py-3.5 transition hover:border-white/20"
-                  >
-                    <span
-                      aria-hidden
-                      className="h-8 w-1.5 flex-shrink-0 rounded-full"
-                      style={{ background: t.color, boxShadow: `0 0 10px ${t.color}66` }}
-                    />
-                    <span className="min-w-0">
-                      <span className="block truncate text-[14px] font-bold text-ink">{t.short}</span>
-                      <span className="block truncate text-[11px] text-ink-3">{t.name}</span>
-                    </span>
-                  </Link>
-                ))}
-              </div>
-            </section>
-          )
-        })}
+        {/* The interactive index (search + league chips). The full club list is
+            passed in from this server component, so all 154 team URLs are in the
+            initial HTML for crawlers and no-JS visitors; GearBrowser only
+            filters what is already there. */}
+        <GearBrowser teams={GEAR_TEAMS} />
       </div>
       </main>
       <SiteFooter />

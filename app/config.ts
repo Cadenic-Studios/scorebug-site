@@ -58,7 +58,9 @@ export function androidCta(): { href: string; label: string; caption: string } {
     return { href: PLAY_URL, label: 'Google Play', caption: 'Get it on' }
   }
   if (LAUNCH_STAGE === 'testing' && PLAY_TESTING_URL) {
-    return { href: PLAY_TESTING_URL, label: 'Become a tester', caption: 'Android early access' }
+    // "Join the test" — clearer verb than "Become a tester" and consistent with
+    // the waitlist-stage label below, so the button reads the same across stages.
+    return { href: PLAY_TESTING_URL, label: 'Join the test', caption: 'Android early access' }
   }
   return { href: WAITLIST_ANCHOR, label: 'Join the test', caption: 'Android early access' }
 }

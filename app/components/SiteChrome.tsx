@@ -2,6 +2,55 @@ import Image from 'next/image'
 import { androidCta, WEB_APP, APP_LINKS } from '../config'
 
 /**
+ * The in-feed conversion banner — "chronicle this on Scorebug", dropped inside
+ * the /news stream and the /gear/[team] pages.
+ *
+ * ─── WHY IT TAKES A `line` ───────────────────────────────────────────────────
+ * The banner is contextual: on a team page it says "log the Oilers games", on
+ * the news feed it says "log the game you just read about". Generic app CTAs
+ * are ignored; a line that names what the reader is already looking at converts.
+ * Both actions are offered — the web app (one click, no install) as the primary
+ * enamel button, and the Android test as the secondary — because the two
+ * surfaces convert different visitors and neither should be buried.
+ */
+export function AppCta({ line, className = '' }: { line: string; className?: string }) {
+  const android = androidCta()
+  return (
+    <aside
+      className={`glass-card relative overflow-hidden rounded-2xl p-6 ${className}`}
+      aria-label="Get Scorebug"
+    >
+      <span
+        aria-hidden
+        className="pointer-events-none absolute inset-0"
+        style={{ background: 'radial-gradient(80% 60% at 12% 0%, rgba(248,81,73,0.16) 0%, transparent 60%)' }}
+      />
+      <div className="relative flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="min-w-0">
+          <p className="text-[11px] font-black uppercase tracking-[0.16em] text-sb-red">On Scorebug</p>
+          <p className="mt-1.5 text-[15.5px] font-bold leading-snug text-ink">{line}</p>
+        </div>
+        <div className="flex flex-shrink-0 flex-wrap items-center gap-2.5">
+          <a
+            href={WEB_APP}
+            className="enamel-red inline-flex items-center gap-2 whitespace-nowrap rounded-xl px-5 py-3 text-[14px] font-black text-white transition active:scale-[0.98]"
+          >
+            Launch web app
+            <span aria-hidden className="opacity-80">›</span>
+          </a>
+          <a
+            href={android.href}
+            className="glass-btn inline-flex items-center whitespace-nowrap rounded-xl px-4 py-3 text-[13px] font-bold text-ink-2 transition hover:text-ink"
+          >
+            {android.label}
+          </a>
+        </div>
+      </div>
+    </aside>
+  )
+}
+
+/**
  * The site header and footer, shared.
  *
  * ─── WHY THIS EXISTS ─────────────────────────────────────────────────────────
