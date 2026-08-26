@@ -67,6 +67,20 @@ const nextConfig = {
   // local pages permanently unreachable — the pages would build and deploy and
   // still never be served.
   async redirects() {
+    /**
+     * www -> apex, permanent. www.getscorebug.app was serving the full site
+     * with a 200 — two indexable hosts with identical content, competing with
+     * each other for every query. The canonical tag pointed at the apex, which
+     * mitigates, but a canonical is a hint and a 308 is an answer. `has` with
+     * a host condition is the documented Next.js shape for this; `:path*`
+     * carries the deep link across.
+     */
+    const WWW = [{
+      source: '/:path*',
+      has: [{ type: 'host', value: 'www.getscorebug.app' }],
+      destination: 'https://getscorebug.app/:path*',
+      permanent: true,
+    }]
     const APP_ROUTES = [
       'activity', 'admin', 'auth', 'fan', 'go', 'linemates', 'player-card',
       'the-almanac', 'the-bleachers', 'the-docket',
@@ -76,10 +90,13 @@ const nextConfig = {
     const APP = 'https://app.getscorebug.app'
     // Two rules per route: the bare path, and everything beneath it.
     // `/x/:rest*` does not match `/x` itself, so the pair is required.
-    return APP_ROUTES.flatMap(r => [
-      { source: `/${r}`, destination: `${APP}/${r}/`, permanent: false },
-      { source: `/${r}/:rest*`, destination: `${APP}/${r}/:rest*`, permanent: false },
-    ])
+    return [
+      ...WWW,
+      ...APP_ROUTES.flatMap(r => [
+        { source: `/${r}`, destination: `${APP}/${r}/`, permanent: false },
+        { source: `/${r}/:rest*`, destination: `${APP}/${r}/:rest*`, permanent: false },
+      ]),
+    ]
   },
 
   /**
