@@ -112,7 +112,7 @@ function ProductCard({ p }: { p: ShopifyProduct }) {
               affordance it reads as a static tile and nobody clicks it — the
               arrow is the only thing telling a visitor this goes somewhere. */}
           <span aria-hidden className="text-[13px] font-bold text-ink-3 transition group-hover:text-ink-2">
-            View ›
+            Shop ›
           </span>
         </span>
       </span>

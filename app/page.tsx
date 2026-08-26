@@ -197,13 +197,20 @@ export default async function Home() {
                   anything smaller. 28px of air under the kicker, not 20, because
                   the cap height below it is three times taller. */}
               <h1 className="headline headline-display mt-7 text-[3.6rem] text-white sm:text-[4.6rem] lg:text-[5.2rem]">
-                Chronicle
+                Your life as a fan.
                 <br />
-                every game.
+                On the record.
               </h1>
+              {/* CONCRETE, not grand. The temptation in a hero like this is
+                  "immortalise your legacy" — abstract, interchangeable, and the
+                  exact register that got stripped from this page once already
+                  for reading as machine-written. Three specific nights a real
+                  fan recognises do the emotional work that adjectives cannot,
+                  and the promise underneath them stays factual. */}
               <p className="mt-6 max-w-md text-lg leading-relaxed text-ink-2">
-                A sports logbook for the games you actually watch. Grade each one out of 5.0,
-                write the take, and keep the record for good.
+                The overtime winner. The one you drove six hours for. The collapse you
+                still will not talk about. Grade every game out of 5.0, say what it meant,
+                and keep it for good.
               </p>
 
               <div className="mt-9">
@@ -274,15 +281,16 @@ export default async function Home() {
 
         {/* ══ The hook ══ */}
         <section className="mx-auto max-w-3xl px-5 py-24 text-center">
-          <h2 className="headline text-4xl text-ink sm:text-5xl">What you watched, on the record.</h2>
+          <h2 className="headline text-4xl text-ink sm:text-5xl">You were there. Prove it.</h2>
           {/* max-w-[36rem], NOT the section's max-w-3xl. Centred 17px copy across
               48rem sets ~90 characters a line; the eye loses the return sweep
               past about 75. The section stays 3xl so the heading can run wider
               than the paragraph under it. */}
           <p className="mx-auto mt-5 max-w-[36rem] text-[17px] leading-relaxed text-ink-2">
-            Scorebug is a sports logbook app. A game goes final, you grade it out of 5.0 and
-            write what you thought, and it stays in your personal sports vault. Live scores run
-            across {LEAGUE_COUNT} leagues, and you can log finals back to the 2002 season.
+            You have watched thousands of games and remember a handful. Scorebug keeps the
+            rest. The final whistle goes, you grade it out of 5.0 and write what you thought,
+            and it stays in your vault for good. Live scores run across {LEAGUE_COUNT} leagues,
+            and you can go back and log finals as far as the 2002 season.
           </p>
         </section>
 
@@ -299,12 +307,12 @@ export default async function Home() {
             kicker="The core loop"
             accent="#F85149"
             title="Rate & chronicle"
-            body="Once a game is final, you grade it and say why. The rating, the note and the photos all attach to that one game and stay attached."
+            body="The whistle goes and the feeling starts fading. Grade it while it is still raw, write what you actually thought, and pin the ticket stub to it. Years later that is the difference between a score you can look up and a night you can relive."
             bullets={[
-              'A goal-light dial, 1.0 to 5.0, in half-point steps',
-              'Record how you watched: broadcast, at the venue, out watching, or a watch party',
-              'Photos and ticket stubs stay private to your Vault, always',
-              'Choose per game whether your rating and review go public',
+              'A goal-light dial, 1.0 to 5.0, in half-points, because a 4 and a 4.5 were not the same night',
+              'Say how you were there: on the couch, in the building, out watching, or hosting the watch party',
+              'Ticket stubs and photos stay private to your Vault. Always, and by default',
+              'Ratings and reviews start public so other fans can find them, with a per-game switch to keep any one to yourself',
             ]}
             src="/shots/chronicle.png"
             alt="The Log in Scorebug: finished games ready to chronicle, each with its final score and a Log this game button."
@@ -312,30 +320,30 @@ export default async function Home() {
 
           <FeatureRow
             flip
-            kicker="Live scores · every league"
+            kicker="Your command centre"
             accent="#2DD4BF"
             title="The Slate"
-            body="Every game on today's card across your leagues, with scores that update while you watch. When one goes final you log it from the same card, so tracking and logging are the same motion."
+            body="Stop running four apps and a group chat on game night. Every match on today's card, across every league you care about, on one screen. The second one goes final, you log it from the same card you were watching it on."
             bullets={[
               'NHL, NFL, NBA, MLB, CFL, college football and men’s college basketball',
               'MLS, the Premier League, La Liga, Serie A, Bundesliga, Ligue 1 and the Champions League',
               'Formula 1 race schedules, status and podiums',
-              'Scores refresh on their own while games are in progress',
+              'Scores move on their own while the game is live. No pull to refresh, no reload',
             ]}
             src="/shots/slate.png"
             alt="The Slate: a day of finals across leagues, each matchup card washed in both teams' colours with a Log this game action."
           />
 
           <FeatureRow
-            kicker="Everything you've logged"
+            kicker="Your trophy room"
             accent="#58A6FF"
             title="The Vault"
-            body="Your personal sports vault: every game you have logged, the grade you gave it and the note you wrote, with your running average on top. It is the record of what you actually watched, season after season."
+            body="The shoebox of ticket stubs, except you can actually find things in it. Every game you have graded, every note you wrote, every stub you photographed, in one room with your running average over the door."
             bullets={[
-              'Every game you have ever logged, with no time limit',
-              'Sort by most recent, highest-rated or lowest-rated',
-              'The Time Machine logs finished games back to the 2002 season',
-              'Filter by league, or search your own notes',
+              'Every game you have ever logged. No time limit, no archiving, nothing expires',
+              'Sort by most recent, highest-rated or lowest-rated, so your best night is one tap away',
+              'The Time Machine reaches back to the 2002 season, so your history starts long before the app did',
+              'Filter by league, or search your own notes for the game you half-remember',
             ]}
             src="/shots/vault.png"
             alt="The Scorebug home screen with the calendar and an upcoming Docket, beside the Rate and Chronicle screen part-way through a grade."
@@ -394,6 +402,16 @@ export default async function Home() {
             </div>
           </div>
         </section>
+
+        {/* == The Scorebug Network -- commerce, elevated ====================
+            Moved up from position 8 (below the FAQ, where most sessions never
+            reach). It sits AFTER the product features and not under the hero
+            on purpose: this site converts on app users, not merch, and a
+            commerce wall above the value props reframes the page as a store.
+            It is also what makes the subdeck honest -- "more than an app"
+            only lands for someone who has just been shown the app.
+            Absorbed the old "Also on Scorebug" block; see HomeRevenue.tsx. */}
+        <HomeRevenue />
 
         {/* ══ The Front Office (gold) ══ */}
         <section className="lit-gold floodlights relative overflow-hidden border-y border-white/10">
@@ -489,59 +507,6 @@ export default async function Home() {
                     past the point where the eye finds the next line reliably. */}
                 <p className="max-w-[33rem] px-5 pb-5 text-[15px] leading-relaxed text-ink-2">{f.a}</p>
               </details>
-            ))}
-          </div>
-        </section>
-
-        {/* ══ Revenue teaser — real Pro Shop products + trending gear ══════════
-            Placed after the value props rather than under the hero; see the
-            note in HomeRevenue.tsx on why that is the conversion-correct spot. */}
-        <HomeRevenue />
-
-        {/* ══ Also on Scorebug ═══════════════════════════════════════════════
-            Internal links to /shop, /gear and /news from the BODY of the page,
-            not only the header and footer.
-
-            This is not decoration. /shop, /gear and its 32 team pages, and
-            /news were all reachable from the chrome alone — and a link that
-            appears identically on every page of a site is discounted as
-            boilerplate: it gets the URL crawled, but it passes very little
-            about what the page is FOR. A contextual link inside the content,
-            with descriptive anchor text, is the signal that actually
-            associates "team gear" and "sports headlines" with those URLs.
-            It is also the only route a reader has to them without going back
-            up to the nav. ══════════════════════════════════════════════════ */}
-        <section className="mx-auto max-w-5xl px-5 pb-8" aria-labelledby="also-heading">
-          <h2 id="also-heading" className="headline text-3xl text-ink sm:text-4xl">
-            Also on Scorebug
-          </h2>
-          <div className="mt-7 grid gap-4 sm:grid-cols-3">
-            {[
-              { href: '/shop', kicker: 'Pro Shop', accent: '#F85149',
-                title: 'Scorebug apparel',
-                blurb: 'Tees, hoodies and gear, printed to order and shipped worldwide.' },
-              { href: '/gear', kicker: 'Fan gear', accent: '#58A6FF',
-                title: 'Team gear and memorabilia',
-                blurb: `Jerseys, cards and collectibles for ${GEAR_TEAM_COUNT} clubs across the NHL, NFL, NBA, MLB and MLS.` },
-              { href: '/news', kicker: 'The Wire', accent: '#E5B53C',
-                title: 'Sports headlines',
-                blurb: 'Today’s stories from around the leagues, linked to the outlets that wrote them.' },
-            ].map(c => (
-              <Link
-                key={c.href}
-                href={c.href}
-                className="glass-card group flex flex-col rounded-2xl p-6 transition hover:border-white/20"
-              >
-                <span className="flex items-center gap-2 text-[11px] font-black uppercase tracking-[0.16em]" style={{ color: c.accent }}>
-                  <span aria-hidden className="inline-block h-1.5 w-1.5 rounded-full" style={{ background: c.accent, boxShadow: `0 0 8px ${c.accent}` }} />
-                  {c.kicker}
-                </span>
-                <span className="mt-3 text-[16px] font-bold leading-snug text-ink">{c.title}</span>
-                <span className="mt-2 flex-1 text-[13.5px] leading-relaxed text-ink-2">{c.blurb}</span>
-                <span aria-hidden className="mt-4 text-[13px] font-bold text-ink-3 transition group-hover:text-ink-2">
-                  Open ›
-                </span>
-              </Link>
             ))}
           </div>
         </section>

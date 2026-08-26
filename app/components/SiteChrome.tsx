@@ -92,27 +92,73 @@ export function LaunchWebApp({ size = 'lg', className = '' }: { size?: 'lg' | 'm
   )
 }
 
+/** The three revenue hubs, in the order they earn. */
+const HUB_LINKS = [
+  { href: APP_LINKS.proShop, label: 'Pro Shop' },
+  { href: '/gear', label: 'Fan Gear' },
+  { href: '/news', label: 'The Wire' },
+]
+
+/**
+ * ─── WHY THE HEADER IS TWO ROWS ON A PHONE ───────────────────────────────────
+ * All three hubs now have to be reachable on every breakpoint. They cannot all
+ * fit one bar: at 360px the row already carries a wordmark, the Android CTA and
+ * the enamel "Launch Web App", and the previous version hid Pro Shop below
+ * `md` for exactly that reason — Gear and The Wire were not in the header at
+ * all.
+ *
+ * Cramming them in would either push the primary CTA off the screen or shrink
+ * every target under 44px. So the bar splits: row one keeps identity and the
+ * one action that matters (launch the app), row two carries the hubs as a
+ * full-width strip. Above `md` it collapses back to a single inline row, so
+ * desktop is unchanged apart from gaining two links.
+ *
+ * The hub strip is NOT horizontally scrollable — three short labels fit 320px
+ * with room to spare, and a scroller would hide the third link behind a gesture
+ * nobody knows is available.
+ */
 export function SiteHeader() {
+  const android = androidCta()
   return (
-    <header className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-5 py-5">
-      <a href="/" aria-label="Scorebug home" className="flex min-w-0 items-center gap-2.5">
-        <Image src="/app-icon.png" alt="" width={36} height={36} className="rounded-[9px]" priority />
-        {/* Icon only below sm. The wordmark and a full-width "Launch Web App"
-            cannot both fit a 360px bar, and a truncated "SCORE…" is worse than
-            no wordmark beside a logo that already says it. */}
-        <span className="headline headline-sm hidden text-2xl text-ink sm:inline">Scorebug</span>
-      </a>
-      <nav aria-label="Primary" className="flex flex-shrink-0 items-center gap-2.5">
-        {/* Pro Shop is `md:` while the test link is `sm:` — at 640px the bar
-            already carries a wordmark, a CTA pill and the enamel button, and a
-            third link there pushes "Launch Web App" off a 360px phone. */}
-        <a href={APP_LINKS.proShop} className="glass-btn hidden rounded-full px-4 py-2 text-[13px] font-bold text-ink-2 transition hover:text-ink md:inline-block">
-          Pro Shop
+    <header className="mx-auto max-w-6xl px-5 pt-5 pb-3 md:pb-5">
+      <div className="flex items-center justify-between gap-4">
+        <a href="/" aria-label="Scorebug home" className="flex min-w-0 items-center gap-2.5">
+          <Image src="/app-icon.png" alt="" width={36} height={36} className="rounded-[9px]" priority />
+          {/* Icon only below sm. The wordmark and a full-width "Launch Web App"
+              cannot both fit a 360px bar, and a truncated "SCORE…" is worse than
+              no wordmark beside a logo that already says it. */}
+          <span className="headline headline-sm hidden text-2xl text-ink sm:inline">Scorebug</span>
         </a>
-        <a href={androidCta().href} className="glass-btn hidden rounded-full px-4 py-2 text-[13px] font-bold text-ink-2 transition hover:text-ink sm:inline-block">
-          {androidCta().label}
-        </a>
-        <LaunchWebApp size="md" />
+
+        <nav aria-label="Primary" className="flex flex-shrink-0 items-center gap-2.5">
+          {/* Inline from md up; the mobile strip below carries them otherwise. */}
+          {HUB_LINKS.map(l => (
+            <a
+              key={l.href}
+              href={l.href}
+              className="glass-btn hidden rounded-full px-4 py-2 text-[13px] font-bold text-ink-2 transition hover:text-ink md:inline-block"
+            >
+              {l.label}
+            </a>
+          ))}
+          <a href={android.href} className="glass-btn hidden rounded-full px-4 py-2 text-[13px] font-bold text-ink-2 transition hover:text-ink sm:inline-block">
+            {android.label}
+          </a>
+          <LaunchWebApp size="md" />
+        </nav>
+      </div>
+
+      {/* Row two — phones and small tablets only. */}
+      <nav aria-label="Sections" className="mt-3 flex items-center gap-2 md:hidden">
+        {HUB_LINKS.map(l => (
+          <a
+            key={l.href}
+            href={l.href}
+            className="glass-btn flex-1 rounded-full px-3 py-2.5 text-center text-[12.5px] font-bold text-ink-2 transition hover:text-ink"
+          >
+            {l.label}
+          </a>
+        ))}
       </nav>
     </header>
   )
