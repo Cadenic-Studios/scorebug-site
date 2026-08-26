@@ -7,12 +7,12 @@ filename, so **replacing a file is the whole swap** — no code change needed.
 
 | File | Where it appears | Shipped artwork |
 |---|---|---|
-| `hero.png` | Hero, right of the H1 | **Device-only**, 1440×1645 — cut from `chronicle.png` below its lockup |
-| `chronicle.png` | "Rate & chronicle" row | Poster, 1080×1920 |
+| `hero.png` | Hero, right of the H1 | **REAL SCREENSHOT**, 1440×1645 — Home + The Slate, two handsets |
+| `chronicle.png` | "Rate & chronicle" row | **REAL SCREENSHOT**, 1440×2559 — The Log |
 | `slate.png` | "The Slate" row | Poster, 1080×1920 |
 | `vault.png` | "The Vault" row | Poster, 1080×1920 |
 | `front-office.png` | Gold membership section | Poster, 1080×1920 (cropped past its lockup) |
-| `wire.png` | Three-up card | Poster, 1080×1920 |
+| `wire.png` | Three-up card | **REAL SCREENSHOT**, 941×1672 — The Wire |
 | `bleachers.png` | Three-up card | Poster, 1080×1920 |
 | `franchise.png` | Three-up card | Poster, 1080×1920 |
 
@@ -28,8 +28,44 @@ filename, keep the `.png` extension, and rebuild:
 - "JOIN THE CROWD." → `bleachers.png`
 - "TRACK YOUR TEAMS." → `franchise.png`
 
-`chronicle.png` and `wire.png` have no Play Store counterpart. Leave the shipped
-artwork, or produce two more in the same style.
+`chronicle.png` and `wire.png` have no Play Store counterpart.
+
+## Three of these are real screenshots now
+
+`hero.png`, `chronicle.png` and `wire.png` are no longer AI artwork. They are
+captures of the running app, framed by `scripts/capture-shots.mjs`:
+
+```
+node scripts/capture-shots.mjs            # capture + compose
+node scripts/capture-shots.mjs --compose  # recompose from cached raws
+```
+
+**Why they were replaced.** The AI plates had text baked into the pixels, and
+the text was wrong: `hero.png` and `chronicle.png` read "Weshington Commanders",
+`wire.png` read "THIE WIRE". None of that is fixable in CSS — `app/page.tsx` had
+to crop the hero to hide it, and that crop is now gone. A screenshot of the real
+product cannot misspell anything, because every word in it is rendered by the
+app. (`vault.png` was checked at 3x and reads "Washington" correctly; the five
+remaining plates are still the shipped artwork.)
+
+**The script opens a visible Chrome window and waits for you to log in.** It
+never handles a password — it polls for a signed-in DOM. The profile persists
+under `.cache/`, so only the first run asks. Two things in there are load-bearing
+and commented at length: device emulation is applied only AFTER login (turning
+it on first makes the login form silently ignore every click), and every wait
+during capture is bounded (an unbounded image wait deadlocked The Wire).
+
+**Composition is HTML, not an image library.** `sharp` is not installed and is a
+heavy native dependency for three files; a browser is already open, so the bezel,
+glow and floor reflection are CSS and the plate is screenshotted at the exact
+target size. Per-plate `scale` and `rotate` exist because two slots are cropped
+downstream — see the comments on `PLATES`.
+
+**Re-shooting changes the content.** These captures show real fixtures, real
+scores and real ESPN headlines from the day they were taken, plus the signed-in
+account's own username and avatar. That is a feature for credibility and a
+liability for dated screenshots; re-run the script when the artwork starts to
+look stale.
 
 ## Two things the page does for you
 

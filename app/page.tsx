@@ -140,9 +140,15 @@ function FeatureRow({
 /** Compact card for the closing three-up. The poster is cropped to 4:5 so
  *  three 9:16 plates do not stack into a 2,400px wall on a phone. */
 function FeatureCard({
-  kicker, accent, title, body, src, alt,
+  kicker, accent, title, body, src, alt, objectPosition = '50% 100%',
 }: {
   kicker: string; accent: string; title: string; body: string; src: string; alt: string
+  /** Where the 4:5 crop sits on the poster. Defaults to the BOTTOM, which is
+   *  right for the AI campaign plates (lockup on top, product UI underneath).
+   *  A real screenshot plate has the phone centred with dark margin above and
+   *  below instead, so pinning it to the bottom cuts the top third of the
+   *  handset off — those slots pass '50% 50%'. */
+  objectPosition?: string
 }) {
   return (
     <div className="glass-card relative overflow-hidden rounded-3xl p-6 pb-7">
@@ -156,7 +162,7 @@ function FeatureCard({
             three plates are campaign artwork: logo lockup and a baked headline
             up top, product UI underneath. Cropping from the top (the default)
             showed the marketing, not the app. */}
-        <Showcase src={src} alt={alt} accent={accent} tilt="flat" aspect="4 / 5" objectPosition="50% 100%" sizes="(max-width: 639px) 80vw, (max-width: 1023px) 42vw, 30vw" />
+        <Showcase src={src} alt={alt} accent={accent} tilt="flat" aspect="4 / 5" objectPosition={objectPosition} sizes="(max-width: 639px) 80vw, (max-width: 1023px) 42vw, 30vw" />
         <p className="mt-8 text-[10.5px] font-black uppercase tracking-[0.22em]" style={{ color: accent }}>{kicker}</p>
         <h3 className="headline headline-sm mt-1.5 text-3xl text-ink">{title}</h3>
         <p className="mt-2.5 text-[14.5px] leading-relaxed text-ink-2">{body}</p>
@@ -235,7 +241,7 @@ export default function Home() {
             <div className="flex justify-center lg:col-start-2 lg:row-start-1 lg:justify-end">
               <Showcase
                 src="/shots/hero.png"
-                alt="A game rating dial set to 4.0 out of 5 with half-step buttons and viewing options, beside a Vault of logged games and their grades."
+                alt="Two phones running Scorebug: Home with The Docket of upcoming games, and The Slate showing live scores across the leagues."
                 accent="#F85149"
                 tilt="right"
                 priority
@@ -247,31 +253,18 @@ export default function Home() {
                 width={1440}
                 height={1645}
                 //
-                // ── WHY THIS CROP IS NOT NEGOTIABLE ──────────────────────────
-                // hero.png has "Weshington Commanders" MISSPELLED, baked into
-                // the pixels of the left phone's matchup card, at y≈467-513 of
-                // the 1440x1645 source. It cannot be fixed in CSS and it was
-                // sitting above the fold. Until the artwork is re-rendered, the
-                // frame starts BELOW that card.
+                // ── THE CROP THAT USED TO BE HERE IS GONE ────────────────────
+                // This slot carried aspect="1440 / 1030" + objectPosition
+                // "50% 100%" for one reason: the old AI-rendered hero.png had
+                // "Weshington Commanders" misspelled into the pixels of the
+                // left phone's matchup card, above the fold, and the crop
+                // started the frame below it.
                 //
-                // 1440/1030 is the widest-possible vertical crop: object-cover
-                // only crops the axis the container is longer on, so any ratio
-                // wider than the source's 1440/1645 trims top and bottom and
-                // nothing else. 1030 leaves exactly 615px to cut, and
-                // objectPosition 100% spends all 615 off the TOP — landing the
-                // cut at y=615, in the gap between the misspelled card (ends
-                // y≈612) and the GAME RATING panel (starts y≈648).
-                //
-                // Both handsets keep their side rails, bottom bezels and floor
-                // reflection, so they still read as phones rather than as flat
-                // screenshots. Do not raise 1030 without re-checking y=615:
-                // 1125 puts the "Weshington" label back on the page.
-                aspect="1440 / 1030"
-                objectPosition="50% 100%"
-                // Wider than the old portrait plate because the frame is now
-                // landscape; at max-w-[470px] it rendered only 336px tall and
-                // lost the hero.
-                className="w-full max-w-[420px] sm:max-w-[520px]"
+                // hero.png is now a real screenshot of the running app
+                // (scripts/capture-shots.mjs), so every word in it is rendered
+                // by the product and cannot be misspelled. The full plate shows
+                // again — both handsets, complete with bezels and reflection.
+                className="w-full max-w-[420px] sm:max-w-[500px]"
                 sizes="(max-width: 1023px) 86vw, 520px"
               />
             </div>
@@ -313,7 +306,7 @@ export default function Home() {
               'Choose per game whether your rating and review go public',
             ]}
             src="/shots/chronicle.png"
-            alt="The Rate & Chronicle screen: a goal-light dial set to 4.0 out of 5, viewing-perspective options, and a private notes field."
+            alt="The Log in Scorebug: finished games ready to chronicle, each with its final score and a Log this game button."
           />
 
           <FeatureRow
@@ -372,6 +365,10 @@ export default function Home() {
                 title="The Wire"
                 body="Headlines from the leagues you follow, with a tab for each one. Pin a team to My Wire, or let it track your Starting Lineup on its own."
                 src="/shots/wire.png"
+                // Centre, not the default bottom: wire.png is now a real
+                // screenshot of The Wire framed in a handset, not a campaign
+                // poster with a lockup on top.
+                objectPosition="50% 50%"
                 alt="The Wire: a news feed filtered to the teams you follow, with a tab for each league."
               />
               <FeatureCard

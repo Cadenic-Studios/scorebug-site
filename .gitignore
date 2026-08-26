@@ -36,3 +36,7 @@ peek.png
 # file is where a service_role key would eventually get pasted by accident.
 .env.local
 .env*.local
+
+# Cached raw screenshots and the Chrome profile used by scripts/capture-shots.mjs.
+# The profile holds a real logged-in session - it must never be committed.
+.cache
