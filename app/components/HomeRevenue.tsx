@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import Image from 'next/image'
-import { getProducts, isShopifyConfigured, shopifyProductUrl, formatPriceRange, type ShopifyProduct } from '../lib/shopify'
+import { getProducts, isShopifyConfigured, formatPriceRange, type ShopifyProduct } from '../lib/shopify'
 import { getGearTeam, GEAR_TEAM_COUNT } from '../lib/teams'
 import { LEAGUE_COUNT } from '../leagues'
 
@@ -102,11 +102,11 @@ export default async function HomeRevenue() {
           </div>
           <div className="mt-5 grid grid-cols-2 gap-4 lg:grid-cols-4">
             {products.map(p => (
-              <a
+              /* Internal route, not the myshopify.com product page — see the
+                 note on the same link in app/shop/page.tsx. */
+              <Link
                 key={p.id}
-                href={shopifyProductUrl(p.handle)}
-                target="_blank"
-                rel="noopener noreferrer"
+                href={`/shop/${p.handle}`}
                 className="sb-product glass-card group flex flex-col overflow-hidden rounded-2xl"
               >
                 <span className="relative block w-full overflow-hidden" style={{ aspectRatio: '1 / 1', background: 'rgba(255,255,255,0.04)' }}>
@@ -127,7 +127,7 @@ export default async function HomeRevenue() {
                     <span aria-hidden className="text-[12px] font-bold text-ink-3 transition group-hover:text-ink-2">Shop ›</span>
                   </span>
                 </span>
-              </a>
+              </Link>
             ))}
           </div>
         </>

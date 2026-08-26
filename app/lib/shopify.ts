@@ -76,7 +76,17 @@ export type GqlResult<T> = { data: T | null; error: string | null }
 async function shopifyFetch<T>(
   query: string,
   variables: Record<string, unknown> = {},
-  opts: { revalidate?: number } = {},
+  /**
+   * `noStore` is for MUTATIONS and is not optional politeness.
+   *
+   * Everything here POSTs — queries and mutations alike — and these POSTs are
+   * opted into Next's Data Cache by the `next.revalidate` below (verified live:
+   * /shop served `X-Vercel-Cache: HIT` with a non-zero Age). A cart mutation
+   * caught by that same cache would hand every visitor for the next 60 seconds
+   * the SAME cart, and therefore the same checkout URL — someone else's basket.
+   * Mutations must opt out explicitly.
+   */
+  opts: { revalidate?: number; noStore?: boolean } = {},
 ): Promise<GqlResult<T>> {
   if (!isShopifyConfigured()) return { data: null, error: 'not-configured' }
   try {
@@ -105,7 +115,9 @@ async function shopifyFetch<T>(
          * API only ever returns products published to the sales channel this
          * token belongs to — see the note on getProducts.
          */
-        next: { revalidate: opts.revalidate ?? 60 },
+        ...(opts.noStore
+          ? { cache: 'no-store' as const }
+          : { next: { revalidate: opts.revalidate ?? 60 } }),
       },
     )
     if (!res.ok) return { data: null, error: `http-${res.status}` }
@@ -173,6 +185,103 @@ export async function getProducts(first = 24): Promise<GqlResult<ShopifyProduct[
   })
   if (r.error) return { data: null, error: r.error }
   return { data: r.data?.products?.nodes ?? [], error: null }
+}
+
+/* ── The product detail page ───────────────────────────────────────────────── */
+
+/** A PDP product also carries the full image gallery. */
+export type ShopifyProductDetail = ShopifyProduct & {
+  descriptionHtml: string
+  images: { nodes: NonNullable<ShopifyImage>[] }
+}
+
+/**
+ * One product, by handle, for the native PDP.
+ *
+ * `images` is requested HERE and not in PRODUCT_FIELDS on purpose: the grid
+ * needs one thumbnail per product and asking for eight would multiply the
+ * catalogue query's cost for images no grid ever renders. A detail page asks
+ * for the gallery; a list page does not.
+ *
+ * A handle that does not exist resolves `product` to null WITHOUT a GraphQL
+ * error — so a missing product is `{ data: null, error: null }`, which the page
+ * turns into a 404. That is different from `{ data: null, error: '...' }`, which
+ * is Shopify being unreachable and must not be shown as "no such product".
+ */
+export async function getProduct(handle: string): Promise<GqlResult<ShopifyProductDetail | null>> {
+  const query = `
+    query Product($handle: String!) {
+      product(handle: $handle) {
+        ${PRODUCT_FIELDS}
+        descriptionHtml
+        images(first: 8) {
+          nodes { url(transform: { maxWidth: 1400, maxHeight: 1400 }) altText }
+        }
+      }
+    }
+  `
+  const r = await shopifyFetch<{ product: ShopifyProductDetail | null }>(query, { handle })
+  if (r.error) return { data: null, error: r.error }
+  return { data: r.data?.product ?? null, error: null }
+}
+
+/** Every handle, for generateStaticParams. */
+export async function getProductHandles(): Promise<string[]> {
+  const query = `{ products(first: 250) { nodes { handle } } }`
+  const r = await shopifyFetch<{ products: { nodes: { handle: string }[] } }>(query)
+  return r.data?.products?.nodes?.map(n => n.handle) ?? []
+}
+
+/**
+ * Create a cart holding one variant and hand back Shopify's hosted checkout URL.
+ *
+ * ─── WHY cartCreate AND NOT checkoutCreate ───────────────────────────────────
+ * `checkoutCreate` is the deprecated Checkout API. Shopify has been removing it
+ * from the Storefront API since 2024 and it is gone on current versions — a
+ * build against it would compile fine and 404 at the mutation. `cartCreate` is
+ * the supported replacement and returns the same thing we need: a
+ * `checkoutUrl` pointing at Shopify's own secure, PCI-compliant checkout.
+ *
+ * ─── WHY WE STILL HAND OFF TO SHOPIFY AT THE END ─────────────────────────────
+ * The brand experience is headless right up to the payment screen, which is the
+ * correct boundary. Taking card details ourselves would put this site in PCI
+ * scope; Shopify's checkout already carries Shop Pay, wallets, tax and shipping
+ * calculation, and fraud screening. Headless means owning the browsing and the
+ * product page, not rebuilding a payment processor.
+ *
+ * Runs from the CLIENT with the PUBLIC Storefront token — the same token that
+ * already ships in the bundle for the catalogue. No private `shpat_` credential
+ * is involved, which is the standing rule for this repo.
+ */
+export async function createCartCheckout(
+  variantId: string,
+  quantity = 1,
+): Promise<GqlResult<string>> {
+  const mutation = `
+    mutation CartCreate($lines: [CartLineInput!]!) {
+      cartCreate(input: { lines: $lines }) {
+        cart { checkoutUrl }
+        userErrors { field message }
+      }
+    }
+  `
+  const r = await shopifyFetch<{
+    cartCreate: { cart: { checkoutUrl: string } | null; userErrors: { message: string }[] }
+  }>(
+    mutation,
+    { lines: [{ merchandiseId: variantId, quantity: Math.max(1, quantity) }] },
+    { noStore: true },
+  )
+
+  if (r.error) return { data: null, error: r.error }
+  // `userErrors` is Shopify's SOFT failure channel: HTTP 200, no `errors` array,
+  // and a null cart. Unchecked, this returns undefined and the button silently
+  // does nothing.
+  const ue = r.data?.cartCreate?.userErrors
+  if (ue?.length) return { data: null, error: ue.map(e => e.message).join('; ') }
+  const url = r.data?.cartCreate?.cart?.checkoutUrl
+  if (!url) return { data: null, error: 'no-checkout-url' }
+  return { data: url, error: null }
 }
 
 /**

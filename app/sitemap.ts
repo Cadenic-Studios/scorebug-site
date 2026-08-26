@@ -1,6 +1,7 @@
 import type { MetadataRoute } from 'next'
 import { SITE, LEGAL_PATHS, LEGAL_UPDATED_ISO } from './config'
 import { GEAR_TEAMS } from './lib/teams'
+import { getProductHandles } from './lib/shopify'
 
 /**
  * FOUR URLs: the landing page and the three legal documents.
@@ -21,7 +22,8 @@ import { GEAR_TEAMS } from './lib/teams'
  * clock: a legal document's date is the day its wording changed, and every
  * deploy claiming a fresh policy is a claim that is nearly always false.
  */
-export default function sitemap(): MetadataRoute.Sitemap {
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  const productHandles = await getProductHandles()
   const legalUpdated = new Date(LEGAL_UPDATED_ISO)
   return [
     { url: SITE, lastModified: new Date(), changeFrequency: 'weekly', priority: 1 },
@@ -36,6 +38,18 @@ export default function sitemap(): MetadataRoute.Sitemap {
      * one page whose structured data makes a factual claim about both.
      */
     { url: `${SITE}/shop`, lastModified: new Date(), changeFrequency: 'daily', priority: 0.9 },
+    /* One entry per product, now that each has a real page on THIS domain.
+       Fetched rather than hard-coded so a newly published product is in the
+       sitemap on the next regeneration — the same source generateStaticParams
+       uses, so this cannot advertise a handle the route will not serve. An
+       unreachable Shopify yields [] and simply omits them, which is correct:
+       better a short sitemap than one full of URLs that 404. */
+    ...productHandles.map(handle => ({
+      url: `${SITE}/shop/${handle}`,
+      lastModified: new Date(),
+      changeFrequency: 'daily' as const,
+      priority: 0.7,
+    })),
     { url: `${SITE}/gear`, lastModified: new Date(), changeFrequency: 'weekly', priority: 0.8 },
     /* One entry per statically generated club page. Generated from the same list
        the route's generateStaticParams uses, so the sitemap cannot advertise a

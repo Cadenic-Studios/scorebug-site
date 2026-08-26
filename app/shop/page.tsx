@@ -1,8 +1,9 @@
 import type { Metadata } from 'next'
 import Image from 'next/image'
+import Link from 'next/link'
 import { SITE, WEB_APP } from '../config'
 import {
-  getProducts, isShopifyConfigured, shopifyProductUrl,
+  getProducts, isShopifyConfigured,
   formatPriceRange, categoryLabel, isApparel,
   type ShopifyProduct,
 } from '../lib/shopify'
@@ -86,15 +87,16 @@ function ProductCard({ p }: { p: ShopifyProduct }) {
   const img = p.featuredImage
   const soldOut = !p.availableForSale
   return (
-    <a
-      href={shopifyProductUrl(p.handle)}
-      target="_blank"
-      /**
-       * `sponsored` is not needed — this is our own store, not an affiliate
-       * destination — but `noopener noreferrer` still is, because the link
-       * opens a new tab and an un-guarded `_blank` is a tabnabbing vector.
-       */
-      rel="noopener noreferrer"
+    /* Internal <Link>, and no target="_blank".
+       This used to be an external anchor to <store>.myshopify.com — so a fan
+       browsing a dark, typeset Scorebug page tapped a product and landed on
+       Shopify's default theme, on a domain they had never seen, at the exact
+       moment intent was highest. It also meant the canonical URL for our own
+       merchandise lived on a subdomain we cannot rank.
+       Now it routes to the native PDP at /shop/[handle]. A same-origin
+       destination needs no tabnabbing guard, and it prefetches. */
+    <Link
+      href={`/shop/${p.handle}`}
       className="sb-product glass-card group flex flex-col overflow-hidden rounded-2xl"
     >
       <span
@@ -134,7 +136,7 @@ function ProductCard({ p }: { p: ShopifyProduct }) {
           </span>
         </span>
       </span>
-    </a>
+    </Link>
   )
 }
 
@@ -166,7 +168,7 @@ export default async function ShopPage() {
             description: (p.description || '').slice(0, 300) || undefined,
             image: p.featuredImage?.url ? [p.featuredImage.url] : undefined,
             brand: { '@type': 'Brand', name: 'Scorebug' },
-            url: shopifyProductUrl(p.handle),
+            url: `${SITE}/shop/${p.handle}`,
             offers: {
               '@type': 'Offer',
               price: p.priceRange.minVariantPrice.amount,
@@ -174,7 +176,7 @@ export default async function ShopPage() {
               availability: p.availableForSale
                 ? 'https://schema.org/InStock'
                 : 'https://schema.org/OutOfStock',
-              url: shopifyProductUrl(p.handle),
+              url: `${SITE}/shop/${p.handle}`,
             },
           },
         })),
