@@ -186,7 +186,22 @@ export default async function Home() {
       <main>
         {/* ══ Hero ══ */}
         <section className="lit-red floodlights relative overflow-hidden">
-          <div className="mx-auto grid max-w-6xl items-center gap-14 px-5 pb-24 pt-10 lg:grid-cols-[1fr_auto] lg:pt-14">
+          {/* ── THE SPLIT IS `xl`, NOT `lg`. ───────────────────────────────
+              It was `lg`, so the two-column hero engaged at 1024px — which is
+              exactly an iPad Pro in portrait, and the inner screen of a folded
+              phone. At that width the artwork column takes its ~500px and the
+              copy column is left with ~428px, while the headline is still being
+              set at lg:text-[5.2rem]. Anton at 83px in a 428px column wraps
+              "Your life as a fan. On the record." onto FOUR ragged lines
+              ("YOUR LIFE AS / A FAN. / ON THE / RECORD.") and pushes the CTA
+              most of a screen down. Nothing overflowed, which is why it never
+              tripped an overflow check — it just looked broken.
+
+              Holding one column until 1280 gives those viewports the full-width
+              headline they already get at 900px, where the same copy sets
+              cleanly. The trade is a taller hero on a portrait tablet, which is
+              the correct trade on a screen that is mostly height. */}
+          <div className="mx-auto grid max-w-6xl items-center gap-14 px-5 pb-24 pt-10 xl:grid-cols-[1fr_auto] xl:pt-14">
             <div className="relative z-10">
               {/* The kicker used to read "Chronicle your sports", which is the
                   <h1> again in different clothes. A kicker sitting two lines
@@ -196,10 +211,23 @@ export default async function Home() {
                   correction that is real at 83px and closes Anton's counters at
                   anything smaller. 28px of air under the kicker, not 20, because
                   the cap height below it is three times taller. */}
-              <h1 className="headline headline-display mt-7 text-[3.6rem] text-white sm:text-[4.6rem] lg:text-[5.2rem]">
-                Your life as a fan.
-                <br />
-                On the record.
+              {/* ── NO HARD <br/>, AND `text-balance` INSTEAD. ───────────────
+                  The hard break used to sit after "fan." That worked for the old
+                  two-word headline and breaks this one: the copy column is
+                  556px at desktop (max-w-6xl minus the 500px artwork and the
+                  gap), and "YOUR LIFE AS A FAN." needs ~984px at 83px Anton. So
+                  it wrapped on its own and left "FAN." orphaned on a line by
+                  itself, with "ON THE RECORD." under it.
+
+                  Hand-tuning breaks per width does not survive: a break that
+                  fixes 1440 orphans something else at 1024 or 390, because the
+                  type steps three times and the column width changes twice.
+                  `text-wrap: balance` lets the browser even out the lines at
+                  whatever width it actually gets, which is the one rule that
+                  holds at every breakpoint. Where it is unsupported the text
+                  simply wraps normally, which is where we already were. */}
+              <h1 className="headline headline-display mt-7 text-balance text-[3.6rem] text-white sm:text-[4.6rem] lg:text-[5.2rem]">
+                Your life as a fan. On the record.
               </h1>
               {/* CONCRETE, not grand. The temptation in a hero like this is
                   "immortalise your legacy" — abstract, interchangeable, and the
@@ -242,11 +270,11 @@ export default async function Home() {
                 which is why the artwork below carries an explicit row 1 / col 2:
                 once one grid item is placed by hand, leaving its siblings on
                 auto-placement is how you get items stacked in the same cell. */}
-            <div className="relative z-10 min-w-0 lg:col-span-2 lg:col-start-1 lg:row-start-2">
+            <div className="relative z-10 min-w-0 xl:col-span-2 xl:col-start-1 xl:row-start-2">
               <LeagueBar />
             </div>
 
-            <div className="flex justify-center lg:col-start-2 lg:row-start-1 lg:justify-end">
+            <div className="flex justify-center xl:col-start-2 xl:row-start-1 xl:justify-end">
               <Showcase
                 src="/shots/hero.png"
                 alt="Two phones running Scorebug: Home with The Docket of upcoming games, and The Slate showing live scores across the leagues."

@@ -61,8 +61,26 @@ export const metadata: Metadata = {
   twitter: { card: 'summary_large_image', title: TITLE, description: DESCRIPTION },
 }
 
-/** Ten minutes, matching the Storefront fetch's own revalidate. */
-export const revalidate = 600
+/**
+ * 60s, matching the Storefront fetch's own revalidate.
+ *
+ * VERIFIED, NOT ASSUMED: this page was reported as "caching indefinitely" and
+ * not showing new Printify products. It was not. A live check found
+ * `X-Vercel-Cache: HIT` with `Age: 454` under the old 600s window — ISR was
+ * regenerating correctly, and the page was already serving a product that had
+ * replaced an older one. Querying the Storefront API directly returned exactly
+ * the two products the page renders.
+ *
+ * So a missing product is not a cache problem and shortening this will not
+ * surface one. The Storefront API only returns products PUBLISHED to the sales
+ * channel this token belongs to, and Printify-created products commonly land
+ * unpublished or published only to a channel this token cannot see. The fix for
+ * that lives in Shopify admin, not here.
+ *
+ * The shorter window is still worth having: it cuts the publish-to-visible gap
+ * from ten minutes to one, and nobody waits on it either way.
+ */
+export const revalidate = 60
 
 function ProductCard({ p }: { p: ShopifyProduct }) {
   const img = p.featuredImage

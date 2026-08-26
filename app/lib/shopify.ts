@@ -93,10 +93,19 @@ async function shopifyFetch<T>(
          * ISR rather than `no-store`. The catalogue is the page's SEO payload,
          * so it must be in the HTML — but re-querying Shopify on every crawl hit
          * would burn the Storefront API's cost budget and slow first paint.
-         * Ten minutes is well inside how often a two-product shop changes, and
-         * a deploy busts it anyway.
+         *
+         * 60s, down from 600s. Nobody waits on this either way (ISR serves the
+         * stale copy instantly and regenerates behind the request), so the only
+         * thing the longer window bought was fewer Storefront calls on a
+         * catalogue that changes when a product is published. A ten-minute gap
+         * between hitting publish and seeing the product is long enough to read
+         * as "the site is broken" and send someone looking for a cache bug.
+         *
+         * NOTE: this does not make an unpublished product appear. The Storefront
+         * API only ever returns products published to the sales channel this
+         * token belongs to — see the note on getProducts.
          */
-        next: { revalidate: opts.revalidate ?? 600 },
+        next: { revalidate: opts.revalidate ?? 60 },
       },
     )
     if (!res.ok) return { data: null, error: `http-${res.status}` }
