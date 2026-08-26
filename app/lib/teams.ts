@@ -60,7 +60,7 @@ export const GEAR_TEAMS: GearTeam[] = [
   { slug: "florida-panthers", name: "Florida Panthers", short: "Panthers", league: 'NHL', color: '#58A6FF' },
   { slug: "los-angeles-kings", name: "Los Angeles Kings", short: "Kings", league: 'NHL', color: '#58A6FF' },
   { slug: "minnesota-wild", name: "Minnesota Wild", short: "Wild", league: 'NHL', color: '#58A6FF' },
-  { slug: "montr-al-canadiens", name: "Montréal Canadiens", short: "Canadiens", league: 'NHL', color: '#58A6FF' },
+  { slug: "montreal-canadiens", name: "Montréal Canadiens", short: "Canadiens", league: 'NHL', color: '#58A6FF' },
   { slug: "nashville-predators", name: "Nashville Predators", short: "Predators", league: 'NHL', color: '#58A6FF' },
   { slug: "new-jersey-devils", name: "New Jersey Devils", short: "Devils", league: 'NHL', color: '#58A6FF' },
   { slug: "new-york-islanders", name: "New York Islanders", short: "Islanders", league: 'NHL', color: '#58A6FF' },
@@ -176,7 +176,7 @@ export const GEAR_TEAMS: GearTeam[] = [
   // MLS — 30 clubs
   { slug: "atlanta-united", name: "Atlanta United", short: "Atlanta United", league: 'MLS', color: '#00B2A9' },
   { slug: "austin-fc", name: "Austin FC", short: "Austin FC", league: 'MLS', color: '#00B2A9' },
-  { slug: "cf-montr-al", name: "CF Montréal", short: "CF Montréal", league: 'MLS', color: '#00B2A9' },
+  { slug: "cf-montreal", name: "CF Montréal", short: "CF Montréal", league: 'MLS', color: '#00B2A9' },
   { slug: "charlotte-fc", name: "Charlotte FC", short: "Charlotte FC", league: 'MLS', color: '#00B2A9' },
   { slug: "chicago-fire", name: "Chicago Fire", short: "Chicago Fire", league: 'MLS', color: '#00B2A9' },
   { slug: "colorado-rapids", name: "Colorado Rapids", short: "Colorado Rapids", league: 'MLS', color: '#00B2A9' },
