@@ -251,7 +251,12 @@ export default function PrivacyPolicy() {
               </P>
             </Section>
 
-            <Section id="advertising" title="Advertising">
+            <Section id="advertising-practices" title="Advertising">
+            {/* id renamed from the bare word: EasyList's generic cosmetic
+                rules hide elements by common ad-ish ids, and a hidden section
+                of the privacy policy/terms is invisible precisely to the
+                ad-block users it most concerns — including a Play reviewer
+                running one. Nothing linked to the old anchor. */}
               <P>
                 Free accounts see ads. On Android they are served by <Term>Google AdMob</Term>, and
                 on the web by <Term>Google AdSense</Term>. Members of The Front Office, our paid

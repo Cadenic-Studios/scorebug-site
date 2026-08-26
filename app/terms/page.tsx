@@ -268,7 +268,12 @@ export default function TermsOfService() {
               </UL>
             </Section>
 
-            <Section id="ads-affiliates" title="Ads and affiliate links">
+            <Section id="ads-and-affiliate-links" title="Ads and affiliate links">
+            {/* id renamed from the bare word: EasyList's generic cosmetic
+                rules hide elements by common ad-ish ids, and a hidden section
+                of the privacy policy/terms is invisible precisely to the
+                ad-block users it most concerns — including a Play reviewer
+                running one. Nothing linked to the old anchor. */}
               <P>
                 Free accounts see ads, served by Google AdMob on Android and AdSense on the web.
                 Front Office members do not.

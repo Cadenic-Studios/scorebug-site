@@ -18,6 +18,16 @@ body {
   overflow-x: hidden;
 }
 
+/* Android/iOS paint a grey flash over any tapped link or button by default.
+   Against this page's near-black ground it reads as a rendering glitch, and
+   every control here already has its own active state (enamel buttons scale,
+   glass buttons brighten) — so the flash is pure noise. Buttons and links
+   only; suppressing it globally would also strip it from text selection. */
+a, button, summary, [role='button'] {
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   *, *::before, *::after {
