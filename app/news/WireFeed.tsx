@@ -4,6 +4,7 @@ import { useMemo, useState } from 'react'
 import { ticketNetworkTeamUrl } from '../lib/affiliates'
 import Sponsored, { AffiliateLink } from '../components/Sponsored'
 import { AppCta } from '../components/SiteChrome'
+import VpnBanner from '../components/VpnBanner'
 
 /**
  * The Wire's interactive feed: league filter chips + a Latest/By-league sort,
@@ -124,6 +125,7 @@ export default function WireFeed({ articles }: { articles: Article[] }) {
             {latest.slice(0, 40).map(a => <Item key={a.id} a={a} />)}
           </ul>
           <AppCta className="mt-8" line="Read it here, then log the game you watched — your grade and your take, kept for good." />
+          <VpnBanner className="mt-4" />
         </>
       ) : (
         grouped.order.map((lg, i) => (
@@ -138,6 +140,10 @@ export default function WireFeed({ articles }: { articles: Article[] }) {
             <TicketRow league={lg} />
             {/* One app CTA, after the most-covered league block. */}
             {i === 0 && <AppCta className="mt-8" line="Following one of these teams? The Wire tracks your Starting Lineup in the app — next to the games you rated." />}
+            {/* One VPN unit, and not in the first block: the top of the wire
+                belongs to the news, and this block already carries a ticket
+                unit. Placing it here keeps two paid units off the same screen. */}
+            {i === 1 && <VpnBanner className="mt-8" />}
           </section>
         ))
       )}
