@@ -14,7 +14,7 @@ import './globals.css'
  * already carries the trust strip and the footer.
  */
 const DESCRIPTION =
-  'Scorebug is a sports logbook app: track live scores across 15 leagues, rate every game you watch out of 5.0, and keep it all in a permanent personal sports vault.'
+  'Sports logbook app: rate every game you watch out of 5.0, write your take, and keep it forever. Live scores across 15 leagues.'
 
 const TITLE = 'Scorebug · Chronicle every game'
 
