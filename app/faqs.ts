@@ -41,6 +41,29 @@ export const FAQS: { q: string; a: string }[] = [
   },
   {
     q: 'What platforms is Scorebug available on?',
-    a: 'Scorebug runs today in any browser at getscorebug.app. That is the full app, with no install. The Android build is in closed testing right now; join the waitlist on this page and we will send an invite as spots open. An iOS version is planned after Android.',
+    // Rewritten when the Play link was replaced by a signup form: the old answer
+    // said "we will send an invite", which understated the wait and overstated
+    // our part in it. Google sends the invite; we add the address.
+    a: 'Scorebug runs today in any browser at getscorebug.app. That is the full app, with no install and no waiting. The Android build is in closed testing, so access is by invite: sign up on this page with your name, email and platform, we add your address to the tester list in Google Play, and Google emails your invite. An iOS version is planned after Android.',
+  },
+  {
+    q: 'Do I need to download anything to use Scorebug?',
+    // The single most common blocker on a page whose primary CTA is a web app.
+    // Answer engines quote this one against "no download" and "browser" queries.
+    a: 'No. The complete app runs in your browser at app.getscorebug.app — the same Slate, Log, Vault and Wire you get on mobile, with nothing to install and no app store involved. Sign in and you can log a game in under a minute.',
+  },
+  {
+    q: 'How do I join the Scorebug Android test?',
+    a: 'Sign up on getscorebug.app with your name, the email on your Google account, and Android as your platform. Because it is a closed test, Google can only admit accounts we have added to the tester list, so we add addresses in batches and Google emails the invite from there — usually within a day. Use the Google account that is signed in on your phone, or the invite cannot be redeemed. The web app works immediately in the meantime.',
+  },
+  {
+    q: 'Can I use Scorebug on iPhone?',
+    // Honest and useful. Claiming an iOS app that does not exist is the fastest
+    // way to get corrected in public by someone who went looking for it.
+    a: 'Yes, through the browser. There is no native iOS app yet, but the full web app runs in Safari on iPhone and iPad at app.getscorebug.app, and you can add it to your home screen. A native iOS version is planned after Android.',
+  },
+  {
+    q: 'Does Scorebug cover college sports and soccer?',
+    a: 'Yes. College coverage is NCAA football and men’s Division I basketball. Soccer covers the Premier League, La Liga, Serie A, Bundesliga, Ligue 1, the Champions League and MLS. Alongside those it tracks the NHL, NFL, NBA, MLB, the CFL and Formula 1 — fifteen leagues in total.',
   },
 ]

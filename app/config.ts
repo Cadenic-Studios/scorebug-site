@@ -57,11 +57,24 @@ export function androidCta(): { href: string; label: string; caption: string } {
   if (LAUNCH_STAGE === 'live') {
     return { href: PLAY_URL, label: 'Google Play', caption: 'Get it on' }
   }
-  if (LAUNCH_STAGE === 'testing' && PLAY_TESTING_URL) {
-    // "Join the test" — clearer verb than "Become a tester" and consistent with
-    // the waitlist-stage label below, so the button reads the same across stages.
-    return { href: PLAY_TESTING_URL, label: 'Join the test', caption: 'Android early access' }
-  }
+  /**
+   * ─── 'testing' NO LONGER LINKS TO PLAY, AND THAT IS THE FIX ────────────────
+   * This used to return PLAY_TESTING_URL. That link only works for a Google
+   * account ALREADY on the tester list in Play Console — a CLOSED test admits
+   * nobody else — so every uninvited visitor, which is everyone, tapped "Join
+   * the test" and got Google's error page. Exactly the dead-end this whole
+   * `LAUNCH_STAGE` mechanism was built to prevent, reintroduced by pointing at
+   * a URL that is live but not public.
+   *
+   * The stage still means "a closed test exists"; it just routes to the signup
+   * form, which captures the address so it can be added to the tester list and
+   * invited by Google. PLAY_TESTING_URL stays defined because it is the link
+   * that goes OUT in those invites, and because flipping to an open test later
+   * is then a one-line change back.
+   *
+   * When open testing is granted, return PLAY_TESTING_URL here again — an open
+   * test's opt-in page works for anyone.
+   */
   return { href: WAITLIST_ANCHOR, label: 'Join the test', caption: 'Android early access' }
 }
 
