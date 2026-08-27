@@ -1,10 +1,9 @@
 import type { Metadata } from 'next'
-import Image from 'next/image'
 import { notFound } from 'next/navigation'
 import { SITE } from '../../config'
-import { getProduct, getProductHandles, formatMoney, categoryLabel } from '../../lib/shopify'
+import { getProduct, getProductHandles } from '../../lib/shopify'
 import { SiteHeader, SiteFooter, Breadcrumbs, BreadcrumbNav } from '../../components/SiteChrome'
-import BuyPanel from './BuyPanel'
+import ProductView from './ProductView'
 
 /**
  * /shop/[handle] — the native product page.
@@ -187,65 +186,17 @@ export default async function ProductPage({ params }: { params: { handle: string
             { name: p.title },
           ]} />
 
-          <div className="mt-8 grid gap-10 lg:grid-cols-2 lg:gap-14">
-            {/* ── Gallery ──────────────────────────────────────────────────
-                Every frame is a fixed 1/1 box with `fill`, so the grid's height
-                is known before a single byte of image arrives. That is what
-                keeps this page at CLS 0 — a product page that reflows when the
-                hero decodes is the classic cause. */}
-            <div>
-              <div
-                className="glass-card relative w-full overflow-hidden rounded-2xl"
-                style={{ aspectRatio: '1 / 1', background: 'rgba(255,255,255,0.04)' }}
-              >
-                {hero && (
-                  <Image
-                    src={hero.url}
-                    alt={hero.altText || p.title}
-                    fill
-                    priority
-                    sizes="(max-width: 1023px) 92vw, 44vw"
-                    className="object-cover"
-                  />
-                )}
-                <span className="glass-pill absolute left-4 top-4 rounded-full px-2.5 py-1 text-[10px] font-black uppercase text-ink-2">
-                  {categoryLabel(p)}
-                </span>
-              </div>
+          <ProductView product={p} />
 
-              {gallery.length > 1 && (
-                <div className="mt-3 grid grid-cols-4 gap-3">
-                  {gallery.slice(1, 5).map((g, i) => (
-                    <div
-                      key={g.url}
-                      className="glass-card relative overflow-hidden rounded-xl"
-                      style={{ aspectRatio: '1 / 1', background: 'rgba(255,255,255,0.04)' }}
-                    >
-                      <Image
-                        src={g.url}
-                        alt={g.altText || `${p.title} — view ${i + 2}`}
-                        fill
-                        sizes="(max-width: 1023px) 22vw, 11vw"
-                        className="object-cover"
-                      />
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {/* ── Detail + buy ─────────────────────────────────────────────── */}
-            <div className="lg:pt-2">
-              <h1 className="headline headline-sm text-[2.1rem] leading-tight text-white sm:text-[2.6rem]">
-                {p.title}
-              </h1>
-
-              <div className="mt-7">
-                <BuyPanel product={p} />
-              </div>
-
-              {p.description && (
-                <div className="mt-10 border-t border-white/10 pt-7">
+          {/* Details runs FULL WIDTH under both columns rather than being
+              stuffed into the right one. Pinned to the right column it sat
+              under the buy panel with a screen-tall void beside it, because the
+              gallery column is much taller than the options column — the page
+              looked half-empty at exactly the point a shopper is reading specs.
+              Measure is capped so the prose does not rag across 1150px. */}
+          {p.description && (
+            <div className="mx-auto mt-14 max-w-3xl">
+              <div className="border-t border-white/10 pt-7">
                   <h2 className="text-[11px] font-black uppercase tracking-[0.16em] text-ink-3">
                     Details
                   </h2>
@@ -278,15 +229,14 @@ export default async function ProductPage({ params }: { params: { handle: string
                       </div>
                     )
                   })()}
-                </div>
-              )}
-
-              <p className="mt-8 text-[12.5px] leading-relaxed text-ink-3">
-                Printed to order and shipped worldwide. Every item is made when you
-                place the order, so nothing sits in a warehouse.
-              </p>
+              </div>
             </div>
-          </div>
+          )}
+
+          <p className="mx-auto mt-8 max-w-3xl text-[12.5px] leading-relaxed text-ink-3">
+            Printed to order and shipped worldwide. Every item is made when you
+            place the order, so nothing sits in a warehouse.
+          </p>
         </div>
       </main>
       <SiteFooter />
