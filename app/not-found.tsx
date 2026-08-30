@@ -46,7 +46,7 @@ export default function NotFound() {
           <div className="mx-auto mt-10 grid max-w-xl gap-3 sm:grid-cols-2">
             {[
               { href: '/', title: 'Home', blurb: 'What Scorebug is, in one page.' },
-              { href: WEB_APP, title: 'Launch the web app', blurb: 'Straight into the product.' },
+              { href: WEB_APP, title: 'Open Scorebug Online', blurb: 'Straight into the product.' },
               { href: '/shop', title: 'Pro Shop', blurb: 'Scorebug tees, hoodies and gear.' },
               { href: '/gear', title: 'Team gear', blurb: 'Jerseys, cards and collectibles.' },
             ].map(c => (

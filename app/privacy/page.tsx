@@ -178,7 +178,7 @@ export default function PrivacyPolicy() {
             <Section id="who-we-are" title="Who we are">
               <P>
                 Scorebug is built and operated by {COMPANY}, {COMPANY_LOCATION}. In this policy,
-                “we” and “us” mean {COMPANY}; “Scorebug” means the Scorebug web app at
+                “we” and “us” mean {COMPANY}; “Scorebug” means Scorebug Online at
                 app.getscorebug.app and the Scorebug Android app.
               </P>
               <P>
@@ -325,7 +325,7 @@ export default function PrivacyPolicy() {
                 <LI><Term>Google Firebase</Term> — push notification delivery.</LI>
                 <LI><Term>Google AdMob and AdSense</Term> — ads for free accounts.</LI>
                 <LI><Term>Google Play Billing and RevenueCat</Term> — subscription payments and entitlements.</LI>
-                <LI><Term>Vercel</Term> — hosting for the web app and this site.</LI>
+                <LI><Term>Vercel</Term> — hosting for Scorebug Online and this site.</LI>
                 <LI>
                   Sports scores, schedules and news come from third-party data providers. Those are
                   requests for public sports data — no account information travels with them.

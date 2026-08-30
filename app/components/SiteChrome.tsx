@@ -35,7 +35,7 @@ export function AppCta({ line, className = '' }: { line: string; className?: str
             href={WEB_APP}
             className="sb-cta enamel-red inline-flex items-center gap-2 whitespace-nowrap rounded-xl px-5 py-3 text-[14px] font-black text-white"
           >
-            Launch web app
+            Open Scorebug
             <span aria-hidden className="opacity-80">›</span>
           </a>
           <a
@@ -86,7 +86,7 @@ export function LaunchWebApp({ size = 'lg', className = '' }: { size?: 'lg' | 'm
         <circle cx="12" cy="12" r="9" />
         <path d="M3 12h18M12 3c2.6 3 2.6 15 0 18M12 3c-2.6 3-2.6 15 0 18" />
       </svg>
-      Launch Web App
+      Open Scorebug
       <span aria-hidden className="text-[1.1em] leading-none opacity-80">›</span>
     </a>
   )
@@ -103,7 +103,7 @@ const HUB_LINKS = [
  * ─── WHY THE HEADER IS TWO ROWS ON A PHONE ───────────────────────────────────
  * All three hubs now have to be reachable on every breakpoint. They cannot all
  * fit one bar: at 360px the row already carries a wordmark, the Android CTA and
- * the enamel "Launch Web App", and the previous version hid Pro Shop below
+ * the enamel "Open Scorebug", and the previous version hid Pro Shop below
  * `md` for exactly that reason — Gear and The Wire were not in the header at
  * all.
  *
@@ -124,7 +124,7 @@ export function SiteHeader() {
       <div className="flex items-center justify-between gap-4">
         <a href="/" aria-label="Scorebug home" className="flex min-w-0 items-center gap-2.5">
           <Image src="/app-icon.png" alt="" width={36} height={36} className="rounded-[9px]" priority />
-          {/* Icon only below sm. The wordmark and a full-width "Launch Web App"
+          {/* Icon only below sm. The wordmark and a full-width "Open Scorebug"
               cannot both fit a 360px bar, and a truncated "SCORE…" is worse than
               no wordmark beside a logo that already says it. */}
           <span className="headline headline-sm hidden text-2xl text-ink sm:inline">Scorebug</span>

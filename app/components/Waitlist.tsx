@@ -52,7 +52,7 @@ const LOOKS_LIKE_EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/
 const PLATFORMS: { id: Platform; label: string; hint: string }[] = [
   { id: 'android', label: 'Android', hint: 'Join the closed test' },
   { id: 'ios', label: 'iPhone', hint: 'Be first when iOS lands' },
-  { id: 'web', label: 'Just the web app', hint: 'No install needed' },
+  { id: 'web', label: 'Scorebug Online', hint: 'No install needed' },
 ]
 
 export default function Waitlist() {
@@ -173,7 +173,7 @@ export default function Waitlist() {
           href="https://app.getscorebug.app"
           className="sb-cta enamel-red mt-5 inline-block rounded-2xl px-7 py-3.5 text-[15px] font-black text-white"
         >
-          Launch the web app
+          Open Scorebug Online
         </a>
         <p className="mt-4 text-[12.5px] text-ink-3">
           Questions?{' '}
@@ -212,7 +212,7 @@ export default function Waitlist() {
       </h3>
       <p className="mx-auto mt-3 max-w-sm text-center text-[14.5px] leading-relaxed text-ink-2">
         Scorebug for Android is in closed testing, so invites go out from Google once we
-        add you to the list. Tell us where to send yours — the web app works in the
+        add you to the list. Tell us where to send yours — Scorebug Online works in the
         meantime.
       </p>
 

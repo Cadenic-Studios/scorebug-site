@@ -225,7 +225,7 @@ export default async function ShopPage() {
                   : 'Gear is on the way. Keep chronicling in the meantime.'}
               </p>
               <a href={WEB_APP} className="enamel-red mt-7 inline-block rounded-2xl px-7 py-3.5 text-[15px] font-black text-white transition active:scale-[0.98]">
-                Open the web app
+                Open Scorebug
               </a>
             </div>
           ) : (

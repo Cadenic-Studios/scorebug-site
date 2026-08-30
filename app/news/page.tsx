@@ -133,7 +133,7 @@ export default async function NewsPage() {
             rated, so the story and the scoreline sit in the same place.
           </p>
           <a href={WEB_APP} className="enamel-red mt-6 inline-block rounded-2xl px-7 py-3.5 text-[15px] font-black text-white transition active:scale-[0.98]">
-            Open the web app
+            Open Scorebug
           </a>
         </div>
 

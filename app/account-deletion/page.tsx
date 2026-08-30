@@ -152,7 +152,7 @@ export default function AccountDeletion() {
             </p>
             <p className="mt-4 text-[13px] text-ink-3">
               Applies to Scorebug (<span className="tabular-nums">ca.scorebug.sports</span>) and the
-              Scorebug web app, published by {COMPANY}. Last updated{' '}
+              Scorebug app, published by {COMPANY}. Last updated{' '}
               <time dateTime={LEGAL_UPDATED_ISO}>{LEGAL_UPDATED}</time>
             </p>
           </div>
@@ -174,7 +174,7 @@ export default function AccountDeletion() {
               </P>
               <P>
                 This is the fastest route and needs nothing from us. It works in the Android app
-                and in the web app.
+                and in Scorebug Online.
               </P>
             </Route>
 

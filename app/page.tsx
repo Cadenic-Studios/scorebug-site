@@ -254,6 +254,22 @@ export default async function Home() {
               </div>
 
               <p className="mt-6 text-[13px] text-ink-3">Free to use · {LEAGUE_COUNT} leagues · logs back to 2002</p>
+
+              {/* ── WHO BUILT IT, SAID EARLY ────────────────────────────────
+                  The footer already carries "Made in Canada", but a line at the
+                  bottom of a long page is a legal detail, not a reason to
+                  trust the thing. Said here — in the hero, under the CTAs — it
+                  is part of the pitch. The maple leaf is the only emoji on this
+                  page and it earns its place: it is the fastest way to say
+                  "Canadian" at 13px without a sentence.
+
+                  Kept to one line on purpose. This is a sports logbook, not a
+                  heritage brand, and a paragraph about provenance above the
+                  fold would push the product below it. */}
+              <p className="mt-3 flex items-center gap-1.5 text-[13px] text-ink-3">
+                <span aria-hidden>🇨🇦</span>
+                Built with a love of the game in Canada, by Canadians.
+              </p>
             </div>
 
             {/* ── League bar ──────────────────────────────────────────────
@@ -320,6 +336,38 @@ export default async function Home() {
             and it stays in your vault for good. Live scores run across {LEAGUE_COUNT} leagues,
             and you can go back and log finals as far as the 2002 season.
           </p>
+        </section>
+
+        {/* ══ The line in the sand ══
+            Placed HERE — directly after "You were there. Prove it." and before
+            the feature rows — because it is a promise about the product, not a
+            feature of it. Below the features it would read as one more bullet;
+            above them it frames everything that follows.
+
+            Deliberately plain: no icon, no card grid, no gradient. Every other
+            block on this page is selling something. This one is a statement,
+            and dressing it up in the same marketing furniture as the rest would
+            make it sound like marketing. The border and the flat panel are the
+            whole treatment.
+
+            The wording is absolute on purpose. "We don't currently show
+            gambling ads" is a position that can quietly change; "there isn't
+            any, and there never will be" is a commitment a visitor can hold us
+            to — which is the entire point of saying it. */}
+        <section className="mx-auto max-w-3xl px-5 pb-24">
+          <div className="rounded-2xl border border-white/10 bg-white/[0.03] px-6 py-10 text-center sm:px-10">
+            <p className="text-[10px] font-black uppercase tracking-[0.24em] text-ink-3">
+              Where we stand
+            </p>
+            <h2 className="headline mt-4 text-3xl text-ink sm:text-4xl">
+              Zero gambling ads. Zero sports betting.
+            </h2>
+            <p className="mx-auto mt-5 max-w-[34rem] text-[17px] leading-relaxed text-ink-2">
+              There isn&rsquo;t any, and there never will be. No odds, no spreads, no
+              &ldquo;get $200 in bonus bets&rdquo;, no sportsbook logo in the corner of a
+              scoreboard. Just you and the game.
+            </p>
+          </div>
         </section>
 
         {/* ══ Marquee features ══ */}

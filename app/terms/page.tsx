@@ -162,7 +162,7 @@ export default function TermsOfService() {
             <Section id="agreement" title="The agreement">
               <P>
                 Scorebug is operated by {COMPANY}, {COMPANY_LOCATION}. These Terms are an agreement
-                between you and {COMPANY} covering the Scorebug web app at{' '}
+                between you and {COMPANY} covering Scorebug Online at{' '}
                 <A href={WEB_APP}>app.getscorebug.app</A>, the Scorebug Android app, and this site.
               </P>
               <P>

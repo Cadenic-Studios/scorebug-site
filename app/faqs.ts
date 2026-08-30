@@ -54,13 +54,13 @@ export const FAQS: { q: string; a: string }[] = [
   },
   {
     q: 'How do I join the Scorebug Android test?',
-    a: 'Sign up on getscorebug.app with your name, the email on your Google account, and Android as your platform. Because it is a closed test, Google can only admit accounts we have added to the tester list, so we add addresses in batches and Google emails the invite from there — usually within a day. Use the Google account that is signed in on your phone, or the invite cannot be redeemed. The web app works immediately in the meantime.',
+    a: 'Sign up on getscorebug.app with your name, the email on your Google account, and Android as your platform. Because it is a closed test, Google can only admit accounts we have added to the tester list, so we add addresses in batches and Google emails the invite from there — usually within a day. Use the Google account that is signed in on your phone, or the invite cannot be redeemed. Scorebug Online works immediately in the meantime.',
   },
   {
     q: 'Can I use Scorebug on iPhone?',
     // Honest and useful. Claiming an iOS app that does not exist is the fastest
     // way to get corrected in public by someone who went looking for it.
-    a: 'Yes, through the browser. There is no native iOS app yet, but the full web app runs in Safari on iPhone and iPad at app.getscorebug.app, and you can add it to your home screen. A native iOS version is planned after Android.',
+    a: 'Yes, through the browser. There is no native iOS app yet, but Scorebug Online is the full experience and runs in Safari on iPhone and iPad at app.getscorebug.app, and you can add it to your home screen. A native iOS version is planned after Android.',
   },
   {
     q: 'Does Scorebug cover college sports and soccer?',
