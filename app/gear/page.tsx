@@ -6,8 +6,11 @@ import { SiteHeader, SiteFooter, Breadcrumbs, BreadcrumbNav } from '../component
 import GearBrowser from './GearBrowser'
 
 const TITLE = 'Team gear and memorabilia'
+// Derived. `GEAR_TEAM_COUNT` is imported two lines above and used in the page
+// body already — this string was the one place the number was typed by hand,
+// which is how it drifts out of step with the page it describes.
 const DESCRIPTION =
-  'Jerseys, hats and memorabilia for 154 clubs across the NHL, NFL, NBA, MLB and MLS. Search your team, then shop apparel or hunt cards and collectibles.'
+  `Jerseys, hats and memorabilia for ${GEAR_TEAM_COUNT} clubs across the NHL, NFL, NBA, MLB and MLS. Search your team, then shop apparel or hunt cards and collectibles.`
 
 export const metadata: Metadata = {
   title: TITLE,
