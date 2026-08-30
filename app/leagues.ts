@@ -30,7 +30,7 @@ export type SiteLeague = {
   full: string
   /** The registry's league colour. */
   color: string
-  sport: 'Hockey' | 'Football' | 'Basketball' | 'Baseball' | 'Soccer' | 'Racing'
+  sport: 'Hockey' | 'Football' | 'Basketball' | 'Baseball' | 'Soccer' | 'Racing' | 'Cricket'
 }
 
 /**
@@ -45,6 +45,10 @@ export const LEAGUES: SiteLeague[] = [
   { id: 'NBA',    label: 'NBA',          full: 'National Basketball Association', color: '#F78166', sport: 'Basketball' },
   { id: 'MLB',    label: 'MLB',          full: 'Major League Baseball',         color: '#D29922', sport: 'Baseball' },
   { id: 'F1',     label: 'F1',           full: 'Formula 1',                     color: '#E10600', sport: 'Racing' },
+  // Sits here for the same reason F1 does: the registry orders global
+  // competitions above domestic ones, and the IPL is the largest cricket
+  // league in the world.
+  { id: 'IPL',    label: 'IPL',          full: 'Indian Premier League',         color: '#7E22CE', sport: 'Cricket' },
   { id: 'CFL',    label: 'CFL',          full: 'Canadian Football League',      color: '#10B981', sport: 'Football' },
   { id: 'NCAAF',  label: 'NCAAF',        full: 'NCAA College Football',         color: '#EC4899', sport: 'Football' },
   { id: 'NCAAB',  label: 'NCAAB',        full: "NCAA Men's College Basketball", color: '#EA580C', sport: 'Basketball' },
@@ -55,6 +59,9 @@ export const LEAGUES: SiteLeague[] = [
   { id: 'BUND',   label: 'Bundesliga',   full: 'Bundesliga',                    color: '#84CC16', sport: 'Soccer' },
   { id: 'LIGUE1', label: 'Ligue 1',      full: 'Ligue 1',                       color: '#F59E0B', sport: 'Soccer' },
   { id: 'MLS',    label: 'MLS',          full: 'Major League Soccer',           color: '#00B2A9', sport: 'Soccer' },
+  { id: 'CSL',    label: 'Chinese SL',   full: 'Chinese Super League',          color: '#C026D3', sport: 'Soccer' },
+  { id: 'ISL',    label: 'Indian SL',    full: 'Indian Super League',           color: '#FF9933', sport: 'Soccer' },
+  { id: 'JLEAGUE',label: 'J.League',     full: 'J1 League (Japan)',             color: '#BC002D', sport: 'Soccer' },
 ]
 
 /** Derived, never typed twice. The page quotes this count in several places and

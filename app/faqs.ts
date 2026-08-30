@@ -23,7 +23,7 @@ export const FAQS: { q: string; a: string }[] = [
   },
   {
     q: 'Which sports and leagues does Scorebug support?',
-    a: '15 leagues: the NHL, NFL, NBA, MLB, CFL, NCAA football and NCAA men’s Division I basketball, MLS, the Premier League, La Liga, Serie A, Bundesliga, Ligue 1, the Champions League and Formula 1. Standings, rosters and player stats run for the NHL, NFL, NBA, MLB and NCAA. The CFL, MLS and the European leagues get schedules, live scores and team pages. Formula 1 gets race schedules, race status and podiums.',
+    a: '19 leagues: the NHL, NFL, NBA, MLB, CFL, NCAA football and NCAA men’s Division I basketball, MLS, the Premier League, La Liga, Serie A, Bundesliga, Ligue 1, the Champions League, the Chinese Super League, the Indian Super League, Japan’s J1 League, the Indian Premier League and Formula 1. Standings, rosters and player stats run for the NHL, NFL, NBA, MLB and NCAA. The CFL, MLS, the European leagues and the Asian leagues get schedules, live scores and team pages. Cricket — the IPL — gets schedules, live scores, full scorelines and team pages. Formula 1 gets race schedules, race status and podiums.',
   },
   {
     q: 'Can I log games I watched years ago?',
