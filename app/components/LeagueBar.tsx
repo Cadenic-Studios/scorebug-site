@@ -68,6 +68,32 @@ export default function LeagueBar({ className = '' }: { className?: string }) {
           </li>
         ))}
       </ul>
+
+      {/* ── THE LIST IS NOT FINISHED, AND SAYING SO IS THE POINT ─────────
+          A bare list of leagues answers "is my sport in here" with yes or no,
+          and a no reads as a closed door. It is not one — the Chinese Super
+          League, the Indian Super League, J.League and the IPL are all in the
+          row above precisely because the app is not built for one country's
+          fans. One line turns a miss into a "not yet".
+
+          NO DATES AND NO NAMED LEAGUES. A roadmap on a marketing page becomes a
+          promise the moment somebody screenshots it, and a league that then
+          slips looks like a broken one. "As fast as we can do them properly" is
+          the honest shape of the commitment, and the mail link is a real
+          inbox — the same one the footer and the support pages use. */}
+      <p className="mt-3.5 max-w-[46rem] text-[12.5px] leading-relaxed text-ink-2">
+        <span className="font-bold text-ink">And we are not done.</span>{' '}
+        New leagues get added as fast as we can do them properly — crests,
+        colours and history included. Wherever you watch from, your game belongs
+        in here too; if yours is missing,{' '}
+        <a
+          href="mailto:hello@getscorebug.app?subject=League%20request"
+          className="font-semibold text-ink underline decoration-white/25 underline-offset-2 transition-colors hover:decoration-white/60"
+        >
+          tell us
+        </a>{' '}
+        and it goes on the list.
+      </p>
     </section>
   )
 }

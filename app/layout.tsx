@@ -2,6 +2,9 @@ import type { Metadata } from 'next'
 import { Anton, Inter, Oswald } from 'next/font/google'
 import { FAQS } from './faqs'
 import { SITE, WEB_APP } from './config'
+// Derived — a hand-typed league count in metadata is a claim that goes stale
+// silently and ships to every search and answer engine before anyone notices.
+import { LEAGUE_COUNT } from './leagues'
 import './globals.css'
 
 /**
@@ -14,7 +17,7 @@ import './globals.css'
  * already carries the trust strip and the footer.
  */
 const DESCRIPTION =
-  'Sports logbook app: rate every game you watch out of 5.0, write your take, and keep it forever. Live scores across 19 leagues.'
+  `Sports logbook app: rate every game you watch out of 5.0, write your take, and keep it forever. Live scores across ${LEAGUE_COUNT} leagues.`
 
 const TITLE = 'Scorebug · Chronicle every game'
 
@@ -102,7 +105,7 @@ const JSON_LD = {
       screenshot: `${SITE}/og.png`,
       publisher: { '@id': `${SITE}/#org` },
       featureList: [
-        'The Slate: live scores and schedules across 19 leagues (NHL, NFL, NBA, MLB, CFL, NCAA football and men’s basketball, MLS, the Premier League, La Liga, Serie A, Bundesliga, Ligue 1, the Champions League, the Chinese Super League, the Indian Super League, Japan’s J1 League, the Indian Premier League and Formula 1)',
+        `The Slate: live scores and schedules across ${LEAGUE_COUNT} leagues (NHL, NFL, NBA, MLB, CFL, NCAA football and men’s basketball, MLS, the Premier League, La Liga, Serie A, Bundesliga, Ligue 1, the Champions League, the Chinese Super League, the Indian Super League, Japan’s J1 League, the Indian Premier League and Formula 1)`,
         'Rate & Chronicle: grade any finished game out of 5.0, write your take, and add private photos',
         'The Time Machine: chronicle any final back to 2002',
         'The Vault: your lifetime archive, sortable by highest- and lowest-rated',

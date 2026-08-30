@@ -358,11 +358,27 @@ summary:focus-visible {
    which is what made the seams read as "the background stopped". This keeps a
    continuous, barely-perceptible falloff underneath everything so the lit
    sections feel like part of one lit room. Fixed attachment is deliberately
-   NOT used — it forces a repaint of the whole ground on every scroll frame. */
+   NOT used — it forces a repaint of the whole ground on every scroll frame.
+
+   ── IT HAS TO REACH THE MIDDLE, AND IT DID NOT ───────────────────────
+   Both gradients were anchored to an EDGE (`at 50% 0%` and `at 50% 100%`) and
+   faded to fully transparent at 60%/62% of their own ellipse. On a short page
+   that overlaps. On this homepage it does not: the top wash died around a third
+   of the way down, the bottom one did not begin until the last quarter, and
+   roughly 40% of the page — the entire middle, which is where most of the
+   content is — rendered as flat #0a0b0e. That is precisely the "the background
+   stopped" failure the paragraph above says this rule exists to prevent, and it
+   is what a reader sees as dead black space between sections.
+
+   Three overlapping washes instead of two, with the falloffs extended so each
+   one is still contributing where the next picks up. Amplitudes stay in the
+   0.04–0.07 range: the effect must remain something you notice only when it is
+   removed. Still one paint, still no fixed attachment. */
 body {
   background-image:
-    radial-gradient(120% 55% at 50% 0%, rgba(88, 108, 140, 0.07) 0%, rgba(88, 108, 140, 0) 60%),
-    radial-gradient(90% 40% at 50% 100%, rgba(120, 92, 92, 0.05) 0%, rgba(120, 92, 92, 0) 62%);
+    radial-gradient(120% 55% at 50% 0%, rgba(88, 108, 140, 0.07) 0%, rgba(88, 108, 140, 0) 72%),
+    radial-gradient(110% 46% at 50% 50%, rgba(94, 102, 132, 0.045) 0%, rgba(94, 102, 132, 0) 78%),
+    radial-gradient(90% 42% at 50% 100%, rgba(120, 92, 92, 0.05) 0%, rgba(120, 92, 92, 0) 74%);
 }
 
 /* ══ Commerce CTA micro-interaction ════════════════════════════════════════

@@ -9,6 +9,15 @@
  * single most quotable text on the site, because answer engines lift it
  * verbatim.
  */
+import { LEAGUE_COUNT } from './leagues'
+
+/**
+ * THE COUNT IS DERIVED, NOT TYPED. Two answers in this file used to spell the
+ * number out. When four leagues were added, one was updated and the other went
+ * on saying "fifteen leagues in total" — into the visible accordion, into the
+ * FAQPage JSON-LD, and into llms.txt, which is the worst possible place for a
+ * number to be wrong. Anything that states the count must read it from here.
+ */
 export const FAQS: { q: string; a: string }[] = [
   {
     q: 'What is Scorebug?',
@@ -23,7 +32,7 @@ export const FAQS: { q: string; a: string }[] = [
   },
   {
     q: 'Which sports and leagues does Scorebug support?',
-    a: '19 leagues: the NHL, NFL, NBA, MLB, CFL, NCAA football and NCAA men’s Division I basketball, MLS, the Premier League, La Liga, Serie A, Bundesliga, Ligue 1, the Champions League, the Chinese Super League, the Indian Super League, Japan’s J1 League, the Indian Premier League and Formula 1. Standings, rosters and player stats run for the NHL, NFL, NBA, MLB and NCAA. The CFL, MLS, the European leagues and the Asian leagues get schedules, live scores and team pages. Cricket — the IPL — gets schedules, live scores, full scorelines and team pages. Formula 1 gets race schedules, race status and podiums.',
+    a: `${LEAGUE_COUNT} leagues: the NHL, NFL, NBA, MLB, CFL, NCAA football and NCAA men’s Division I basketball, MLS, the Premier League, La Liga, Serie A, Bundesliga, Ligue 1, the Champions League, the Chinese Super League, the Indian Super League, Japan’s J1 League, the Indian Premier League and Formula 1. Standings, rosters and player stats run for the NHL, NFL, NBA, MLB and NCAA. The CFL, MLS, the European leagues and the Asian leagues get schedules, live scores and team pages. Cricket — the IPL — gets schedules, live scores, full scorelines and team pages. Formula 1 gets race schedules, race status and podiums.`,
   },
   {
     q: 'Can I log games I watched years ago?',
@@ -64,6 +73,6 @@ export const FAQS: { q: string; a: string }[] = [
   },
   {
     q: 'Does Scorebug cover college sports and soccer?',
-    a: 'Yes. College coverage is NCAA football and men’s Division I basketball. Soccer covers the Premier League, La Liga, Serie A, Bundesliga, Ligue 1, the Champions League and MLS. Alongside those it tracks the NHL, NFL, NBA, MLB, the CFL and Formula 1 — fifteen leagues in total.',
+    a: `Yes. College coverage is NCAA football and men’s Division I basketball. Soccer covers the Premier League, La Liga, Serie A, Bundesliga, Ligue 1, the Champions League, MLS, the Chinese Super League, the Indian Super League and Japan’s J1 League. Cricket is the Indian Premier League. Alongside those it tracks the NHL, NFL, NBA, MLB, the CFL and Formula 1 — ${LEAGUE_COUNT} leagues in total, and the list keeps growing: new leagues are added as fast as they can be done properly, so if yours is missing it is a not-yet rather than a no.`,
   },
 ]

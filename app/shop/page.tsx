@@ -241,7 +241,7 @@ export default async function ShopPage() {
                         page is read by a crawler before it is read by a person,
                         and a heading is a ranking signal where a button is not. */}
                     <h2 className="headline text-3xl text-ink sm:text-4xl">{section.heading}</h2>
-                    <div className="mt-6 grid grid-cols-2 gap-4 sm:gap-5 lg:grid-cols-3">
+                    <div className="mt-6 grid grid-cols-2 gap-4 sm:gap-5 lg:grid-cols-3 xl:grid-cols-4">
                       {section.items.map(p => <ProductCard key={p.id} p={p} />)}
                     </div>
                   </section>

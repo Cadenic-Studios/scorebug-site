@@ -144,7 +144,11 @@ export default function TeamGearPage({ params }: { params: { team: string } }) {
           purchases made through the links below, at no extra cost to you.
         </p>
 
-        <div className="mt-10 grid gap-4">
+        {/* `grid` WITHOUT `grid-cols-*` is a one-column grid — the default
+            `grid-template-columns` is `none`, so this laid four partner cards
+            out single-file at every width inside a wide container. It reads as
+            a stack that forgot to become a grid, which is what it was. */}
+        <div className="mt-10 grid gap-4 sm:grid-cols-2">
           <Row
             label="Fanatics"
             accent="#F85149"

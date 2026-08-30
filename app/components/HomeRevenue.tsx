@@ -76,7 +76,12 @@ export default async function HomeRevenue() {
   const trending = TRENDING.map(getGearTeam).filter(Boolean) as NonNullable<ReturnType<typeof getGearTeam>>[]
 
   return (
-    <section className="mx-auto max-w-5xl px-5 py-20" aria-labelledby="network-heading">
+    /* py-24 / max-w-6xl, matching every other band on the homepage. This was
+       the page's only py-20 max-w-5xl section, which put a 160px seam above it
+       where every other seam is 192px and inset its content 128px narrower than
+       the row directly above — read as the layout drifting rather than as a
+       deliberate change of pace. */
+    <section className="mx-auto max-w-6xl px-5 py-24" aria-labelledby="network-heading">
       <div className="text-center">
         <p className="glass-pill inline-flex items-center gap-2 rounded-full px-3.5 py-1.5 text-[11px] font-black uppercase" style={{ color: '#F85149' }}>
           <span aria-hidden className="inline-block h-1.5 w-1.5 rounded-full" style={{ background: '#F85149', boxShadow: '0 0 8px #F85149' }} />

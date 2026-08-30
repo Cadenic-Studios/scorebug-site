@@ -266,10 +266,21 @@ export default async function Home() {
                   Kept to one line on purpose. This is a sports logbook, not a
                   heritage brand, and a paragraph about provenance above the
                   fold would push the product below it. */}
-              <p className="mt-3 flex items-center gap-1.5 text-[13px] text-ink-3">
-                <span aria-hidden>🇨🇦</span>
-                Built with a love of the game in Canada, by Canadians.
-              </p>
+              {/* IT IS A PANEL, NOT A LINE. The first version set this at 13px/ink-3,
+                  which is character-for-character the same treatment as the
+                  "Free to use · 19 leagues" fine print directly above it — so it
+                  read as a second line of legal small print rather than as a
+                  statement. Provenance either earns its own surface or it is not
+                  worth saying. The border and tint are the whole treatment, and
+                  it stays ONE sentence: this is a sports logbook, not a heritage
+                  brand, and a paragraph about provenance above the fold pushes
+                  the product below it. */}
+              <div className="mt-5 inline-flex items-center gap-3 rounded-xl border border-white/[0.12] bg-white/[0.04] px-4 py-3">
+                <span aria-hidden className="text-[20px] leading-none">🇨🇦</span>
+                <p className="text-[14.5px] font-semibold leading-snug text-ink">
+                  Built with a love of the game in Canada, by Canadians.
+                </p>
+              </div>
             </div>
 
             {/* ── League bar ──────────────────────────────────────────────
@@ -400,9 +411,17 @@ export default async function Home() {
             accent="#2DD4BF"
             title="The Slate"
             body="Stop running four apps and a group chat on game night. Every match on today's card, across every league you care about, on one screen. The second one goes final, you log it from the same card you were watching it on."
+            /* THE WHOLE CATALOGUE. These bullets were written before the
+               Chinese Super League, the Indian Super League, J.League and the
+               IPL were added and never updated, so the one place on the page
+               that enumerates coverage told a fan in Mumbai or Shanghai that
+               their league was not here. Soccer and cricket now get their own
+               line rather than being appended to an already-long one. */
             bullets={[
               'NHL, NFL, NBA, MLB, CFL, college football and men’s college basketball',
               'MLS, the Premier League, La Liga, Serie A, Bundesliga, Ligue 1 and the Champions League',
+              'The Chinese Super League, the Indian Super League and Japan’s J1 League',
+              'Cricket: the Indian Premier League, with full scorelines',
               'Formula 1 race schedules, status and podiums',
               'Scores move on their own while the game is live. No pull to refresh, no reload',
             ]}
@@ -561,7 +580,14 @@ export default async function Home() {
             Sits ABOVE the FAQ, not below it. Every Android CTA on the page
             (nav, hero, footer) targets #waitlist, and a scroll target that
             lands past the FAQ makes those buttons feel like they overshot. */}
-        <section id="waitlist" className="scroll-mt-8 px-5 py-24">
+        {/* LIT, like every other full-bleed band on this page. A sign-up form
+            is a 512px card by nature, so at desktop width this section was a
+            ~1700px-wide stripe of flat ground with a small object floating in
+            the middle of it — the single largest patch of dead black on the
+            page. It does not need more content; it needs to look like part of
+            the same room as the sections above and below it, which is exactly
+            what `.lit-*` is for. */}
+        <section id="waitlist" className="lit-blue scroll-mt-8 px-5 py-24">
           <Waitlist />
         </section>
 
