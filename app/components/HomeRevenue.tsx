@@ -2,7 +2,6 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { getProducts, isShopifyConfigured, formatPriceRange, type ShopifyProduct } from '../lib/shopify'
 import { getGearTeam, GEAR_TEAM_COUNT } from '../lib/teams'
-import { LEAGUE_COUNT } from '../leagues'
 
 /**
  * The Scorebug Network — the homepage's commerce section.
@@ -92,7 +91,7 @@ export default async function HomeRevenue() {
         </h2>
         <p className="mx-auto mt-5 max-w-[36rem] text-[17px] leading-relaxed text-ink-2">
           Scorebug is more than an app. Shop official apparel, browse gear for
-          {' '}{GEAR_TEAM_COUNT} teams, and catch the headlines across {LEAGUE_COUNT} leagues.
+          {' '}{GEAR_TEAM_COUNT} teams, and catch the headlines from around your leagues.
         </p>
       </div>
 

@@ -179,7 +179,10 @@ export default async function ProductPage({ params }: { params: { handle: string
 
       <SiteHeader />
       <main className="lit-red floodlights relative overflow-hidden">
-        <div className="relative z-10 mx-auto max-w-6xl px-5 pb-24 pt-10">
+        {/* pt-14, matching /shop, /news, /gear and /faq. This was the only
+            content route opening at pt-10, so navigating into a product from
+            the Pro Shop shifted the whole page up 16px. */}
+        <div className="relative z-10 mx-auto max-w-6xl px-5 pb-24 pt-14">
           <BreadcrumbNav trail={[
             { name: 'Scorebug', href: '/' },
             { name: 'Pro Shop', href: '/shop' },

@@ -5,6 +5,7 @@ import { ticketNetworkTeamUrl } from '../lib/affiliates'
 import Sponsored, { AffiliateLink } from '../components/Sponsored'
 import { AppCta } from '../components/SiteChrome'
 import VpnBanner from '../components/VpnBanner'
+import { LEAGUES } from '../leagues'
 
 /**
  * The Wire's interactive feed: league filter chips + a Latest/By-league sort,
@@ -35,12 +36,27 @@ type Article = {
   published_at: string | null
 }
 
-/** League accent colours, matching the app's registry palette. Unknown leagues
- *  fall back to the desk's gold. */
-const LEAGUE_COLOR: Record<string, string> = {
-  NHL: '#58A6FF', NFL: '#A371F7', NBA: '#F78166', MLB: '#D29922', MLS: '#00B2A9',
-  CFL: '#E5484D', EPL: '#3FB950', 'PREMIER LEAGUE': '#3FB950', NCAAF: '#DB6D28', NCAAB: '#DB6D28', F1: '#E5484D',
-}
+/**
+ * League accent colours, DERIVED from the league list rather than retyped.
+ *
+ * The hand-written map that used to live here claimed to match the registry
+ * palette and did not: it covered 10 of 19 leagues, so La Liga, Serie A, the
+ * Bundesliga, Ligue 1, the Champions League, the CSL, the ISL, J.League and the
+ * IPL all fell through to the desk's gold and were visually indistinguishable
+ * from one another in the feed. It also gave CFL and F1 the same red.
+ *
+ * The feed matches on FREE TEXT — an aggregated headline carries whatever the
+ * outlet called the league — so each league is registered under its id, its
+ * badge label and its spelled-out name, which is what the old map was reaching
+ * for with its one 'PREMIER LEAGUE' alias.
+ */
+const LEAGUE_COLOR: Record<string, string> = Object.fromEntries(
+  LEAGUES.flatMap(l => [
+    [l.id.toUpperCase(), l.color],
+    [l.label.toUpperCase(), l.color],
+    [l.full.toUpperCase(), l.color],
+  ]),
+)
 const colorFor = (lg: string) => LEAGUE_COLOR[lg.toUpperCase()] ?? '#E5B53C'
 
 function timeAgo(iso: string | null): string {
