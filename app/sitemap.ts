@@ -85,6 +85,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
        headlines are unlikely to rank and this entry is here so the page is
        discoverable, not because it is expected to carry search traffic. */
     { url: `${SITE}/news`, lastModified: new Date(), changeFrequency: 'hourly', priority: 0.4 },
+    /* /pricing is a commercial page, not a legal one: it changes when the
+       product's tiers change, and a payment provider re-checks it. */
+    { url: `${SITE}/pricing`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.8 },
+    { url: `${SITE}${LEGAL_PATHS.refunds}`, lastModified: legalUpdated, changeFrequency: 'yearly', priority: 0.5 },
     { url: `${SITE}${LEGAL_PATHS.privacy}`, lastModified: legalUpdated, changeFrequency: 'yearly', priority: 0.5 },
     { url: `${SITE}${LEGAL_PATHS.terms}`, lastModified: legalUpdated, changeFrequency: 'yearly', priority: 0.5 },
     { url: `${SITE}${LEGAL_PATHS.accountDeletion}`, lastModified: legalUpdated, changeFrequency: 'yearly', priority: 0.5 },

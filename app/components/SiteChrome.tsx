@@ -1,5 +1,5 @@
 import Image from 'next/image'
-import { androidCta, WEB_APP, APP_LINKS } from '../config'
+import { LEGAL_PATHS, androidCta, WEB_APP, APP_LINKS } from '../config'
 
 /**
  * The in-feed conversion banner — "chronicle this on Scorebug", dropped inside
@@ -177,8 +177,14 @@ export function SiteFooter() {
           <a href={APP_LINKS.proShop} className="py-2 -my-2 hover:text-ink-2">Pro Shop</a>
           <a href="/gear" className="py-2 -my-2 hover:text-ink-2">Gear</a>
           <a href="/news" className="py-2 -my-2 hover:text-ink-2">News</a>
+          {/* Pricing and Refunds are in the footer because a payment provider
+              verifying this domain checks that the site LINKS to its terms,
+              privacy and refund policies — not merely that the URLs resolve.
+              Paddle states this explicitly during domain verification. */}
+          <a href="/pricing" className="py-2 -my-2 hover:text-ink-2">Pricing</a>
           <a href={APP_LINKS.privacy} className="py-2 -my-2 hover:text-ink-2">Privacy</a>
           <a href={APP_LINKS.terms} className="py-2 -my-2 hover:text-ink-2">Terms</a>
+          <a href={LEGAL_PATHS.refunds} className="py-2 -my-2 hover:text-ink-2">Refunds</a>
           <a href={androidCta().href} className="py-2 -my-2 hover:text-ink-2">{androidCta().label}</a>
         </nav>
         <p className="text-[12px] text-ink-3">© {new Date().getFullYear()} Scorebug™ · Made in Canada</p>

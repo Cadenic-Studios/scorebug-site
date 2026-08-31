@@ -174,6 +174,10 @@ export const LEGAL_PATHS = {
   privacy: '/privacy',
   terms: '/terms',
   accountDeletion: '/account-deletion',
+  /** Required by Paddle before it will verify the domain for checkout, and the
+   *  document a cardholder's bank reads during a chargeback. Same rule as the
+   *  others: a real page on THIS deployment, never a cross-host redirect. */
+  refunds: '/refunds',
 } as const
 
 /**
