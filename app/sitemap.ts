@@ -1,5 +1,5 @@
 import type { MetadataRoute } from 'next'
-import { SITE, LEGAL_PATHS, LEGAL_UPDATED_ISO } from './config'
+import { SITE, LEGAL_PATHS, LEGAL_UPDATED_ISO, REFUNDS_UPDATED_ISO } from './config'
 import { GEAR_TEAMS } from './lib/teams'
 import { LEAGUES } from './leagues'
 import { MATCHUPS } from './matchups'
@@ -88,7 +88,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     /* /pricing is a commercial page, not a legal one: it changes when the
        product's tiers change, and a payment provider re-checks it. */
     { url: `${SITE}/pricing`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.8 },
-    { url: `${SITE}${LEGAL_PATHS.refunds}`, lastModified: legalUpdated, changeFrequency: 'yearly', priority: 0.5 },
+    { url: `${SITE}${LEGAL_PATHS.refunds}`, lastModified: new Date(REFUNDS_UPDATED_ISO), changeFrequency: 'yearly', priority: 0.5 },
     { url: `${SITE}${LEGAL_PATHS.privacy}`, lastModified: legalUpdated, changeFrequency: 'yearly', priority: 0.5 },
     { url: `${SITE}${LEGAL_PATHS.terms}`, lastModified: legalUpdated, changeFrequency: 'yearly', priority: 0.5 },
     { url: `${SITE}${LEGAL_PATHS.accountDeletion}`, lastModified: legalUpdated, changeFrequency: 'yearly', priority: 0.5 },

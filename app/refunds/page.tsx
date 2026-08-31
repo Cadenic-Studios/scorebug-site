@@ -2,7 +2,7 @@ import Image from 'next/image'
 import type { Metadata } from 'next'
 import {
   SITE, CONTACT_EMAIL, COMPANY, COMPANY_LOCATION,
-  LEGAL_PATHS, LEGAL_UPDATED, LEGAL_UPDATED_ISO,
+  LEGAL_PATHS, REFUNDS_UPDATED, REFUNDS_UPDATED_ISO,
 } from '../config'
 
 /* ── Served here, not redirected ──────────────────────────────────────────────
@@ -130,7 +130,7 @@ export default function RefundsPage() {
         <main className="mx-auto max-w-3xl px-5 pb-20 pt-6">
           <h1 className="headline text-4xl text-ink sm:text-5xl">Refund Policy</h1>
           <p className="mt-4 text-[15px] text-ink-3">
-            Last updated <time dateTime={LEGAL_UPDATED_ISO}>{LEGAL_UPDATED}</time> · {COMPANY}, {COMPANY_LOCATION}
+            Last updated <time dateTime={REFUNDS_UPDATED_ISO}>{REFUNDS_UPDATED}</time> · {COMPANY}, {COMPANY_LOCATION}
           </p>
 
           <nav aria-label="Contents" className="mt-8 rounded-2xl border border-white/10 bg-white/[0.03] p-5">

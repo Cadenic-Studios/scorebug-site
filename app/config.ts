@@ -201,5 +201,16 @@ export const COMPANY_JURISDICTION = 'the Province of Alberta, Canada'
  * Bump BOTH when the substance changes. The ISO form feeds <time dateTime>
  * and the sitemap's lastModified; the display form is what people read.
  */
+/**
+ * The Refund Policy carries its OWN date because it is newer than the other
+ * three. Sharing LEGAL_UPDATED would have printed "Last updated August 24" on a
+ * document that did not exist until the 31st — which is the kind of detail a
+ * payment provider's compliance review and a chargeback arbitrator both read
+ * literally. Bump this when the refund wording changes; bump LEGAL_UPDATED when
+ * the Terms or Privacy Policy change.
+ */
+export const REFUNDS_UPDATED = 'August 31, 2026'
+export const REFUNDS_UPDATED_ISO = '2026-08-31'
+
 export const LEGAL_UPDATED = 'August 24, 2026'
 export const LEGAL_UPDATED_ISO = '2026-08-24'
