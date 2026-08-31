@@ -1,7 +1,7 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { FAQS } from './faqs'
-import { androidCta, WEB_APP, PRICING, PRICE_NOTE, APP_LINKS } from './config'
+import { SITE, androidCta, WEB_APP, PRICING, PRICE_NOTE, APP_LINKS } from './config'
 import { LEAGUE_COUNT, TEAM_LEAGUE_COUNT } from './leagues'
 import { GEAR_TEAM_COUNT } from './lib/teams'
 import HomeRevenue from './components/HomeRevenue'
@@ -9,6 +9,7 @@ import Waitlist from './components/Waitlist'
 import { SiteHeader, SiteFooter, LaunchWebApp } from './components/SiteChrome'
 import LeagueBar from './components/LeagueBar'
 import Showcase from './components/Showcase'
+import MapleLeaf from './components/MapleLeaf'
 
 /* ── Call-to-action cluster ───────────────────────────────────────────────────
    The web app is the primary action everywhere it appears: it is the only one
@@ -201,7 +202,7 @@ export default async function Home() {
               headline they already get at 900px, where the same copy sets
               cleanly. The trade is a taller hero on a portrait tablet, which is
               the correct trade on a screen that is mostly height. */}
-          <div className="mx-auto grid max-w-6xl items-center gap-14 px-5 pb-24 pt-10 xl:grid-cols-[1fr_auto] xl:pt-14">
+          <div className="mx-auto grid max-w-6xl items-center gap-12 px-5 pb-14 pt-10 sm:pb-20 xl:grid-cols-[1fr_auto] xl:pt-14">
             <div className="relative z-10">
               {/* The kicker used to read "Chronicle your sports", which is the
                   <h1> again in different clothes. A kicker sitting two lines
@@ -253,30 +254,25 @@ export default async function Home() {
                 <StoreButtons />
               </div>
 
-              <p className="mt-6 text-[13px] text-ink-3">Free to use · {LEAGUE_COUNT} leagues · logs back to 2002</p>
-
               {/* ── WHO BUILT IT, SAID EARLY ────────────────────────────────
                   The footer already carries "Made in Canada", but a line at the
-                  bottom of a long page is a legal detail, not a reason to
-                  trust the thing. Said here — in the hero, under the CTAs — it
-                  is part of the pitch. The maple leaf is the only emoji on this
-                  page and it earns its place: it is the fastest way to say
-                  "Canadian" at 13px without a sentence.
+                  bottom of a long page is a legal detail, not a reason to trust
+                  the thing. Said here, in the hero under the CTAs, it is part of
+                  the pitch.
 
-                  Kept to one line on purpose. This is a sports logbook, not a
-                  heritage brand, and a paragraph about provenance above the
-                  fold would push the product below it. */}
-              {/* IT IS A PANEL, NOT A LINE. The first version set this at 13px/ink-3,
-                  which is character-for-character the same treatment as the
-                  "Free to use · 19 leagues" fine print directly above it — so it
-                  read as a second line of legal small print rather than as a
+                  IT IS A PANEL, NOT A LINE. The first version set this at
+                  13px/ink-3, the same treatment as the fine print that used to
+                  sit above it, so it read as legal small print rather than as a
                   statement. Provenance either earns its own surface or it is not
-                  worth saying. The border and tint are the whole treatment, and
-                  it stays ONE sentence: this is a sports logbook, not a heritage
-                  brand, and a paragraph about provenance above the fold pushes
-                  the product below it. */}
-              <div className="mt-5 inline-flex items-center gap-3 rounded-xl border border-white/[0.12] bg-white/[0.04] px-4 py-3">
-                <span aria-hidden className="text-[20px] leading-none">🇨🇦</span>
+                  worth saying. It stays ONE sentence: this is a sports logbook,
+                  not a heritage brand, and a paragraph about provenance above
+                  the fold pushes the product below it.
+
+                  The mark is an inline SVG, NOT the 🇨🇦 emoji — that is a pair
+                  of regional indicators which Android and Windows frequently
+                  decline to render, shipping a grey "CA" tile instead. */}
+              <div className="mt-7 inline-flex items-center gap-3 rounded-xl border border-white/[0.12] bg-white/[0.04] px-4 py-3">
+                <MapleLeaf size={20} className="text-[#F85149]" />
                 <p className="text-[14.5px] font-semibold leading-snug text-ink">
                   Built with a love of the game in Canada, by Canadians.
                 </p>
@@ -335,7 +331,7 @@ export default async function Home() {
         </section>
 
         {/* ══ The hook ══ */}
-        <section className="mx-auto max-w-3xl px-5 py-24 text-center">
+        <section className="mx-auto max-w-3xl px-5 py-14 text-center sm:py-20">
           <h2 className="headline text-4xl text-ink sm:text-5xl">You were there. Prove it.</h2>
           {/* max-w-[36rem], NOT the section's max-w-3xl. Centred 17px copy across
               48rem sets ~90 characters a line; the eye loses the return sweep
@@ -365,7 +361,7 @@ export default async function Home() {
             gambling ads" is a position that can quietly change; "there isn't
             any, and there never will be" is a commitment a visitor can hold us
             to — which is the entire point of saying it. */}
-        <section className="mx-auto max-w-3xl px-5 pb-24">
+        <section className="mx-auto max-w-3xl px-5 pb-14 sm:pb-20">
           <div className="rounded-2xl border border-white/10 bg-white/[0.03] px-6 py-10 text-center sm:px-10">
             <p className="text-[10px] font-black uppercase tracking-[0.24em] text-ink-3">
               Where we stand
@@ -378,15 +374,43 @@ export default async function Home() {
               &ldquo;get $200 in bonus bets&rdquo;, no sportsbook logo in the corner of a
               scoreboard. Just you and the game.
             </p>
+
+            {/* ── THE REASON THE LINE ABOVE IS CREDIBLE ────────────────────
+                "No gambling ads" is a promise; being independent is the
+                STRUCTURE that makes the promise keepable, which is why it sits
+                inside the same panel rather than in a section of its own. A
+                separate card would read as a second unrelated boast; a divider
+                inside one card reads as the supporting clause it is.
+
+                Deliberately not a bullet list. Three short clauses in one
+                sentence carry more conviction at this size than three ticks,
+                and this panel's whole treatment is "flat surface, no marketing
+                furniture". */}
+            <div className="mx-auto mt-8 max-w-[34rem] border-t border-white/10 pt-8">
+              <p className="text-[10px] font-black uppercase tracking-[0.24em] text-[#F85149]">
+                100% Independent
+              </p>
+              <p className="mt-3.5 text-[16px] leading-relaxed text-ink-2">
+                Built with zero corporate league payouts, zero betting sponsorships, and
+                pure sports fan passion. We don&rsquo;t bow to league copyrights or media
+                blackouts. Just raw, unbiased scorekeeping for true fans.
+              </p>
+            </div>
           </div>
         </section>
 
         {/* ══ Marquee features ══ */}
-        {/* No top padding, on purpose. Every other seam on this page is 192px
-            (two py-24 sections meeting); this one is 96px because the hook
-            above is the sentence these three rows are the evidence for, and a
-            full seam breaks that into two unrelated thoughts. */}
-        <section className="mx-auto flex max-w-6xl flex-col gap-28 px-5 pb-24" id="features">
+        {/* No top padding, on purpose: the hook above is the sentence these
+            three rows are the evidence for, and a full seam would break that
+            into two unrelated thoughts.
+
+            SECTION RHYTHM. Every seam used to be two py-24 blocks meeting, so
+            192px of empty black sat between a heading and the cards proving it
+            — on a phone that is most of a screen with nothing in it, and it read
+            as the page having failed to load rather than as breathing room.
+            Sections are now py-14 (112px seam) on a phone and sm:py-20 (160px)
+            from tablet up, where the extra width earns the extra air. */}
+        <section className="mx-auto flex max-w-6xl flex-col gap-16 px-5 pb-14 sm:gap-24 sm:pb-20" id="features">
           {/* Visually hidden: the rows below are h3s and need an h2 to belong to. */}
           <h2 className="sr-only">What Scorebug does</h2>
 
@@ -454,7 +478,7 @@ export default async function Home() {
 
         {/* ══ Three-up ══ */}
         <section className="lit-blue">
-          <div className="mx-auto max-w-6xl px-5 py-24">
+          <div className="mx-auto max-w-6xl px-5 py-14 sm:py-20">
             <div className="text-center">
               <Kicker accent="#58A6FF">Also in the app</Kicker>
               <h2 className="headline mx-auto mt-5 max-w-2xl text-4xl text-ink sm:text-5xl">
@@ -510,7 +534,7 @@ export default async function Home() {
 
         {/* ══ The Front Office (gold) ══ */}
         <section className="lit-gold floodlights relative overflow-hidden border-y border-white/10">
-          <div className="mx-auto grid max-w-6xl items-center gap-14 px-5 py-24 lg:grid-cols-2 lg:gap-16">
+          <div className="mx-auto grid max-w-6xl items-center gap-12 px-5 py-14 sm:py-20 lg:grid-cols-2 lg:gap-16">
             <div>
               <Kicker accent="#E5B53C">Membership</Kicker>
               <h2 className="headline mt-5 text-4xl sm:text-5xl" style={{ color: '#F4E3B0' }}>
@@ -587,12 +611,31 @@ export default async function Home() {
             page. It does not need more content; it needs to look like part of
             the same room as the sections above and below it, which is exactly
             what `.lit-*` is for. */}
-        <section id="waitlist" className="lit-blue scroll-mt-8 px-5 py-24">
+        <section id="waitlist" className="lit-blue scroll-mt-8 px-5 py-14 sm:py-20">
           <Waitlist />
         </section>
 
         {/* ══ FAQ ══ */}
-        <section className="mx-auto max-w-3xl px-5 py-24" id="faq">
+        {/* FAQPage lives HERE, not in the root layout, because the markup
+            must describe FAQ content visible on the URL that carries it. From
+            the layout it shipped on every page including ones that show no FAQ
+            at all. */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'FAQPage',
+            '@id': `${SITE}/#faq`,
+            url: SITE,
+            isPartOf: { '@id': `${SITE}/#site` },
+            mainEntity: FAQS.map(f => ({
+              '@type': 'Question',
+              name: f.q,
+              acceptedAnswer: { '@type': 'Answer', text: f.a },
+            })),
+          }).replace(/</g, '\u003c') }}
+        />
+        <section className="mx-auto max-w-3xl px-5 py-14 sm:py-20" id="faq">
           {/* The kicker used to say "Questions" above a heading that says
               "Frequently asked" — the same word twice. It carries a fact now. */}
           <Kicker accent="#58A6FF">Checked against the app</Kicker>
@@ -614,7 +657,7 @@ export default async function Home() {
         </section>
 
         {/* ══ Final CTA — mirrors the hero's hierarchy for anyone who scrolled ══ */}
-        <section className="lit-red floodlights relative overflow-hidden px-5 pb-28 pt-24">
+        <section className="lit-red floodlights relative overflow-hidden px-5 pb-16 pt-14 sm:pb-24 sm:pt-20">
           <div className="glass-card relative mx-auto max-w-4xl overflow-hidden rounded-3xl px-6 py-16 text-center">
             <span aria-hidden className="pointer-events-none absolute inset-0"
               style={{ background: 'radial-gradient(80% 90% at 50% -30%, rgba(248,81,73,0.22) 0%, transparent 65%)' }} />

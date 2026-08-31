@@ -1,6 +1,5 @@
 import type { Metadata } from 'next'
 import { Anton, Inter, Oswald } from 'next/font/google'
-import { FAQS } from './faqs'
 import { SITE, WEB_APP } from './config'
 // Derived — a hand-typed league count in metadata is a claim that goes stale
 // silently and ships to every search and answer engine before anyone notices.
@@ -112,7 +111,7 @@ const JSON_LD = {
         'The Wire: a news desk built around the teams you follow',
         'The Bleachers: community reviews, fan takes and Linemates',
         'The Franchise: your Starting Lineup’s combined season record',
-        'The Front Office: the full Analytics Desk, unlimited Docket and Clippings, and no ads',
+        'The Front Office: the full Analytics Desk, an unlimited Docket, and no feed ads in The Bleachers',
       ],
     },
     {
@@ -130,17 +129,19 @@ const JSON_LD = {
       publisher: { '@id': `${SITE}/#org` },
       about: { '@id': `${SITE}/#app` },
     },
-    {
-      '@type': 'FAQPage',
-      '@id': `${SITE}/#faq`,
-      url: SITE,
-      isPartOf: { '@id': `${SITE}/#site` },
-      mainEntity: FAQS.map(f => ({
-        '@type': 'Question',
-        name: f.q,
-        acceptedAnswer: { '@type': 'Answer', text: f.a },
-      })),
-    },
+    /* ── THE SITE FAQ IS NOT IN THIS GRAPH ─────────────────────────────
+       It used to be, and it shipped on EVERY page because this graph is
+       injected from the root layout. FAQPage markup has to describe FAQ
+       content that is visible on the URL carrying it — that is a stated
+       Google requirement, not a preference — and the eleven questions in
+       app/faqs.ts are rendered on the homepage alone. On /gear/*, /shop/*
+       and now /leagues/* and /matchups/* it was describing content that was
+       not there, and once the programmatic pages started publishing their
+       OWN topical FAQPage there were two FAQPage entities on one URL for a
+       crawler to choose between.
+
+       It now lives on the homepage, next to the section it describes:
+       app/page.tsx -> homeFaqSchema(). */
   ],
 }
 

@@ -76,23 +76,27 @@ export default function LeagueBar({ className = '' }: { className?: string }) {
           row above precisely because the app is not built for one country's
           fans. One line turns a miss into a "not yet".
 
-          NO DATES AND NO NAMED LEAGUES. A roadmap on a marketing page becomes a
-          promise the moment somebody screenshots it, and a league that then
-          slips looks like a broken one. "As fast as we can do them properly" is
-          the honest shape of the commitment, and the mail link is a real
-          inbox — the same one the footer and the support pages use. */}
+          NOTHING HERE PROMISES A LEAGUE. The previous wording ("new leagues get
+          added as fast as we can do them properly", "and it goes on the list")
+          reads as a commitment to ship whatever is asked for, and a request that
+          then goes nowhere makes the whole page look untrustworthy. Interest is
+          invited; delivery is not guaranteed. No dates and no named leagues
+          either — a roadmap on a marketing page becomes a promise the moment
+          somebody screenshots it.
+
+          The mail link is a real inbox, the same one the footer and the support
+          pages use. */}
       <p className="mt-3.5 max-w-[46rem] text-[12.5px] leading-relaxed text-ink-2">
-        <span className="font-bold text-ink">And we are not done.</span>{' '}
-        New leagues get added as fast as we can do them properly — crests,
-        colours and history included. Wherever you watch from, your game belongs
-        in here too; if yours is missing,{' '}
+        <span className="font-bold text-ink">And we are just getting started.</span>{' '}
+        We are constantly expanding our coverage across global leagues. Have a league
+        or sport you want to see?{' '}
         <a
-          href="mailto:hello@getscorebug.app?subject=League%20request"
+          href="mailto:hello@getscorebug.app?subject=League%20recommendation"
           className="font-semibold text-ink underline decoration-white/25 underline-offset-2 transition-colors hover:decoration-white/60"
         >
-          tell us
+          Let us know
         </a>{' '}
-        and it goes on the list.
+        — we welcome recommendations.
       </p>
     </section>
   )

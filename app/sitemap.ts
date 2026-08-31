@@ -1,6 +1,8 @@
 import type { MetadataRoute } from 'next'
 import { SITE, LEGAL_PATHS, LEGAL_UPDATED_ISO } from './config'
 import { GEAR_TEAMS } from './lib/teams'
+import { LEAGUES } from './leagues'
+import { MATCHUPS } from './matchups'
 import { getProductHandles } from './lib/shopify'
 
 /**
@@ -56,6 +58,25 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
        URL the build did not produce. */
     ...GEAR_TEAMS.map(t => ({
       url: `${SITE}/gear/${t.slug}`,
+      lastModified: new Date(),
+      changeFrequency: 'weekly' as const,
+      priority: 0.6,
+    })),
+    /* ── Programmatic set: league hubs and rivalry pages ───────────────────
+       Generated from the same lists their routes' generateStaticParams use, so
+       the sitemap cannot advertise a URL the build did not produce. Both routes
+       set `dynamicParams = false`, which means anything outside these lists is a
+       real 404 rather than an infinitely-generatable thin page. */
+    { url: `${SITE}/leagues`, lastModified: new Date(), changeFrequency: 'weekly', priority: 0.8 },
+    ...LEAGUES.map(l => ({
+      url: `${SITE}/leagues/${l.id.toLowerCase()}`,
+      lastModified: new Date(),
+      changeFrequency: 'weekly' as const,
+      priority: 0.7,
+    })),
+    { url: `${SITE}/matchups`, lastModified: new Date(), changeFrequency: 'weekly', priority: 0.7 },
+    ...MATCHUPS.map(m => ({
+      url: `${SITE}/matchups/${m.slug}`,
       lastModified: new Date(),
       changeFrequency: 'weekly' as const,
       priority: 0.6,
