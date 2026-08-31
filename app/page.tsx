@@ -575,10 +575,16 @@ export default async function Home() {
                 Open Scorebug and see the plans →
               </a>
               <p className="mt-3 max-w-md text-[12px] leading-relaxed text-ink-3">
-                {PRICING.us.monthly} {PRICING.us.currency}/month or {PRICING.us.yearly}{' '}
-                {PRICING.us.currency}/year. In Canada, {PRICING.ca.monthly} {PRICING.ca.currency}/month
-                or {PRICING.ca.yearly} {PRICING.ca.currency}/year. That is about{' '}
-                {PRICING.perMonthEquivalent} a month either way. {PRICE_NOTE} Android at launch.
+                {/* Same figures in both storefronts now, so the old
+                    "and in Canada it is different" construction just made two
+                    identical numbers look like a discrepancy. The point worth
+                    making is that you are billed in YOUR currency, not that the
+                    amount changes. */}
+                {PRICING.us.monthly}{PRICING.monthlyCadence.replace(' ', '')} or{' '}
+                {PRICING.us.yearly}/year, billed in your own currency:{' '}
+                {PRICING.us.currency} in the United States, {PRICING.ca.currency} in Canada. The
+                annual plan works out at about {PRICING.perMonthEquivalent} a month, a{' '}
+                {PRICING.annualSavingsPct}% saving. {PRICE_NOTE}
               </p>
             </div>
 

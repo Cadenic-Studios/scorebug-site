@@ -98,7 +98,7 @@ export default function PricingPage() {
                 <span className="text-[15px] font-bold text-ink-3"> {PRICING.monthlyCadence}</span>
               </p>
               <p className="mt-2 text-[13.5px] text-ink-3">
-                or {PRICING.us.yearly} a year, about {PRICING.perMonthEquivalent} a month
+                or {PRICING.us.yearly} a year, about {PRICING.perMonthEquivalent} a month ({PRICING.annualSavingsPct}% off)
               </p>
               <p className="mt-5 text-[14.5px] leading-relaxed text-ink-2">
                 Everything in Free, plus the full Analytics Desk, a Starting Lineup of up to 25 teams
@@ -110,13 +110,17 @@ export default function PricingPage() {
             </div>
           </div>
 
-          {/* Prices in both storefront currencies. A verification reviewer and a
-              Canadian visitor both look for the number that applies to them. */}
+          {/* The figures are identical in both storefronts; only the currency
+              changes. Saying "and in Canada it is X" when X is the same number
+              reads as a discrepancy, so the sentence makes the actual point:
+              you are billed in your own currency. A verification reviewer needs
+              to see the tax and other-territory caveats spelled out. */}
           <p className="mt-5 text-[13.5px] leading-relaxed text-ink-3">
-            Shown in {PRICING.us.currency}. In Canada, {PRICING.ca.monthly} {PRICING.ca.currency} a
-            month or {PRICING.ca.yearly} {PRICING.ca.currency} a year. Your local price, including
-            any applicable tax, is confirmed at checkout before you are charged. Prices in other
-            countries are set by the storefront and may differ.
+            Billed in your own currency: {PRICING.us.currency} in the United States,{' '}
+            {PRICING.ca.currency} in Canada, at the same {PRICING.us.monthly} monthly and{' '}
+            {PRICING.us.yearly} annual figures. Your local price, including any applicable tax, is
+            confirmed at checkout before you are charged. Prices in other countries are set by the
+            storefront and may differ.
           </p>
 
           {/* ── What differs ───────────────────────────────────────────── */}

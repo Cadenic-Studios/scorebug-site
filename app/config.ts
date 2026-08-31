@@ -119,20 +119,37 @@ export const WEB_APP = 'https://app.getscorebug.app'
  * these two storefronts sees their own local price at checkout, which is why
  * `PRICE_NOTE` travels with every price on the page.
  *
- * The annual plan lands at ~$1.67 a month in BOTH currencies, which is the one
- * number worth leading with. The discount off monthly is NOT the same on both
- * (58% in USD, 67% in CAD), so the page never quotes a single percentage.
+ * The figures are now IDENTICAL in both storefronts — 3.99 monthly and 19.99
+ * annually — and only the currency differs. Earlier drafts had CAD at $5/$20,
+ * which made the annual discount 67% in Canada against 58% in the US, and that
+ * asymmetry is why the copy used to avoid quoting a single percentage. It no
+ * longer has to: 3.99 x 12 = 47.88 against 19.99 is 58% in both.
+ *
+ * The annual plan still lands at ~$1.67 a month either way, which remains the
+ * one number worth leading with.
+ *
+ * These must match the Paddle prices exactly (see PADDLE below). A public
+ * pricing page that disagrees with checkout is a verification failure and, once
+ * live, a chargeback argument.
  */
 export const PRICING = {
   us: { monthly: '$3.99', yearly: '$19.99', currency: 'USD' },
-  ca: { monthly: '$5', yearly: '$20', currency: 'CAD' },
-  /** True of both storefronts — $19.99/12 and $20/12 both round to $1.67. */
+  ca: { monthly: '$3.99', yearly: '$19.99', currency: 'CAD' },
+  /** True of both storefronts — 19.99/12 rounds to 1.67. */
   perMonthEquivalent: '$1.67',
+  /** Same in both now that the figures match: 47.88 -> 19.99. */
+  annualSavingsPct: 58,
   monthlyCadence: '/ month',
 } as const
 
+/**
+ * Travels with every price on the site. Deliberately names no single
+ * storefront: the membership is sold through Google Play in the Android app and
+ * through Paddle on the web, and "Google Play confirms your local price" became
+ * wrong for half the buyers the moment web checkout existed.
+ */
 export const PRICE_NOTE =
-  'Cancel any time. Google Play confirms your local price at checkout.'
+  'Cancel any time. Your local price, including any tax, is confirmed at checkout.'
 
 /**
  * Links into the web app, served through this domain by the fallback rewrite.
