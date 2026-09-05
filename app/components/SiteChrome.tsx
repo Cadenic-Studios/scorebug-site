@@ -212,17 +212,21 @@ export function SiteFooter() {
           rel="noopener noreferrer"
           className="group -my-2 inline-flex items-center gap-2.5 py-2"
         >
-          {/* Explicit width/height — the emblem is a 512px square, and letting
-              it arrive unsized would reserve the wrong box and shift the row.
+          {/* The brand kit's MICRO cut of the studio badge, as vector: frame,
+              one pine, the maple star, the canoe. The full badge draws six
+              conifers and a reflection, none of which survives 24px, and the
+              PNG this replaces was 241KB and resampled at 2x and 3x.
 
-              No rounding utility, unlike the Scorebug icon beside it: the file
-              is already a squircle whose sky and water are TRANSPARENT, not
-              white. On this near-black ground the mark reads as a navy outline
-              with the canoe and pine sitting on the page's own darkness, and a
-              `rounded-*` class would clip nothing that is painted. `alt=""`
-              because the link text immediately names the studio — announcing
-              the logo again is a duplicate for a screen reader. */}
-          <Image src="/cadenic-emblem.png" alt="" width={24} height={24} className="flex-shrink-0" />
+              A plain <img>, deliberately — next/image sends even local files
+              through the optimizer, which refuses SVG unless the project opts
+              into `dangerouslyAllowSVG`, and a 1.3KB vector has nothing for an
+              optimizer to do. Explicit width/height so the box is reserved
+              before the file lands and the row cannot shift. No rounding: the
+              artwork draws its own frame and its own corner. `alt=""` because
+              the link text immediately names the studio — announcing the logo
+              again is a duplicate for a screen reader. */}
+          {/* eslint-disable-next-line @next/next/no-img-element -- see above */}
+          <img src="/cadenic-mark.svg" alt="" width={24} height={24} className="h-6 w-6 flex-shrink-0" />
           {/* ── THE ANCHOR TEXT IS THE PAYLOAD ─────────────────────────────
               This read "Built by Cadenic Studios" and stopped. Anchor text is
               one of the few things a link tells a search engine ABOUT its

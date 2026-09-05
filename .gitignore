@@ -40,3 +40,5 @@ peek.png
 # Cached raw screenshots and the Chrome profile used by scripts/capture-shots.mjs.
 # The profile holds a real logged-in session - it must never be committed.
 .cache
+
+.vercel
