@@ -76,6 +76,22 @@ export const metadata: Metadata = {
  *  No aggregateRating on purpose: the listing is new, and invented ratings are
  *  a structured-data violation that gets rich results pulled. Add it only once
  *  real Play Store ratings exist. */
+/**
+ * ─── THE STUDIO, AS ONE ENTITY ACROSS THREE DOMAINS ─────────────────────────
+ *
+ * This site, playdeltav.space and cadenic.studio are three domains and one
+ * publisher, and until now nothing in the markup said so — the graph below
+ * described "Scorebug" as a company that appeared from nowhere and answered to
+ * no one. A search engine had no reason to connect it to anything.
+ *
+ * The @id is a cadenic.studio URL ON PURPOSE. It is the exact string that site
+ * publishes its own Organization under, and the same string playdeltav.space
+ * now emits, so a crawler that reads any two of the three merges them into one
+ * entity instead of describing three studios that share a name. Change it here
+ * only if it changes in all three places.
+ */
+const STUDIO_ID = 'https://cadenic.studio/#organization'
+
 const JSON_LD = {
   '@context': 'https://schema.org',
   '@graph': [
@@ -103,6 +119,9 @@ const JSON_LD = {
       url: SITE,
       screenshot: `${SITE}/og.png`,
       publisher: { '@id': `${SITE}/#org` },
+      // Publisher and author are different facts and both are true: Scorebug
+      // is the brand a listing appears under, Cadenic Studios is who built it.
+      author: { '@id': STUDIO_ID },
       featureList: [
         `The Slate: live scores and schedules across ${LEAGUE_COUNT} leagues (NHL, NFL, NBA, MLB, CFL, NCAA football and men’s basketball, MLS, the Premier League, La Liga, Serie A, Bundesliga, Ligue 1, the Champions League, the Chinese Super League, the Indian Super League, Japan’s J1 League, the Indian Premier League and Formula 1)`,
         'Rate & Chronicle: grade any finished game out of 5.0, write your take, and add private photos',
@@ -120,6 +139,22 @@ const JSON_LD = {
       name: 'Scorebug',
       url: SITE,
       logo: `${SITE}/icon.svg`,
+      // Scorebug is a product line, not a company. The operating entity named
+      // on all three legal pages (COMPANY in config.ts) is the studio, and
+      // this is that same fact stated where a machine can read it.
+      parentOrganization: { '@id': STUDIO_ID },
+    },
+    {
+      '@type': 'Organization',
+      '@id': STUDIO_ID,
+      name: 'Cadenic Studios',
+      url: 'https://cadenic.studio',
+      // Deliberately minimal. The studio describes itself in full on its own
+      // domain; repeating a description, a logo or an address here would
+      // create a second, competing account of the same entity that goes stale
+      // the moment the real one is edited. Name, home and sameAs are the three
+      // properties needed to make the join, and nothing else is asserted.
+      sameAs: ['https://cadenic.studio', 'https://github.com/Cadenic-Studios'],
     },
     {
       '@type': 'WebSite',

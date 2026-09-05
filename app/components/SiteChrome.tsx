@@ -189,6 +189,78 @@ export function SiteFooter() {
         </nav>
         <p className="text-[12px] text-ink-3">© {new Date().getFullYear()} Scorebug™ · Made in Canada</p>
       </div>
+
+      {/* ── COLOPHON ───────────────────────────────────────────────────────
+          Who made this, and what else they made. Deliberately BELOW the rule
+          and a step quieter than the nav above it: this is a credit line, not
+          a second call to action, and anything louder would compete with the
+          links that exist to convert.
+
+          Cadenic Studios is already named on all three legal pages as the
+          operating entity (COMPANY in config.ts) — this is the same fact,
+          stated where a reader can act on it.
+
+          Both links are external, so both carry the site's standard
+          target="_blank" + rel="noopener noreferrer" pair (see WireFeed).
+          NEITHER is rel="nofollow", and that is the point: the association
+          between the studio and the products it ships is the thing being
+          published here, and nofollow would ask crawlers to ignore it. */}
+      <div className="mx-auto mt-8 flex max-w-6xl flex-col items-center gap-5 border-t border-white/[0.06] pt-6 text-center sm:flex-row sm:items-start sm:justify-between sm:gap-8 sm:text-left">
+        <a
+          href="https://cadenic.studio"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="group -my-2 inline-flex items-center gap-2.5 py-2"
+        >
+          {/* Explicit width/height — the emblem is a 512px square, and letting
+              it arrive unsized would reserve the wrong box and shift the row.
+
+              No rounding utility, unlike the Scorebug icon beside it: the file
+              is already a squircle whose sky and water are TRANSPARENT, not
+              white. On this near-black ground the mark reads as a navy outline
+              with the canoe and pine sitting on the page's own darkness, and a
+              `rounded-*` class would clip nothing that is painted. `alt=""`
+              because the link text immediately names the studio — announcing
+              the logo again is a duplicate for a screen reader. */}
+          <Image src="/cadenic-emblem.png" alt="" width={24} height={24} className="flex-shrink-0" />
+          {/* ── THE ANCHOR TEXT IS THE PAYLOAD ─────────────────────────────
+              This read "Built by Cadenic Studios" and stopped. Anchor text is
+              one of the few things a link tells a search engine ABOUT its
+              destination, and a bare brand name tells it only the name — which
+              the destination already knows. The descriptor is the phrase a
+              person looking for that studio actually types.
+
+              It sits INSIDE the <a> deliberately: text merely adjacent to a
+              link is not anchor text and carries none of this. Only the studio
+              name is weighted, so the sentence still reads as a credit line
+              rather than a second call to action. */}
+          <span className="max-w-[22rem] text-[12px] leading-snug text-ink-3">
+            Built by{' '}
+            <span className="font-bold text-ink-2 transition group-hover:text-ink">Cadenic Studios</span>
+            , an independent Canadian software studio
+          </span>
+        </a>
+
+        {/* Capped, because this block is a flex child with nothing to stop it:
+            the blurb grew from one line to two and, right-aligned across the
+            full remaining 740px, the ragged edge ran the width of the footer.
+            The cap keeps the wrap tight against the column it belongs to. */}
+        <div className="text-[12px] text-ink-3 sm:max-w-[26rem] sm:text-right">
+          <p className="text-[10px] font-black uppercase tracking-[0.16em] text-ink-3">Also from the studio</p>
+          <p className="mt-1.5">
+            <a
+              href="https://playdeltav.space"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="-my-2 inline-block py-2 font-bold text-ink-2 transition hover:text-ink"
+            >
+              Delta-V
+            </a>
+            {' · '}Orbital launch tracking, space news, and a gravity-flight game.
+            Playable in the browser; the Android build is on Google Play.
+          </p>
+        </div>
+      </div>
     </footer>
   )
 }
