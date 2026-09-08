@@ -3,8 +3,9 @@ import { notFound } from 'next/navigation'
 import { SITE, WEB_APP } from '../../config'
 import { LEAGUES, LEAGUE_COUNT, type SiteLeague } from '../../leagues'
 import { GEAR_TEAMS } from '../../lib/teams'
+import { clubsInLeague } from '../../clubs'
 import { MATCHUPS } from '../../matchups'
-import { SPORT_HUBS } from '../../sports'
+import { hubForSport } from '../../sports'
 import { organizationSchema, applicationSchema, faqSchema, graph, type Faq } from '../../lib/seo'
 import { SiteHeader, SiteFooter, Breadcrumbs, BreadcrumbNav, AppCta } from '../../components/SiteChrome'
 import Link from 'next/link'
@@ -62,13 +63,30 @@ export default function LeaguePage({ params }: { params: { league: string } }) {
   const l = getLeague(params.league)
   if (!l) notFound()
 
-  const clubs = GEAR_TEAMS.filter(t => t.league === (l.id as never))
+  /**
+   * TWO club lists, and they are not the same list.
+   *
+   * `clubs` is every club in the league, from the generated directory — 20 for
+   * the Premier League, 136 for NCAA football. This section used to read from
+   * GEAR_TEAMS, which only ever held the five leagues Fanatics stocks per-club
+   * shops for, so /leagues/epl claimed to be about the Premier League and then
+   * listed no clubs at all. Every league page now names its whole field.
+   *
+   * `gearSlugs` is the subset that has a PAGE at /gear/[team]. Only those get
+   * linked; the rest render as plain text. Linking a club to a page that does
+   * not exist is a 404, and generating a page for every club so the link works
+   * is the thin-affiliate-page trap that app/lib/teams.ts exists to avoid.
+   */
+  const clubs = clubsInLeague(l.id)
+  const gearSlugs = new Set(
+    GEAR_TEAMS.filter(t => t.league === (l.id as never)).map(t => t.slug),
+  )
   const rivalries = MATCHUPS.filter(m => m.league === l.id)
   /* The sport hub above this page, where one exists. Deliberately NOT in the
      breadcrumb: /hockey is not a parent of /leagues/nhl in the URL tree, and a
      breadcrumb that claims a hierarchy the paths do not have is a structured
      -data assertion that is simply false. It is a sibling link instead. */
-  const hub = SPORT_HUBS.find(h => h.sport === l.sport)
+  const hub = hubForSport(l.sport)
 
   /**
    * Written as questions somebody actually types. Each answer is a complete
@@ -162,12 +180,18 @@ export default function LeaguePage({ params }: { params: { league: string } }) {
               <ul className="mt-5 flex flex-wrap gap-2">
                 {clubs.map(t => (
                   <li key={t.slug}>
-                    <Link
-                      href={`/gear/${t.slug}`}
-                      className="glass-pill inline-flex rounded-lg px-3 py-1.5 text-[13px] font-semibold text-ink-2 transition-colors hover:text-ink"
-                    >
-                      {t.name}
-                    </Link>
+                    {gearSlugs.has(t.slug) ? (
+                      <Link
+                        href={`/gear/${t.slug}`}
+                        className="glass-pill inline-flex rounded-lg px-3 py-1.5 text-[13px] font-semibold text-ink-2 transition-colors hover:text-ink"
+                      >
+                        {t.name}
+                      </Link>
+                    ) : (
+                      <span className="glass-pill inline-flex rounded-lg px-3 py-1.5 text-[13px] font-semibold text-ink-2">
+                        {t.name}
+                      </span>
+                    )}
                   </li>
                 ))}
               </ul>

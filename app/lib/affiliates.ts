@@ -155,3 +155,131 @@ export function ticketNetworkGameUrl(away?: string | null, home?: string | null)
   const dest = `${TICKETNETWORK_ORIGIN}/search?q=${encodeURIComponent(q)}`
   return `${CJ_CLICK_BASE}?url=${encodeURIComponent(dest)}`
 }
+
+// ─── SoccerGarage (CJ) — world football ──────────────────────────────────────
+
+/**
+ * The soccer merchant. ONE destination, deliberately.
+ *
+ * ─── IT CANNOT BE DEEP-LINKED, AND THAT IS MEASURED ─────────────────────────
+ * Probed against the destination host on 2026-09-07 (never the CJ click URL —
+ * fetching that registers a real click and reads as fraud):
+ *
+ *   /catalogsearch/result/?q=arsenal          → 302 → /404.html
+ *   /search.php?{keywords|q|search|keyword}=  → 200, all four byte-identical
+ *                                               (167,429 bytes) — the parameter
+ *                                               is ignored; the form is POST.
+ *
+ * So there is no per-club URL to build. A club-named button pointing at a
+ * generic shop front would be a lie told by a layout, and the app's
+ * RepYourSide already refuses exactly that. Until a merchant with real per-club
+ * deep links is signed — see PARTNERS.md, Fanatics International EU is the one
+ * to sign — world-football clubs get a per-club eBay link and a single honest
+ * shop link, and the copy says "shop", not the club's name.
+ *
+ * ─── NO FIRST-PARTY HOP ON THIS ORIGIN ──────────────────────────────────────
+ * dpbolvw.net is on the default uBlock/Brave/AdGuard lists, so some share of
+ * these clicks will be blocked. The app solves that with a same-origin
+ * /go/cj redirector; this site has none, and adding an open redirect to the
+ * marketing origin is a phishing primitive. A lost commission beats a security
+ * incident. Same reasoning as the TicketNetwork note above.
+ */
+const CJ_SOCCERGARAGE_LINK_ID = '10479704'
+const SOCCERGARAGE_CLICK =
+  `https://www.dpbolvw.net/click-${CJ_PUBLISHER_ID}-${CJ_SOCCERGARAGE_LINK_ID}`
+
+/** The CJ impression pixel that ships with the SoccerGarage creative. Render it
+ *  as a real element only on a surface that actually shows the creative. */
+export const SOCCERGARAGE_PIXEL =
+  `https://www.ftjcfx.com/image-${CJ_PUBLISHER_ID}-${CJ_SOCCERGARAGE_LINK_ID}`
+
+/** The shop front. Takes no club, because it cannot honour one. */
+export function soccerGarageUrl(): string {
+  return SOCCERGARAGE_CLICK
+}
+
+/**
+ * Which leagues SoccerGarage is the right merchant for: association football
+ * that Fanatics does not carry. MLS is association football but IS carried by
+ * Fanatics with real per-club stores, so it stays on Fanatics.
+ */
+const SOCCERGARAGE_LEAGUES = new Set([
+  'EPL', 'UCL', 'LALIGA', 'SERIEA', 'BUND', 'LIGUE1', 'CSL', 'ISL', 'JLEAGUE',
+])
+
+export function soccerGarageCarriesLeague(league?: string | null): boolean {
+  if (!league) return false
+  return SOCCERGARAGE_LEAGUES.has(String(league).trim().toUpperCase())
+}
+
+/**
+ * The three shops this site sends people to.
+ *
+ * There is deliberately NO `merchantForLeague(league)` helper any more. One
+ * existed, it answered "which merchant fronts this league" from a static table,
+ * and the hub used it to label rows whose URLs were built by a different
+ * function — so every European row rendered a visible "SoccerGarage" over a
+ * link to eBay. The merchant a surface displays must come from the same call
+ * that produced the URL. `leagueGearLink` and `clubGearUrl` are those calls.
+ */
+export type Merchant = 'fanatics' | 'soccergarage' | 'ebay'
+
+/** The advertiser's own name, for the visible attribution beside SPONSORED. */
+export function advertiserName(m: Merchant): string {
+  return m === 'fanatics' ? 'Fanatics' : m === 'soccergarage' ? 'SoccerGarage' : 'eBay'
+}
+
+/**
+ * The best CLUB-level link available for a league, or null.
+ *
+ * Fanatics leagues get a real club store search. Everything else gets eBay,
+ * which resolves for any club name on earth. SoccerGarage is never returned
+ * here — it has no club form — which is why the shop link is rendered
+ * separately and labelled as a shop.
+ */
+export function clubGearUrl(
+  clubName: string,
+  league: string,
+  placementId = 'public_hub',
+): string | null {
+  const name = (clubName ?? '').trim()
+  if (!name) return null
+  if (fanaticsCarriesLeague(league)) {
+    return fanaticsTeamUrl(name, 'gear', league, placementId)
+  }
+  return ebaySearchUrl(`${name} shirt`, placementId)
+}
+
+/**
+ * The LEAGUE-level gear link used by the sport hubs.
+ *
+ * ─── IT RETURNS THE MERCHANT IT ACTUALLY USED ───────────────────────────────
+ * This used to return a bare URL, and the caller labelled the row by asking
+ * `merchantForLeague` separately. The two disagreed: `merchantForLeague` says
+ * 'soccergarage' for the Premier League — correct, that IS the soccer merchant
+ * — while this function correctly built an eBay link, because SoccerGarage has
+ * no per-league URL to build. Every European row therefore rendered a visible
+ * "SoccerGarage" attribution over a link to eBay.
+ *
+ * That is not a cosmetic bug. The visible merchant name beside SPONSORED is a
+ * disclosure: it tells a reader where a paid link is about to send them. Two
+ * functions that can drift is the wrong shape for that, so there is now one
+ * function and it reports what it built.
+ *
+ * `garment` matters more than it looks: "shirt" is what association-football
+ * kit is called and what its listings are titled, "jersey" is the North
+ * American word. Searching the wrong one halves the result set.
+ */
+export function leagueGearLink(
+  league: { id: string; label: string; full: string; shopName?: string; code?: string },
+  placementId = 'public_hub',
+): { url: string; merchant: Merchant } | null {
+  const name = league.shopName ?? league.full
+  if (fanaticsCarriesLeague(league.id)) {
+    const url = fanaticsTeamUrl(league.shopName ?? league.label, 'gear', league.id, placementId)
+    return url ? { url, merchant: 'fanatics' } : null
+  }
+  const garment = league.code === 'association' ? 'shirt' : 'jersey'
+  const url = ebaySearchUrl(`${name} ${garment}`, placementId)
+  return url ? { url, merchant: 'ebay' } : null
+}

@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { SITE } from '../config'
 import { LEAGUES, LEAGUE_COUNT } from '../leagues'
-import { SPORT_HUBS } from '../sports'
+import { hubForSport } from '../sports'
 import { SiteHeader, SiteFooter, BreadcrumbNav, AppCta } from '../components/SiteChrome'
 
 /**
@@ -51,7 +51,7 @@ export default function LeaguesIndex() {
                     see its docblock — and a sport layer that nothing linked
                     into would be the same orphan problem one level down. */}
                 {(() => {
-                  const hub = SPORT_HUBS.find(h => h.sport === sport)
+                  const hub = hubForSport(sport as never)
                   const heading = 'text-[10px] font-black uppercase tracking-[0.22em]'
                   return hub ? (
                     <h2>

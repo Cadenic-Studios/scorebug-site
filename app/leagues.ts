@@ -31,6 +31,50 @@ export type SiteLeague = {
   /** The registry's league colour. */
   color: string
   sport: 'Hockey' | 'Football' | 'Basketball' | 'Baseball' | 'Soccer' | 'Racing' | 'Cricket'
+  /** Where the league plays, written the way a person would say it. Drives the
+   *  "one app, not a North American one" story on the sport hubs, and is the
+   *  detail an answer engine needs in order to place a league for a reader who
+   *  is not American. */
+  country: string
+  /** Coarse region, used to group the hubs. */
+  region: 'North America' | 'Europe' | 'Asia'
+  /**
+   * The actual countries this league plays in — the thing a "countries covered"
+   * figure must be counted from.
+   *
+   * It exists separately from `country` above because `country` is a DISPLAY
+   * string, and counting display strings gets the answer wrong: deduping
+   * 'United States', 'Canada' and 'United States and Canada' yields three
+   * countries where there are two. A hub that prints a derived figure has to
+   * derive it from something that is actually a set of countries.
+   *
+   * Empty for a continental competition: the Champions League adds no country
+   * that its clubs' domestic leagues do not already account for, and claiming
+   * every UEFA member would inflate the figure in the other direction.
+   */
+  nations: string[]
+  /**
+   * The name to put in a SHOP query, when the league's own full name makes a
+   * bad one. Falls back to `full`.
+   *
+   * "J1 League (Japan) shirt" is the case that forced this: a parenthetical in
+   * a marketplace search is dead weight at best and a zero-result filter at
+   * worst. "NCAA College Football" is the other — retailers file that under
+   * "College Football", and the acronym returns almost nothing.
+   *
+   * NOTE: these are judgement calls, not measured ones. eBay bot-blocks
+   * scripted requests (a search fetched from a script returns an 1,832-byte
+   * stub with no listings), so result counts could not be compared. If a
+   * league's gear rail underperforms in the affiliate reports, this string is
+   * the first thing to change.
+   */
+  shopName?: string
+  /**
+   * Which football this is. Only meaningful when `sport` is 'Football' or
+   * 'Soccer', and it is the whole reason /football can serve both codes without
+   * lying to either: they share a name and share nothing else.
+   */
+  code?: 'gridiron' | 'association'
 }
 
 /**
@@ -40,28 +84,28 @@ export type SiteLeague = {
  * left to right should hit the league they came for as early as possible.
  */
 export const LEAGUES: SiteLeague[] = [
-  { id: 'NHL',    label: 'NHL',          full: 'National Hockey League',        color: '#58A6FF', sport: 'Hockey' },
-  { id: 'NFL',    label: 'NFL',          full: 'National Football League',      color: '#A371F7', sport: 'Football' },
-  { id: 'NBA',    label: 'NBA',          full: 'National Basketball Association', color: '#F78166', sport: 'Basketball' },
-  { id: 'MLB',    label: 'MLB',          full: 'Major League Baseball',         color: '#D29922', sport: 'Baseball' },
-  { id: 'F1',     label: 'F1',           full: 'Formula 1',                     color: '#E10600', sport: 'Racing' },
+  { id: 'NHL',    label: 'NHL',          full: 'National Hockey League',        color: '#58A6FF', sport: 'Hockey', country: 'United States and Canada', region: 'North America', nations: ['United States', 'Canada'] },
+  { id: 'NFL',    label: 'NFL',          full: 'National Football League',      color: '#A371F7', sport: 'Football', country: 'United States', region: 'North America', code: 'gridiron', nations: ['United States'] },
+  { id: 'NBA',    label: 'NBA',          full: 'National Basketball Association', color: '#F78166', sport: 'Basketball', country: 'United States and Canada', region: 'North America', nations: ['United States', 'Canada'] },
+  { id: 'MLB',    label: 'MLB',          full: 'Major League Baseball',         color: '#D29922', sport: 'Baseball', country: 'United States and Canada', region: 'North America', nations: ['United States', 'Canada'] },
+  { id: 'F1',     label: 'F1',           full: 'Formula 1',                     color: '#E10600', sport: 'Racing', country: 'Worldwide', region: 'Europe', nations: [] },
   // Sits here for the same reason F1 does: the registry orders global
   // competitions above domestic ones, and the IPL is the largest cricket
   // league in the world.
-  { id: 'IPL',    label: 'IPL',          full: 'Indian Premier League',         color: '#7E22CE', sport: 'Cricket' },
-  { id: 'CFL',    label: 'CFL',          full: 'Canadian Football League',      color: '#10B981', sport: 'Football' },
-  { id: 'NCAAF',  label: 'NCAAF',        full: 'NCAA College Football',         color: '#EC4899', sport: 'Football' },
-  { id: 'NCAAB',  label: 'NCAAB',        full: "NCAA Men's College Basketball", color: '#EA580C', sport: 'Basketball' },
-  { id: 'EPL',    label: 'Premier League', full: 'English Premier League',      color: '#963CFF', sport: 'Soccer' },
-  { id: 'UCL',    label: 'Champions Lg', full: 'UEFA Champions League',         color: '#4453D6', sport: 'Soccer' },
-  { id: 'LALIGA', label: 'La Liga',      full: 'La Liga',                       color: '#E11D48', sport: 'Soccer' },
-  { id: 'SERIEA', label: 'Serie A',      full: 'Serie A',                       color: '#0EA5E9', sport: 'Soccer' },
-  { id: 'BUND',   label: 'Bundesliga',   full: 'Bundesliga',                    color: '#84CC16', sport: 'Soccer' },
-  { id: 'LIGUE1', label: 'Ligue 1',      full: 'Ligue 1',                       color: '#F59E0B', sport: 'Soccer' },
-  { id: 'MLS',    label: 'MLS',          full: 'Major League Soccer',           color: '#00B2A9', sport: 'Soccer' },
-  { id: 'CSL',    label: 'Chinese SL',   full: 'Chinese Super League',          color: '#C026D3', sport: 'Soccer' },
-  { id: 'ISL',    label: 'Indian SL',    full: 'Indian Super League',           color: '#FF9933', sport: 'Soccer' },
-  { id: 'JLEAGUE',label: 'J.League',     full: 'J1 League (Japan)',             color: '#BC002D', sport: 'Soccer' },
+  { id: 'IPL',    label: 'IPL',          full: 'Indian Premier League',         color: '#7E22CE', sport: 'Cricket', country: 'India', region: 'Asia', nations: ['India'] },
+  { id: 'CFL',    label: 'CFL',          full: 'Canadian Football League',      color: '#10B981', sport: 'Football', country: 'Canada', region: 'North America', code: 'gridiron', nations: ['Canada'], shopName: 'CFL' },
+  { id: 'NCAAF',  label: 'NCAAF',        full: 'NCAA College Football',         color: '#EC4899', sport: 'Football', country: 'United States', region: 'North America', code: 'gridiron', nations: ['United States'], shopName: 'College Football' },
+  { id: 'NCAAB',  label: 'NCAAB',        full: "NCAA Men's College Basketball", color: '#EA580C', sport: 'Basketball', country: 'United States', region: 'North America', nations: ['United States'], shopName: 'College Basketball' },
+  { id: 'EPL',    label: 'Premier League', full: 'English Premier League',      color: '#963CFF', sport: 'Soccer', country: 'England', region: 'Europe', code: 'association', nations: ['England'], shopName: 'Premier League' },
+  { id: 'UCL',    label: 'Champions Lg', full: 'UEFA Champions League',         color: '#4453D6', sport: 'Soccer', country: 'Europe-wide', region: 'Europe', code: 'association', nations: [] },
+  { id: 'LALIGA', label: 'La Liga',      full: 'La Liga',                       color: '#E11D48', sport: 'Soccer', country: 'Spain', region: 'Europe', code: 'association', nations: ['Spain'] },
+  { id: 'SERIEA', label: 'Serie A',      full: 'Serie A',                       color: '#0EA5E9', sport: 'Soccer', country: 'Italy', region: 'Europe', code: 'association', nations: ['Italy'] },
+  { id: 'BUND',   label: 'Bundesliga',   full: 'Bundesliga',                    color: '#84CC16', sport: 'Soccer', country: 'Germany', region: 'Europe', code: 'association', nations: ['Germany'] },
+  { id: 'LIGUE1', label: 'Ligue 1',      full: 'Ligue 1',                       color: '#F59E0B', sport: 'Soccer', country: 'France', region: 'Europe', code: 'association', nations: ['France'] },
+  { id: 'MLS',    label: 'MLS',          full: 'Major League Soccer',           color: '#00B2A9', sport: 'Soccer', country: 'United States and Canada', region: 'North America', code: 'association', nations: ['United States', 'Canada'] },
+  { id: 'CSL',    label: 'Chinese SL',   full: 'Chinese Super League',          color: '#C026D3', sport: 'Soccer', country: 'China', region: 'Asia', code: 'association', nations: ['China'] },
+  { id: 'ISL',    label: 'Indian SL',    full: 'Indian Super League',           color: '#FF9933', sport: 'Soccer', country: 'India', region: 'Asia', code: 'association', nations: ['India'] },
+  { id: 'JLEAGUE',label: 'J.League',     full: 'J1 League (Japan)',             color: '#BC002D', sport: 'Soccer', country: 'Japan', region: 'Asia', code: 'association', nations: ['Japan'], shopName: 'J.League' },
 ]
 
 /** Derived, never typed twice. The page quotes this count in several places and
