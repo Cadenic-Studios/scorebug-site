@@ -73,13 +73,28 @@ and its search results are client-rendered, so `fetch` returns an empty shell.**
   Impact dashboard.** If `u=` is ignored the visitor still lands on the EU shop
   — worse targeting, not a broken link. If a UK-specific tracking link exists,
   swapping `FANATICS_INTL_BASE` is a one-line change.
-- **Three SoccerGarage ad ids exist across the two repos**: `10596243` (this
-  site, the creative pulled from CJ on 2026-09-08, pixel on `tqlkg.com`),
-  `10479704` (the app's `RepYourSide`, pixel on `ftjcfx.com`) and `11017822`
-  (the app's `affiliateLinks.ts`, used by nothing that renders). These are
-  different creatives for one advertiser and all may be valid, but a click id
-  must always be paired with ITS OWN pixel host — reporting an impression
-  against an ad that was never shown is the failure to avoid. Reconcile in CJ.
+- **Three SoccerGarage creatives are live, and each belongs to a placement
+  family.** All confirmed valid by the owner. They are not a conflict to
+  resolve — they are per-placement reporting, and mixing them up is the bug:
+  | Creative | Pixel host | Rendered by |
+  |---|---|---|
+  | `10479704` | `ftjcfx.com` | the app's RepYourSide **and** this site's gear rail — a text button with an impression pixel |
+  | `10596243` | `tqlkg.com` | nothing. A 120×60 **banner** creative. Reserved for a real banner placement if one is ever built |
+  | `11017822` | — | the app's ad-engine soccer slots and Lineup merch rail, via `soccerGarageUrl` |
+  A click id must always be paired with ITS OWN pixel host. This site briefly
+  shipped `10596243`'s click id under a text button that never displays the
+  banner, crediting an impression for an ad nobody saw; it is back on
+  `10479704` and matches the app.
+- **SoccerGarage cannot be deep-linked, and the app was 404ing on it.**
+  `soccerGarageUrl` in the app deep-linked
+  `soccergarage.com/catalogsearch/result/?q=<club>`, which resolves — measured
+  2026-09-08 — to `www.soccergarage.com/404.html`. Every soccer click from
+  three ad-engine slots and the Lineup merch rail dead-ended, invisibly: the CJ
+  click resolved, the chain returned 200, and the failure was two hops down.
+  Fixed to the shop root. **Any copy above a SoccerGarage link must ask for a
+  CATEGORY — boots, keeper gloves, training kit — and never name a club.** The
+  ad engine's `club-kit` angle used to read "Kit Up in Your Arsenal Colours"
+  over that link; it is now "Training Kit & Team Wear".
 - **Kitbag: applied, awaiting approval.** Note that Fanatics International
   already covers the same catalogue through campaign `895352`, so approval is
   now an improvement (per-club official stores) rather than the unlock it was.

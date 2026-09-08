@@ -70,6 +70,18 @@ export type SiteLeague = {
    */
   shopName?: string
   /**
+   * WHICH Fanatics storefront stocks this league. Omitted means the domestic
+   * one. Mirrors `fanaticsStore` on the app's `lib/leagueRegistry.ts` — same
+   * field, same values, same reason: the US shop does not carry European
+   * football, and a hand-kept list of the exceptions goes stale the moment a
+   * league is added.
+   *
+   *   'intl'  fanatics.co.uk on the international Impact campaign, whatever
+   *           country the reader is in. Measured stocked: Arsenal 299 items,
+   *           Real Madrid 183, Juventus 125, Dortmund 93, PSG, Marseille.
+   */
+  fanaticsStore?: 'us' | 'intl'
+  /**
    * Which football this is. Only meaningful when `sport` is 'Football' or
    * 'Soccer', and it is the whole reason /football can serve both codes without
    * lying to either: they share a name and share nothing else.
@@ -96,12 +108,12 @@ export const LEAGUES: SiteLeague[] = [
   { id: 'CFL',    label: 'CFL',          full: 'Canadian Football League',      color: '#10B981', sport: 'Football', country: 'Canada', region: 'North America', code: 'gridiron', nations: ['Canada'], shopName: 'CFL' },
   { id: 'NCAAF',  label: 'NCAAF',        full: 'NCAA College Football',         color: '#EC4899', sport: 'Football', country: 'United States', region: 'North America', code: 'gridiron', nations: ['United States'], shopName: 'College Football' },
   { id: 'NCAAB',  label: 'NCAAB',        full: "NCAA Men's College Basketball", color: '#EA580C', sport: 'Basketball', country: 'United States', region: 'North America', nations: ['United States'], shopName: 'College Basketball' },
-  { id: 'EPL',    label: 'Premier League', full: 'English Premier League',      color: '#963CFF', sport: 'Soccer', country: 'England', region: 'Europe', code: 'association', nations: ['England'], shopName: 'Premier League' },
-  { id: 'UCL',    label: 'Champions Lg', full: 'UEFA Champions League',         color: '#4453D6', sport: 'Soccer', country: 'Europe-wide', region: 'Europe', code: 'association', nations: [], shopName: 'Champions League' },
-  { id: 'LALIGA', label: 'La Liga',      full: 'La Liga',                       color: '#E11D48', sport: 'Soccer', country: 'Spain', region: 'Europe', code: 'association', nations: ['Spain'] },
-  { id: 'SERIEA', label: 'Serie A',      full: 'Serie A',                       color: '#0EA5E9', sport: 'Soccer', country: 'Italy', region: 'Europe', code: 'association', nations: ['Italy'] },
-  { id: 'BUND',   label: 'Bundesliga',   full: 'Bundesliga',                    color: '#84CC16', sport: 'Soccer', country: 'Germany', region: 'Europe', code: 'association', nations: ['Germany'] },
-  { id: 'LIGUE1', label: 'Ligue 1',      full: 'Ligue 1',                       color: '#F59E0B', sport: 'Soccer', country: 'France', region: 'Europe', code: 'association', nations: ['France'] },
+  { id: 'EPL',    label: 'Premier League', full: 'English Premier League',      color: '#963CFF', sport: 'Soccer', country: 'England', region: 'Europe', code: 'association', nations: ['England'], shopName: 'Premier League', fanaticsStore: 'intl' },
+  { id: 'UCL',    label: 'Champions Lg', full: 'UEFA Champions League',         color: '#4453D6', sport: 'Soccer', country: 'Europe-wide', region: 'Europe', code: 'association', nations: [], shopName: 'Champions League', fanaticsStore: 'intl' },
+  { id: 'LALIGA', label: 'La Liga',      full: 'La Liga',                       color: '#E11D48', sport: 'Soccer', country: 'Spain', region: 'Europe', code: 'association', nations: ['Spain'], fanaticsStore: 'intl' },
+  { id: 'SERIEA', label: 'Serie A',      full: 'Serie A',                       color: '#0EA5E9', sport: 'Soccer', country: 'Italy', region: 'Europe', code: 'association', nations: ['Italy'], fanaticsStore: 'intl' },
+  { id: 'BUND',   label: 'Bundesliga',   full: 'Bundesliga',                    color: '#84CC16', sport: 'Soccer', country: 'Germany', region: 'Europe', code: 'association', nations: ['Germany'], fanaticsStore: 'intl' },
+  { id: 'LIGUE1', label: 'Ligue 1',      full: 'Ligue 1',                       color: '#F59E0B', sport: 'Soccer', country: 'France', region: 'Europe', code: 'association', nations: ['France'], fanaticsStore: 'intl' },
   { id: 'MLS',    label: 'MLS',          full: 'Major League Soccer',           color: '#00B2A9', sport: 'Soccer', country: 'United States and Canada', region: 'North America', code: 'association', nations: ['United States', 'Canada'] },
   { id: 'CSL',    label: 'Chinese SL',   full: 'Chinese Super League',          color: '#C026D3', sport: 'Soccer', country: 'China', region: 'Asia', code: 'association', nations: ['China'] },
   { id: 'ISL',    label: 'Indian SL',    full: 'Indian Super League',           color: '#FF9933', sport: 'Soccer', country: 'India', region: 'Asia', code: 'association', nations: ['India'] },

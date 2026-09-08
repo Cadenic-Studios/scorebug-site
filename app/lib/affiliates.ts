@@ -27,6 +27,8 @@
  * no props, and that is deliberate so no surface can water the wording down.
  */
 
+import { LEAGUES } from '../leagues'
+
 // ─── eBay Partner Network ────────────────────────────────────────────────────
 
 const EPN_BASE = 'https://www.ebay.com/sch/i.html'
@@ -121,6 +123,10 @@ const FANATICS_INTL_ORIGIN = 'https://www.fanatics.co.uk'
 
 /**
  * Leagues the DOMESTIC (US) storefront stocks per-club.
+ *
+ * Still a set here rather than a league-table field, because "does the US shop
+ * carry this" is a fact about a merchant, and the site's league table exists to
+ * mirror the app's registry. The INTERNATIONAL side is different — see below.
  */
 const FANATICS_US_LEAGUES = new Set(['NHL', 'NFL', 'NBA', 'MLB', 'NCAAF', 'NCAAB', 'MLS'])
 
@@ -155,7 +161,20 @@ const FANATICS_US_LEAGUES = new Set(['NHL', 'NFL', 'NBA', 'MLB', 'NCAAF', 'NCAAB
  * UCL is included because every club in its field is stocked under its
  * domestic league; the competition-level query itself is thin.
  */
-const FANATICS_INTL_LEAGUES = new Set(['EPL', 'LALIGA', 'SERIEA', 'BUND', 'LIGUE1', 'UCL'])
+/**
+ * The INTERNATIONAL storefront's leagues come from the league table's
+ * `fanaticsStore` field, mirroring the app, where the same fact lives on the
+ * league registry.
+ *
+ * It moved out of a hand-kept set here because the app's league-coverage audit
+ * rejected exactly that shape on the app side, and it was right: a six-entry
+ * subset of nineteen leagues goes stale silently, and the next league added
+ * would inherit the US shop by accident. Keeping the two repos structurally
+ * the same also means a reader who has understood one has understood both.
+ */
+function intlLeagueIds(): Set<string> {
+  return new Set(LEAGUES.filter(l => l.fanaticsStore === 'intl').map(l => l.id))
+}
 
 export type FanaticsStore = 'us' | 'intl'
 
@@ -164,7 +183,7 @@ export function fanaticsStoreFor(league?: string | null): FanaticsStore | null {
   if (!league) return null
   const id = String(league).trim().toUpperCase()
   if (FANATICS_US_LEAGUES.has(id)) return 'us'
-  if (FANATICS_INTL_LEAGUES.has(id)) return 'intl'
+  if (intlLeagueIds().has(id)) return 'intl'
   return null
 }
 
@@ -272,24 +291,37 @@ export function ticketNetworkGameUrl(away?: string | null, home?: string | null)
  * incident. Same reasoning as the TicketNetwork note above.
  */
 /**
- * The ad id the owner pulled from CJ on 2026-09-08. Its impression pixel is on
- * tqlkg.com, NOT ftjcfx.com — each CJ creative has its own pixel host, and
- * pairing one creative's click with another's pixel reports an impression
- * against an ad that was never shown. Both values below must change together.
+ * ─── THE SAME CREATIVE THE APP RENDERS, AND THAT IS THE POINT ───────────────
  *
- * Two other SoccerGarage ad ids exist in these repos (10479704 in the app's
- * RepYourSide, 11017822 in its affiliateLinks). Those are different creatives
- * for the same advertiser and are not wrong, but see PARTNERS.md — they should
- * be reconciled against the CJ dashboard so per-creative reporting is legible.
+ * The publisher account has at least three live SoccerGarage creatives, all
+ * valid, all confirmed by the owner:
+ *
+ *   10479704   a link creative. Pixel on ftjcfx.com. This one — it is what the
+ *              app's RepYourSide renders, and this site's unit is the same
+ *              shape: a text button with an impression pixel beside it.
+ *   10596243   a 120x60 BANNER creative. Pixel on tqlkg.com. Briefly used here
+ *              and reverted: this site renders a gold text button and never
+ *              displays the banner image, so the banner's click id was being
+ *              credited for an impression of an ad nobody saw. If a real
+ *              banner placement is ever built, this is its id.
+ *   11017822   used by the app's ad-engine slots and Lineup merch rail via
+ *              `soccerGarageUrl`. A different placement family, deliberately
+ *              reported separately.
+ *
+ * ─── THE PIXEL HOST IS PER CREATIVE ─────────────────────────────────────────
+ * Each id has its own impression-pixel host, and they are not interchangeable:
+ * 10479704 is ftjcfx.com, 10596243 is tqlkg.com. Pairing one creative's click
+ * with another's pixel reports an impression against an ad that was never
+ * shown. The two constants below must always change together.
  */
-const CJ_SOCCERGARAGE_LINK_ID = '10596243'
+const CJ_SOCCERGARAGE_LINK_ID = '10479704'
 const SOCCERGARAGE_CLICK =
   `https://www.dpbolvw.net/click-${CJ_PUBLISHER_ID}-${CJ_SOCCERGARAGE_LINK_ID}`
 
 /** The CJ impression pixel that ships with the SoccerGarage creative. Render it
  *  as a real element only on a surface that actually shows the creative. */
 export const SOCCERGARAGE_PIXEL =
-  `https://www.tqlkg.com/image-${CJ_PUBLISHER_ID}-${CJ_SOCCERGARAGE_LINK_ID}`
+  `https://www.ftjcfx.com/image-${CJ_PUBLISHER_ID}-${CJ_SOCCERGARAGE_LINK_ID}`
 
 /** The shop front. Takes no club, because it cannot honour one. */
 export function soccerGarageUrl(placementId = 'public_soccer_shop'): string {
