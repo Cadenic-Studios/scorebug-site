@@ -81,6 +81,57 @@ const nextConfig = {
       destination: 'https://getscorebug.app/:path*',
       permanent: true,
     }]
+    /**
+     * ─── THE VANITY DOMAINS: scorebug.hockey, scorebug.football ─────────────
+     *
+     * Same mechanism as the www rule above, and for a sharper version of the
+     * same reason. Adding a domain to this Vercel project makes the project
+     * ANSWER on it — without these rules the entire marketing site would serve
+     * a 200 on all three hosts, which is the duplicate-content problem the www
+     * rule exists to fix, tripled. These rules are not an enhancement; they are
+     * the thing that makes it safe to attach the domains at all.
+     *
+     * Two rules per host, and the order between them is load-bearing:
+     *   `/`        → the sport hub. Somebody who TYPES scorebug.hockey wants
+     *                hockey, not a generic homepage.
+     *   `/:path*`  → the same path on the apex, so a deep link that was printed
+     *                or shared against a vanity domain still resolves.
+     * `:path*` matches zero segments, so it also matches `/` — the bare-root
+     * rule must therefore come first or the hub landing never fires.
+     *
+     * 308, not 307. The www rule's reasoning applies with nothing held back:
+     * these hosts are never going to become their own sites, so a permanent
+     * redirect is the honest answer, and permanence is what consolidates the
+     * link equity onto the one host that can rank. See VANITY_DOMAINS in
+     * app/config.ts for why they are not separate sites.
+     *
+     * ─── HAND-MIRRORED FROM app/config.ts ──────────────────────────────────
+     * A .js config cannot import the TS module, the same constraint
+     * app/leagues.ts documents for the app registry. Keep the two lists in
+     * step: a host added there and forgotten here serves a duplicate of the
+     * whole site, and a host added here whose `landing` page does not exist
+     * bounces every visitor to a 404.
+     */
+    const VANITY = [
+      ['scorebug.hockey', '/hockey'],
+      ['scorebug.football', '/football'],
+    ]
+    const VANITY_RULES = VANITY.flatMap(([host, landing]) =>
+      [host, `www.${host}`].flatMap(h => [
+        {
+          source: '/',
+          has: [{ type: 'host', value: h }],
+          destination: `https://getscorebug.app${landing}`,
+          permanent: true,
+        },
+        {
+          source: '/:path*',
+          has: [{ type: 'host', value: h }],
+          destination: 'https://getscorebug.app/:path*',
+          permanent: true,
+        },
+      ]),
+    )
     const APP_ROUTES = [
       'activity', 'admin', 'auth', 'fan', 'go', 'linemates', 'player-card',
       'the-almanac', 'the-bleachers', 'the-docket',
@@ -90,7 +141,11 @@ const nextConfig = {
     const APP = 'https://app.getscorebug.app'
     // Two rules per route: the bare path, and everything beneath it.
     // `/x/:rest*` does not match `/x` itself, so the pair is required.
+    // VANITY first: its rules are host-scoped, and APP_ROUTES below is not.
+    // Reversed, a vanity-host request for an app route would be handed
+    // straight to app.getscorebug.app, skipping the consolidation hop.
     return [
+      ...VANITY_RULES,
       ...WWW,
       ...APP_ROUTES.flatMap(r => [
         { source: `/${r}`, destination: `${APP}/${r}/`, permanent: false },

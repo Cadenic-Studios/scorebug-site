@@ -4,6 +4,7 @@ import { SITE, WEB_APP } from '../../config'
 import { LEAGUES, LEAGUE_COUNT, type SiteLeague } from '../../leagues'
 import { GEAR_TEAMS } from '../../lib/teams'
 import { MATCHUPS } from '../../matchups'
+import { SPORT_HUBS } from '../../sports'
 import { organizationSchema, applicationSchema, faqSchema, graph, type Faq } from '../../lib/seo'
 import { SiteHeader, SiteFooter, Breadcrumbs, BreadcrumbNav, AppCta } from '../../components/SiteChrome'
 import Link from 'next/link'
@@ -63,6 +64,11 @@ export default function LeaguePage({ params }: { params: { league: string } }) {
 
   const clubs = GEAR_TEAMS.filter(t => t.league === (l.id as never))
   const rivalries = MATCHUPS.filter(m => m.league === l.id)
+  /* The sport hub above this page, where one exists. Deliberately NOT in the
+     breadcrumb: /hockey is not a parent of /leagues/nhl in the URL tree, and a
+     breadcrumb that claims a hierarchy the paths do not have is a structured
+     -data assertion that is simply false. It is a sibling link instead. */
+  const hub = SPORT_HUBS.find(h => h.sport === l.sport)
 
   /**
    * Written as questions somebody actually types. Each answer is a complete
@@ -198,7 +204,17 @@ export default function LeaguePage({ params }: { params: { league: string } }) {
             </dl>
           </section>
 
-          <p className="mt-14 text-[13px] text-ink-3">
+          {hub && (
+            <p className="mt-14 text-[15px] leading-relaxed text-ink-2">
+              Every {hub.label.toLowerCase()} league, club and rivalry Scorebug covers is indexed on{' '}
+              <Link href={`/${hub.slug}`} className="font-semibold text-sb-blue underline decoration-white/25 underline-offset-2 hover:text-ink">
+                the {hub.label.toLowerCase()} page
+              </Link>
+              .
+            </p>
+          )}
+
+          <p className="mt-6 text-[13px] text-ink-3">
             Prefer the full app?{' '}
             <a href={WEB_APP} className="font-semibold text-ink underline decoration-white/25 underline-offset-2">
               Open Scorebug in your browser

@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { SITE } from '../config'
 import { LEAGUES, LEAGUE_COUNT } from '../leagues'
+import { SPORT_HUBS } from '../sports'
 import { SiteHeader, SiteFooter, BreadcrumbNav, AppCta } from '../components/SiteChrome'
 
 /**
@@ -45,7 +46,24 @@ export default function LeaguesIndex() {
           <div className="mt-10 space-y-9">
             {Object.entries(bySport).map(([sport, list]) => (
               <section key={sport}>
-                <h2 className="text-[10px] font-black uppercase tracking-[0.22em] text-ink-3">{sport}</h2>
+                {/* The sport name links to its hub where one exists. This hub
+                    page is the internal link graph for the programmatic set —
+                    see its docblock — and a sport layer that nothing linked
+                    into would be the same orphan problem one level down. */}
+                {(() => {
+                  const hub = SPORT_HUBS.find(h => h.sport === sport)
+                  const heading = 'text-[10px] font-black uppercase tracking-[0.22em]'
+                  return hub ? (
+                    <h2>
+                      <Link href={`/${hub.slug}`} className={`${heading} text-ink-3 transition-colors hover:text-ink-2`}>
+                        {sport}
+                        <span aria-hidden className="ml-1.5 opacity-70">›</span>
+                      </Link>
+                    </h2>
+                  ) : (
+                    <h2 className={`${heading} text-ink-3`}>{sport}</h2>
+                  )
+                })()}
                 <ul className="mt-3 flex flex-wrap gap-2">
                   {list.map(l => (
                     <li key={l.id}>

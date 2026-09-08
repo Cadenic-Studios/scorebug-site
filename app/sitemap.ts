@@ -2,6 +2,7 @@ import type { MetadataRoute } from 'next'
 import { SITE, LEGAL_PATHS, LEGAL_UPDATED_ISO, REFUNDS_UPDATED_ISO } from './config'
 import { GEAR_TEAMS } from './lib/teams'
 import { LEAGUES } from './leagues'
+import { SPORT_HUBS } from './sports'
 import { MATCHUPS } from './matchups'
 import { getProductHandles } from './lib/shopify'
 
@@ -61,6 +62,19 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       lastModified: new Date(),
       changeFrequency: 'weekly' as const,
       priority: 0.6,
+    })),
+    /* ── The sport hubs ───────────────────────────────────────────────────
+       Priority 0.8, level with /leagues: these are the pages the vanity
+       domains land on, so they are an entry point to the site rather than a
+       leaf. Their own URLs are the ones listed — scorebug.hockey and
+       scorebug.football are NEVER listed anywhere, by anything. A sitemap
+       naming a host that 308s away says the opposite of what the server does,
+       which is the rule this file opens with. */
+    ...SPORT_HUBS.map(h => ({
+      url: `${SITE}/${h.slug}`,
+      lastModified: new Date(),
+      changeFrequency: 'weekly' as const,
+      priority: 0.8,
     })),
     /* ── Programmatic set: league hubs and rivalry pages ───────────────────
        Generated from the same lists their routes' generateStaticParams use, so

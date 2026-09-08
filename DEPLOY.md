@@ -69,7 +69,74 @@ On the `scorebug.ca` domain row in Vercel, choose **Redirect to
 permanent redirect at the edge; no code needed. (308 is the modern 301: same
 permanence, method-preserving. Search engines treat it identically.)
 
-## 5. App Links / Universal Links
+## 5. scorebug.football and scorebug.hockey → the sport hubs
+
+Two vanity domains, wired the same way as each other and **not** the same way
+as `scorebug.ca` above. Read the difference before you touch the Vercel UI.
+
+**At each registrar** create the same two records as step 2:
+
+| Type  | Name  | Value                   |
+|-------|-------|-------------------------|
+| A     | `@`   | `76.76.21.21`           |
+| CNAME | `www` | `cname.vercel-dns.com`  |
+
+**In Vercel**, add all four hosts — `scorebug.football`, `www.scorebug.football`,
+`scorebug.hockey`, `www.scorebug.hockey` — to the **same `scorebug-site`
+project**, and leave every one of them on **No Redirect**.
+
+### Why not Vercel's "Redirect to…" toggle, when scorebug.ca uses it
+
+Because the toggle only preserves the path. `scorebug.hockey` would land on
+`getscorebug.app/`, the homepage — and somebody who typed a hockey domain
+should arrive at hockey. The redirect is therefore done in code, in
+`next.config.js`, where a bare-root request can be sent to `/hockey` while every
+deeper path still carries across unchanged:
+
+```
+scorebug.hockey/            → 308 → getscorebug.app/hockey
+scorebug.football/          → 308 → getscorebug.app/football
+scorebug.hockey/pricing     → 308 → getscorebug.app/pricing
+www.scorebug.football/      → 308 → getscorebug.app/football
+```
+
+`scorebug.ca` predates this and its toggle is fine — it is a brand alias with
+no sport behind it, so the homepage is the right destination.
+
+### The rule you must not skip
+
+Adding a domain to this project makes the project **answer** on it. Until the
+rules in `next.config.js` are deployed, all four hosts would serve the entire
+marketing site with a `200` — three indexable copies of one site competing with
+each other, which is exactly the duplicate-content problem the `www` rule in
+that file exists to fix. **Deploy first, then add the domains.**
+
+### Verifying
+
+Once DNS resolves, check the status line and the destination, not the browser:
+
+```bash
+curl -sI https://scorebug.hockey/   | grep -iE '^HTTP/|^location'
+curl -sI https://scorebug.football/ | grep -iE '^HTTP/|^location'
+```
+
+Both must answer `308` with a `location` on `getscorebug.app`. A `200` means
+the redirect rules are not deployed and the duplicate-content problem above is
+live right now.
+
+### What NOT to do with them
+
+- Do not build separate sites on them. See `VANITY_DOMAINS` in `app/config.ts`
+  for the reasoning; the short version is that a second site on a zero-authority
+  domain restating this one's content is a doorway pattern that risks the
+  domain that actually ranks.
+- Do not add them to `sitemap.ts`, to Search Console as separate properties, or
+  to any `sameAs`/`alternates` list. A sitemap that names a host which 308s away
+  tells a crawler the opposite of what the server does.
+- Do not point them at the app subdomain. `app.getscorebug.app` is `noindex` on
+  purpose.
+
+## 6. App Links / Universal Links
 
 The two files are already in `public/.well-known/` and are served with
 `Content-Type: application/json` by the headers rule in `next.config.js`.
@@ -106,7 +173,7 @@ curl -i https://getscorebug.app/.well-known/apple-app-site-association
 
 Both must return `200` with `Content-Type: application/json`.
 
-## 6. Before you publish — two content decisions
+## 7. Before you publish — two content decisions
 
 **The Front Office price is shown on the page.** `$3.99/month · $19.99/year`
 appears in the gold section and in the FAQ. In the app source those numbers
@@ -130,7 +197,7 @@ syncing your friend list, and per-team alerts are free rather than a Front
 Office perk. If you edit the copy, re-check it the same way; this page is the
 text answer engines will quote.
 
-## 7. Post-launch SEO checklist
+## 8. Post-launch SEO checklist
 
 - Google Search Console: add the `getscorebug.app` **domain property** (DNS
   TXT verification), submit `https://getscorebug.app/sitemap.xml`.

@@ -231,3 +231,47 @@ export const REFUNDS_UPDATED_ISO = '2026-08-31'
 
 export const LEGAL_UPDATED = 'August 24, 2026'
 export const LEGAL_UPDATED_ISO = '2026-08-24'
+
+/**
+ * ─── THE VANITY DOMAINS ──────────────────────────────────────────────────────
+ *
+ * scorebug.football and scorebug.hockey are owned by the same company and
+ * point at the same product. They are MARKETING addresses — speakable, short
+ * enough for a bio line or a shirt — and they are NOT separate websites.
+ *
+ * ─── WHY THEY REDIRECT INSTEAD OF HOSTING THEIR OWN LANDING PAGES ────────────
+ * Building a site on each would be actively worse than doing nothing:
+ *
+ *  1. A new domain starts with zero authority, and a keyword in the TLD buys
+ *     no ranking — Google treats new gTLDs exactly like .com. So the pages
+ *     would begin from nothing and stay there.
+ *  2. Whatever we wrote there would restate what /leagues/nhl and /football
+ *     already say, on a second host. That is three properties competing for
+ *     one brand's queries, and it is the textbook shape of a doorway network:
+ *     "multiple domain names … that funnel users to one page" is named in
+ *     Google's own spam policy. app/matchups.ts already refuses this pattern
+ *     at page level; refusing it at domain level is the same rule.
+ *  3. Every inbound link a vanity domain earns would be equity spent on a host
+ *     that cannot rank, instead of on the one that can.
+ *
+ * A 308 gives up nothing and gains the links: the address is still speakable,
+ * every link to it consolidates onto getscorebug.app, and there is no second
+ * sitemap, second Search Console property or second set of legal pages to keep
+ * in step forever.
+ *
+ * ─── WHAT MAKES IT MORE THAN A REDIRECT ─────────────────────────────────────
+ * Each one lands on a real hub page written for that sport (`landing`), not on
+ * the homepage. Somebody who types scorebug.hockey wants hockey, and the page
+ * they reach is the hockey directory — every club, every rivalry, the league.
+ *
+ * ─── ADDING ANOTHER ────────────────────────────────────────────────────────
+ * Add the row, add the DNS records (see DEPLOY.md), add the domain in Vercel,
+ * and build the `landing` page if it does not exist. next.config.js generates
+ * the redirect rules from this table, so nothing else needs editing. The
+ * landing path MUST resolve on this deployment — a vanity domain that bounces
+ * to a 404 is worse than one that was never wired up.
+ */
+export const VANITY_DOMAINS: { host: string; landing: string; sport: string }[] = [
+  { host: 'scorebug.hockey', landing: '/hockey', sport: 'Hockey' },
+  { host: 'scorebug.football', landing: '/football', sport: 'Football' },
+]

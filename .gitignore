@@ -42,3 +42,8 @@ peek.png
 .cache
 
 .vercel
+
+# Per-machine dev-server config for the Claude Code Browser pane. Useful, but
+# it carries an absolute cwd and a port chosen to dodge whatever else is
+# running locally, so it is not a shared setting.
+.claude/
