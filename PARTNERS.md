@@ -1,56 +1,88 @@
 # Affiliate partners — what is live, and what to sign next
 
-Written 2026-09-07, when `/football` and `/hockey` went from redirect targets to
-real hubs. The football hub covers ten association-football competitions across
-England, Spain, Italy, Germany, France, the United States, Canada, China, India
-and Japan — and our merchant coverage does **not** currently reach most of them.
-This file records what is wired, what the gap is, and which programmes close it.
+Written 2026-09-07 when `/football` and `/hockey` became real hubs; revised
+2026-09-08 after the Fanatics International contract was found to already cover
+European football, which the code was wrongly excluding.
+
+The football hub covers ten association-football competitions across England,
+Spain, Italy, Germany, France, the United States, Canada, China, India and
+Japan. Six of the ten now reach a storefront that genuinely stocks them; the
+three Asian leagues and the CFL are on eBay because nothing else carries them.
 
 ---
 
 ## 1. What is wired today
 
-All four are already live in `app/lib/affiliates.ts`, with IDs copied verbatim
-from the app's `lib/ads/`. Every rendered link carries `rel="sponsored noopener
-noreferrer"` and sits under a visible **SPONSORED** badge — see
-`app/components/Sponsored.tsx`, which takes no props on purpose.
+All IDs are copied verbatim from the app's `lib/ads/`. Every rendered link
+carries `rel="sponsored noopener noreferrer"` and sits under a visible
+**SPONSORED** badge — see `app/components/Sponsored.tsx`, which takes no props
+on purpose.
 
-| Partner | Network | Covers | Used on |
+| Partner | Network | Campaign | Covers | Used on |
+|---|---|---|---|---|
+| **Fanatics (US)** | Impact | `586570/9663` | NHL, NFL, NBA, MLB, NCAAF, NCAAB, MLS | `/gear/[team]`, both hubs, all league pages |
+| **Fanatics International** | Impact | `895352/9663` | EPL, La Liga, Serie A, Bundesliga, Ligue 1, UCL | `/football`, the six European league pages |
+| **eBay** | eBay Partner Network | — | anything: CFL, CSL, ISL, J.League, F1, IPL | `/gear/[team]`, both hubs, all league pages |
+| **TicketNetwork** | CJ | `11080825` | North American events | `/gear/[team]` |
+| **SoccerGarage** | CJ | `10596243` | boots, keeper gloves, training kit, balls | `/football` |
+| **Beckett** | CJ | — | cards and grading | app only |
+
+### The correction that unlocked the European leagues
+
+This file previously said Fanatics "does not carry European or Asian football".
+**That was true of `fanatics.com` and false of the international storefront**,
+and it cost the ten association-football leagues on `/football` a real club
+store each. Measured 2026-09-08 in a browser against the destination host —
+never the Impact tracking link, which would register a click — reading rendered
+product **titles**:
+
+| Query | Reported | Real titles | Verdict |
 |---|---|---|---|
-| **Fanatics** | Impact | NHL, NFL, NBA, MLB, NCAAF, NCAAB, MLS | `/gear/[team]`, both hubs |
-| **eBay** | eBay Partner Network | anything — any club, any league, any country | `/gear/[team]`, both hubs |
-| **TicketNetwork** | CJ | North American events | `/gear/[team]` |
-| **SoccerGarage** | CJ | world-football boots, keeper gear, training kit | `/football` |
-| **Beckett** | CJ | cards and grading | app only |
+| Arsenal | 299 items | "Arsenal adidas Away Shirt 2026-27" | **stocked** |
+| Real Madrid | 183 items | "Real Madrid adidas Away Shirt 2026-27" | **stocked** |
+| Juventus | 125 items | "Juventus adidas Third Shirt 2026-27" | **stocked** |
+| Borussia Dortmund | 93 items | "Borussia Dortmund PUMA Home Shirt" | **stocked** |
+| Paris Saint-Germain | 1081 items | "PSG Nike Home Stadium Shirt 2026-27" | **stocked** |
+| Olympique Marseille | 72 items | 70 title hits | **stocked** |
+| Champions League | 393 items | 9 title hits, mostly retro | thin, but every club is stocked |
+| Kashima Antlers | 2 items | one 1993-94 retro shirt | **not stocked** |
+| Saskatchewan Roughriders | 100 items | **zero** — Yankees memorabilia | **not stocked** |
 
-### The gap, stated precisely
+### ⚠️ Item counts are not evidence. Test titles.
 
-**Fanatics does not carry European or Asian football**, and returns an empty
-results page for those clubs. `fanaticsCarriesLeague()` therefore excludes them,
-which is correct — sending a fan to an empty store is worse than showing them
-nothing.
+That last row is the important one. **`fanatics.co.uk` never returns an empty
+page.** For a club it does not stock it returns ~100 fuzzily-matched products
+from unrelated sports — the Roughriders search returns New York Yankees
+game-used memorabilia. "Bengaluru FC" returns 98 items of nothing relevant.
 
-**SoccerGarage cannot be deep-linked.** Probed against the destination host on
-2026-09-07 (never the CJ click URL — fetching that registers a real click and
-reads as fraud):
+So a non-zero count proves nothing, and this file's earlier claim that Fanatics
+returns "an empty results page" for a CFL club was wrong in the *other*
+direction: it returns a full, plausible-looking page of junk, which is worse.
 
-```
-/catalogsearch/result/?q=arsenal            → 302 → /404.html
-/search.php?keywords= | ?q= | ?search= | ?keyword=
-                                            → 200, all four byte-identical
-                                              (167,429 bytes) — the parameter is
-                                              ignored; the search form is POST
-```
+**Anyone re-checking `FANATICS_INTL_LEAGUES` must read rendered product titles,
+not counts, and must do it in a real browser — the site 403s scripted requests
+and its search results are client-rendered, so `fetch` returns an empty shell.**
 
-So there is no per-club or per-league SoccerGarage URL to build. It is rendered
-as one honest shop link labelled "SoccerGarage", never as a club button.
+### Open items on the wiring
 
-**The consequence:** every European and Asian football league on `/football`
-currently monetises through an **eBay search only**. That works — eBay resolves
-for any club on earth — but it is the lowest-converting option on the page, and
-it is fronting the leagues with the largest audiences we cover.
-
----
+- **Confirm campaign `895352` covers `fanatics.co.uk` deep links.** The link was
+  supplied as "Fanatics EU home page" and the contract lists IT/ES/FR/DE plus
+  Online Sale EU/UK/ROW as separate payout lines. The Impact `?u=` deep-link
+  form is documented and used identically on the US campaign, but it could not
+  be tested without registering a click. **Check the first EU click in the
+  Impact dashboard.** If `u=` is ignored the visitor still lands on the EU shop
+  — worse targeting, not a broken link. If a UK-specific tracking link exists,
+  swapping `FANATICS_INTL_BASE` is a one-line change.
+- **Three SoccerGarage ad ids exist across the two repos**: `10596243` (this
+  site, the creative pulled from CJ on 2026-09-08, pixel on `tqlkg.com`),
+  `10479704` (the app's `RepYourSide`, pixel on `ftjcfx.com`) and `11017822`
+  (the app's `affiliateLinks.ts`, used by nothing that renders). These are
+  different creatives for one advertiser and all may be valid, but a click id
+  must always be paired with ITS OWN pixel host — reporting an impression
+  against an ad that was never shown is the failure to avoid. Reconcile in CJ.
+- **Kitbag: applied, awaiting approval.** Note that Fanatics International
+  already covers the same catalogue through campaign `895352`, so approval is
+  now an improvement (per-club official stores) rather than the unlock it was.
 
 ## 2. Sign these next, in this order
 
@@ -58,27 +90,24 @@ Each needs an account and a tracking ID before it can be wired. Nothing below is
 in the code yet, and no placeholder IDs have been invented — a wrong tracking ID
 produces a link that works perfectly for the visitor and pays nobody.
 
-### 2.1 Fanatics International EU (Kitbag) — **the one that matters**
+### 2.1 Kitbag / Fanatics International — applied, awaiting approval
 
-The single highest-value gap-closer, and the lowest-friction one because we
-already have a Fanatics relationship on Impact.
+**Status: applied 2026-09-08.** No longer the blocking unlock it was, because
+campaign `895352` already reaches the international catalogue and the six
+European leagues now route there.
 
-Fanatics acquired Kitbag (Manchester) in February 2016 and it now trades as
-Fanatics International. It operates the **official online stores** for
-Manchester United, Real Madrid, Paris Saint-Germain, Atlético Madrid, Everton,
-Celtic, Aston Villa, Manchester City and Borussia Dortmund, with club
-relationships across the Premier League, La Liga, the Bundesliga and Ligue 1.
+What approval would still add: **per-club official stores**. Fanatics
+International operates the official shops for Manchester United, Real Madrid,
+PSG, Atlético Madrid, Everton, Celtic, Aston Villa, Manchester City and
+Borussia Dortmund. Today those clubs resolve through a league-level search on
+`fanatics.co.uk`; approval would let them resolve to the club's own store, and
+would make it defensible to give European clubs their own `/gear/[team]` pages.
 
-That is exactly the per-club deep-linking that SoccerGarage cannot give us. It
-would upgrade six of the ten association leagues on `/football` from a generic
-eBay search to a real club store, and it would let `GEAR_TEAMS` — and therefore
-`/gear/[team]` pages — expand into European football for the first time.
-
-- **Note:** it is a *separate* programme from the US Fanatics account, so it
-  needs its own application even though the parent company is the same.
-- **When approved:** add an `INTL_FANATICS_LEAGUES` set beside
-  `FANATICS_LEAGUES` in `app/lib/affiliates.ts` and give `leagueGearLink` a
-  third branch. The structure already supports it.
+**Do not expand `GEAR_TEAMS` before then.** The 154 existing club pages are
+already at the edge of the added-value test — their body is four affiliate
+buttons — and adding 96 more of the same shape amplifies a known weakness for
+no new content. The trigger is a real per-club fact worth a page, not a working
+merchant link.
 
 ### 2.2 P1 Travel — European football tickets
 

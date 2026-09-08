@@ -112,11 +112,23 @@ function ClubList({ leagues }: { leagues: SiteLeague[] }) {
 /**
  * The gear rail for a set of leagues.
  *
- * ─── WHY THE COPY NEVER NAMES A CLUB ON THE SOCCER SIDE ────────────────────
- * SoccerGarage cannot be deep-linked — measured, see the note in
- * lib/affiliates.ts — so world-football leagues get an eBay search that really
- * does resolve per league, plus ONE honest shop link that says "shop" rather
- * than pretending to be a club store. Fanatics leagues get a real store search.
+ * ─── THREE DESTINATIONS, PICKED PER LEAGUE ─────────────────────────────────
+ * `leagueGearLink` resolves the storefront that actually stocks each league and
+ * reports which one it chose, so the visible merchant name cannot drift from
+ * the link:
+ *
+ *   Fanatics       — the North American majors and college, and MLS.
+ *   Fanatics UK    — the big five European leagues, on the international
+ *                    campaign. Measured: real current kit for Arsenal, Real
+ *                    Madrid, Juventus, Dortmund, PSG and Marseille.
+ *   eBay           — the CFL, the Chinese Super League, the Indian Super
+ *                    League and the J.League, which no Fanatics storefront
+ *                    stocks. Not a gap: eBay resolves for any club on earth.
+ *
+ * Beneath the rows, association-football surfaces also get ONE SoccerGarage
+ * link, because it sells what no club store does — boots, keeper gloves,
+ * training kit. It cannot be deep-linked to a club (see lib/affiliates.ts), so
+ * the copy asks for the category instead of naming a club it cannot honour.
  *
  * The whole rail collapses if nothing resolves, rather than rendering a heading
  * over an empty box.
@@ -180,7 +192,8 @@ function GearRail(
       {anySoccerGarage && (
         <>
           <p className="mt-4 text-[12.5px] leading-relaxed text-ink-3">
-            For boots, keeper gear and training kit rather than a specific club:
+            Boots, keeper gloves, training kit and match balls — the things a club store
+            does not sell:
           </p>
           <AffiliateLink
             href={soccerGarageUrl(`hub_${placement}_shop`)}

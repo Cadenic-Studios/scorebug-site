@@ -307,11 +307,11 @@ export default function PrivacyPolicy() {
                 anything you have logged.
               </P>
               <P>
-                Some sponsored cards also carry a <Term>1&times;1 impression pixel</Term> from CJ —
-                served from ftjcfx.com, and from tqlkg.com on the NordVPN card. It loads when the
-                card is drawn, not when you tap it. Its only purpose is to tell CJ the ad was
-                shown, and CJ may set its own cookie at that point. It carries nothing about you
-                or your account.
+                Some sponsored cards also carry a <Term>1&times;1 impression pixel</Term> from CJ,
+                served from tqlkg.com or ftjcfx.com depending on the card. It loads when the card
+                is drawn, not when you tap it. Its only purpose is to tell CJ the ad was shown,
+                and CJ may set its own cookie at that point. It carries nothing about you or your
+                account.
               </P>
             </Section>
 

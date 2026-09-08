@@ -4,6 +4,8 @@ import { SITE, WEB_APP } from '../../config'
 import { LEAGUES, LEAGUE_COUNT, type SiteLeague } from '../../leagues'
 import { GEAR_TEAMS } from '../../lib/teams'
 import { clubsInLeague } from '../../clubs'
+import { leagueGearLink, advertiserName } from '../../lib/affiliates'
+import Sponsored, { AffiliateLink } from '../../components/Sponsored'
 import { MATCHUPS } from '../../matchups'
 import { hubForSport } from '../../sports'
 import { organizationSchema, applicationSchema, faqSchema, graph, type Faq } from '../../lib/seo'
@@ -87,6 +89,11 @@ export default function LeaguePage({ params }: { params: { league: string } }) {
      breadcrumb that claims a hierarchy the paths do not have is a structured
      -data assertion that is simply false. It is a sibling link instead. */
   const hub = hubForSport(l.sport)
+  /* Resolved once, per league, and it reports the merchant it chose so the
+     visible attribution cannot drift from the destination. Null means no shop
+     honestly stocks this league, and the unit renders nothing rather than a
+     dead button. */
+  const gear = leagueGearLink(l, `league_${l.id.toLowerCase()}`)
 
   /**
    * Written as questions somebody actually types. Each answer is a complete
@@ -194,6 +201,48 @@ export default function LeaguePage({ params }: { params: { league: string } }) {
                 ))}
               </ul>
             </section>
+          )}
+
+          {/* ── ONE GEAR UNIT PER LEAGUE PAGE ────────────────────────────
+              These nineteen pages carried no commerce at all, which was a
+              gap rather than a principle: somebody reading the La Liga page is
+              a person who might want a La Liga shirt, and the merchant is
+              resolved per league by `leagueGearLink` so it can only ever point
+              at a shop that actually stocks it.
+
+              ONE link, not one per club. The club list above is content and
+              stays content — twenty sponsored links interleaved with internal
+              ones cannot be disclosed cleanly per item, and a page whose body
+              is mostly affiliate links stops being the thing that ranks.
+
+              Placed AFTER the club list and before the rivalries, so it sits
+              at the point of highest intent rather than above the content. */}
+          {gear && (
+            <aside className="glass-card mt-14 rounded-2xl p-6">
+              <div className="flex items-start justify-between gap-4">
+                <div className="min-w-0">
+                  <p className="text-[11px] font-black uppercase tracking-[0.16em] text-sb-gold">
+                    {l.label} kit
+                  </p>
+                  <p className="mt-2 text-[14.5px] leading-relaxed text-ink-2">
+                    Shirts and club apparel at {advertiserName(gear.merchant)}.
+                  </p>
+                </div>
+                <Sponsored className="mt-1" />
+              </div>
+              <AffiliateLink
+                href={gear.url}
+                ariaLabel={`Shop ${l.full} kit at ${advertiserName(gear.merchant)} — sponsored`}
+                className="sb-cta mt-4 inline-block rounded-xl px-5 py-3 text-[14px] font-black"
+                style={{
+                  background: 'linear-gradient(180deg, #E5B53C 0%, #E5B53CCC 100%)',
+                  color: '#1A1206',
+                  border: '1px solid #E5B53C',
+                }}
+              >
+                Shop at {advertiserName(gear.merchant)}
+              </AffiliateLink>
+            </aside>
           )}
 
           {rivalries.length > 0 && (

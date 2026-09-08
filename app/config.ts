@@ -316,11 +316,15 @@ export const LEGAL_UPDATED_ISO = '2026-08-24'
  * domains answered `302 → http://getscorebug.app` with the path discarded, so
  * scorebug.football did not serve the football page at all.
  *
- * FLIP TO TRUE only after all four curl checks in DEPLOY.md §5 return 308 to
- * the right path, then redeploy. Shipping it true early is a House Rule 1
- * violation that the live server itself disproves.
+ * TRUE since 2026-09-08. Verified live on all four hosts: apex and www on both
+ * domains answer 308 with an https location and the path carried across, e.g.
+ * `scorebug.football/leagues/epl` -> `getscorebug.app/leagues/epl`.
+ *
+ * Set it back to false if the DNS is ever moved, because the sentence it gates
+ * is a factual claim about a server and a stale `true` is a claim the server
+ * itself disproves.
  */
-export const VANITY_LIVE: boolean = false
+export const VANITY_LIVE: boolean = true
 
 export const VANITY_DOMAINS: { host: string; landing: string; sport: string }[] = [
   { host: 'scorebug.hockey', landing: '/hockey', sport: 'Hockey' },

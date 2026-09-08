@@ -97,7 +97,7 @@ export const LEAGUES: SiteLeague[] = [
   { id: 'NCAAF',  label: 'NCAAF',        full: 'NCAA College Football',         color: '#EC4899', sport: 'Football', country: 'United States', region: 'North America', code: 'gridiron', nations: ['United States'], shopName: 'College Football' },
   { id: 'NCAAB',  label: 'NCAAB',        full: "NCAA Men's College Basketball", color: '#EA580C', sport: 'Basketball', country: 'United States', region: 'North America', nations: ['United States'], shopName: 'College Basketball' },
   { id: 'EPL',    label: 'Premier League', full: 'English Premier League',      color: '#963CFF', sport: 'Soccer', country: 'England', region: 'Europe', code: 'association', nations: ['England'], shopName: 'Premier League' },
-  { id: 'UCL',    label: 'Champions Lg', full: 'UEFA Champions League',         color: '#4453D6', sport: 'Soccer', country: 'Europe-wide', region: 'Europe', code: 'association', nations: [] },
+  { id: 'UCL',    label: 'Champions Lg', full: 'UEFA Champions League',         color: '#4453D6', sport: 'Soccer', country: 'Europe-wide', region: 'Europe', code: 'association', nations: [], shopName: 'Champions League' },
   { id: 'LALIGA', label: 'La Liga',      full: 'La Liga',                       color: '#E11D48', sport: 'Soccer', country: 'Spain', region: 'Europe', code: 'association', nations: ['Spain'] },
   { id: 'SERIEA', label: 'Serie A',      full: 'Serie A',                       color: '#0EA5E9', sport: 'Soccer', country: 'Italy', region: 'Europe', code: 'association', nations: ['Italy'] },
   { id: 'BUND',   label: 'Bundesliga',   full: 'Bundesliga',                    color: '#84CC16', sport: 'Soccer', country: 'Germany', region: 'Europe', code: 'association', nations: ['Germany'] },
