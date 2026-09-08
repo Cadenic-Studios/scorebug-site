@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { pageMeta } from '../lib/meta'
 import Link from 'next/link'
 import { SITE } from '../config'
 import { LEAGUES, LEAGUE_COUNT } from '../leagues'
@@ -14,13 +15,13 @@ import { SiteHeader, SiteFooter, BreadcrumbNav, AppCta } from '../components/Sit
  * late and ranked poorly. This hub is the internal link graph for the whole
  * programmatic set, which is most of what makes it work.
  */
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMeta({
+  path: '/leagues',
   title: `Which leagues can you track and log in Scorebug?`,
   description:
     `Scorebug covers ${LEAGUE_COUNT} leagues across hockey, football, basketball, baseball, soccer, `
     + `racing and cricket. Live scores with no gambling ads, and a permanent logbook for every game you watch.`,
-  alternates: { canonical: `${SITE}/leagues` },
-}
+})
 
 export default function LeaguesIndex() {
   const bySport = LEAGUES.reduce<Record<string, typeof LEAGUES>>((acc, l) => {
@@ -31,7 +32,7 @@ export default function LeaguesIndex() {
   return (
     <>
       <SiteHeader />
-      <main className="lit-blue floodlights relative overflow-hidden">
+      <main id="main" className="lit-blue floodlights relative overflow-hidden">
         <div className="relative z-10 mx-auto max-w-4xl px-5 pb-14 pt-14 sm:pb-20">
           <BreadcrumbNav trail={[{ name: 'Scorebug', href: '/' }, { name: 'Leagues' }]} />
 

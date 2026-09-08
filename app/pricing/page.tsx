@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { pageMeta } from '../lib/meta'
 import {
   SITE, WEB_APP, CONTACT_EMAIL, COMPANY, COMPANY_LOCATION,
   PRICING, LEGAL_PATHS,
@@ -28,14 +29,14 @@ import { SiteHeader, SiteFooter, BreadcrumbNav, LaunchWebApp } from '../componen
  * real removal is the Bleachers feed, which is what the table says.
  */
 
-export const metadata: Metadata = {
-  title: 'Pricing',
+export const metadata: Metadata = pageMeta({
+  path: '/pricing',
+  title: 'Pricing — what Scorebug costs',
   description:
     `Scorebug is free: track live scores across ${LEAGUE_COUNT} leagues and log, grade and keep every `
     + `game you watch. The Front Office is an optional membership at ${PRICING.us.monthly} `
     + `${PRICING.us.currency} a month or ${PRICING.us.yearly} a year.`,
-  alternates: { canonical: `${SITE}/pricing` },
-}
+})
 
 /** Every row is a capability that genuinely differs between the two tiers. */
 const ROWS: { label: string; free: string | boolean; paid: string | boolean }[] = [
@@ -66,7 +67,7 @@ export default function PricingPage() {
     <>
       <SiteHeader />
 
-      <main className="lit-blue floodlights relative overflow-hidden">
+      <main id="main" className="lit-blue floodlights relative overflow-hidden">
         <div className="relative z-10 mx-auto max-w-3xl px-5 pb-14 pt-14 sm:pb-20">
           <BreadcrumbNav trail={[{ name: 'Scorebug', href: '/' }, { name: 'Pricing' }]} />
 
@@ -104,9 +105,32 @@ export default function PricingPage() {
                 Everything in Free, plus the full Analytics Desk, a Starting Lineup of up to 25 teams
                 across the {TEAM_LEAGUE_COUNT} team leagues, and an unlimited Docket.
               </p>
-              <p className="mt-6 text-[13px] text-ink-3">
-                Available in the Android app today. Web checkout is coming shortly.
-              </p>
+              {/* THIS CARD HAD NO CTA, AND ITS CAPTION WAS FALSE.
+                  It read "Web checkout is coming shortly" while the app ships a
+                  live production Paddle token, so web checkout has been the only
+                  channel that can actually take money — the closed Play test
+                  admits nobody uninvited (see LAUNCH_STAGE in app/config.ts).
+                  Meanwhile the Free card beside it got a real button. The page
+                  driving the whole hub campaign was refusing the one purchase
+                  the product can complete.
+
+                  The sign-in sentence is required, not decorative: the app's
+                  webBilling returns `reason: 'no-user'` and refuses an
+                  anonymous checkout, so a cold visitor who clicks straight
+                  through hits a dead end. */}
+              <div className="mt-6">
+                <a
+                  href={`${WEB_APP}/front-office/`}
+                  className="sb-cta enamel-gold inline-flex items-center gap-2 rounded-xl px-5 py-3 text-[14px] font-black"
+                >
+                  Get the Front Office
+                  <span aria-hidden className="opacity-80">&rsaquo;</span>
+                </a>
+                <p className="mt-3 text-[13px] leading-relaxed text-ink-3">
+                  Sign in first, so the membership lands on your account. Sold and processed by
+                  Paddle. Testers on the Android build can subscribe through Google Play instead.
+                </p>
+              </div>
             </div>
           </div>
 

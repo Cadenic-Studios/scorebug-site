@@ -36,13 +36,18 @@ import type { Faq } from './lib/seo'
  * continents, and "we cover the NFL" undersells a product whose best untold
  * story is that it is not a North American app.
  *
- * ─── EVERY LIST AND EVERY COUNT IS DERIVED ─────────────────────────────────
- * Leagues from leagues.ts, clubs from the generated clubs.ts, rivalries from
- * matchups.ts. Add a league to the registry, regenerate, and it appears here
- * with its country, its clubs and its gear rail with no edit to this file.
- * There is not a single hand-typed number in the copy below, because a hub's
- * whole value is being a true directory and a stale count is how that stops
- * being true.
+ * ─── WHAT IS DERIVED, AND WHAT IS NOT ──────────────────────────────────────
+ * Every LIST and every COUNT rendered by the components is derived: leagues
+ * from leagues.ts, clubs from the generated clubs.ts, rivalries from
+ * matchups.ts. Add a league to the registry, regenerate, and it appears on the
+ * hub with its country, its clubs and its gear rail with no edit to this file.
+ *
+ * The PROSE below is not. A handful of figures are spelled out in words in the
+ * title, description, points and FAQ answers, because "thirteen leagues" reads
+ * and gets quoted better than a template hole. An earlier version of this
+ * comment claimed there was "not a single hand-typed number in the copy below",
+ * which was false and would have convinced the next editor to leave them alone.
+ * WHEN YOU ADD A LEAGUE, grep this file for spelled-out numbers and fix them.
  */
 
 export interface SportHub {
@@ -160,11 +165,19 @@ const FOOTBALL: SportHub = {
     + 'J.League. Every match in every one of them can be graded out of 5.0, written up and kept '
     + 'permanently. No betting odds, no spreads, no sportsbook sponsorships, and free in any '
     + 'browser.',
-  title: 'Football — every league, both codes',
+  /* NOT "every league". That is an exhaustive claim, and "both codes" beside it
+     primes it to be read as one — while Liga MX, the Eredivisie, the Primeira
+     Liga and the Championship are all absent. A checkable number is a stronger
+     claim than a universal quantifier anyway, and it survives being quoted. */
+  title: 'Football, both codes: thirteen leagues in one logbook',
+  /* 153 chars. The house budget is ~150 (see app/layout.tsx) and the previous
+     222-char version pushed "no betting odds" — the actual differentiator —
+     past where Google truncates. It also ended "...MLS and Asia", listing a
+     continent as an item in a list of leagues, which contradicts the "not a
+     token listing" claim forty lines below. */
   description:
-    'Thirteen football leagues in one logbook, gridiron and association: the NFL, CFL and college '
-    + 'football alongside the Premier League, La Liga, Serie A, the Bundesliga, Ligue 1, MLS and '
-    + 'Asia. Live scores with no betting odds.',
+    'Thirteen football leagues, gridiron and association: the NFL, CFL, college '
+    + 'football, the Premier League, La Liga, Serie A, MLS and the J.League. No odds.',
 
   families: [
     {
@@ -200,8 +213,8 @@ const FOOTBALL: SportHub = {
       head: 'Not a North American app',
       body:
         'The Chinese Super League, the Indian Super League and the J.League are here on the same '
-        + 'footing as the NFL — live scores and full logging, not a token listing. Very few '
-        + 'trackers carry all three at all.',
+        + 'footing as the NFL — live scores, full logging, and a place in your Starting Lineup. '
+        + 'Not a token listing bolted on to pad a league count.',
     },
     {
       head: 'The game, not the line',
@@ -250,8 +263,8 @@ const FOOTBALL: SportHub = {
     {
       q: 'Is Scorebug free for football fans?',
       a: 'Yes. Live scores and match logging are free in any browser. An optional Front Office '
-        + 'membership adds a larger Starting Lineup and deeper history, but no league coverage '
-        + 'sits behind it.',
+        + 'membership adds a bigger Starting Lineup and the Analytics Desk — your season ledger, '
+        + 'rivalry splits and attendance history — but no league coverage sits behind it.',
     },
   ],
 }
@@ -265,9 +278,9 @@ const HOCKEY: SportHub = {
   h1: 'Every hockey game you watch, graded and kept for good',
   lede:
     'Scorebug is a logbook for hockey fans: live NHL scores across all 32 clubs, and then the part '
-    + 'nothing else does — you grade the game out of 5.0, write what it meant, record whether you '
-    + 'watched at home or were in the building, and keep it permanently. No betting odds, no '
-    + 'spreads and no sportsbook sponsorships, and free in any browser.',
+    + 'a scoreboard never does — you grade the game out of 5.0, write what it meant, record how you '
+    + 'watched it, and keep all of it permanently. No betting odds, no spreads and no sportsbook '
+    + 'sponsorships, and free in any browser.',
   title: 'Hockey — live NHL scores and a permanent logbook',
   description:
     'Live NHL scores with no betting odds, and a permanent record of every hockey game you watch, '
@@ -309,8 +322,8 @@ const HOCKEY: SportHub = {
     {
       q: 'Can I keep a record of every hockey game I watch?',
       a: 'Yes. Scorebug is a logbook first: after a game ends you grade it out of 5.0, write what '
-        + 'it meant, record whether you watched at home or were in the building, and the entry '
-        + 'stays in your vault permanently.',
+        + 'it meant, and record how you took it in — at the game, at home, at a bar, or catching '
+        + 'up later. The entry stays in your vault permanently.',
     },
     {
       q: 'How far back can I log NHL games in Scorebug?',

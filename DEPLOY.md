@@ -1,5 +1,15 @@
 # Deploying getscorebug.app
 
+> ⚠️ **Do not copy an apex IP out of this file.** the apex IP Vercel shows for that domain appeared here
+> for every domain and is Vercel's **retired** apex address. Measured
+> 2026-09-08: `getscorebug.app` answers on `216.198.79.1`, and so does
+> `scorebug.ca`. A domain pointed at the old IP will not issue a certificate,
+> and the failure looks like a propagation delay rather than a wrong record.
+>
+> **Always use the exact records shown in that domain's own row in Vercel →
+> Settings → Domains.** They are per-domain and they change without notice.
+
+
 The marketing site, the web app, and the two store deep-link files all hang off
 one domain. This is the exact order to wire it, start to finish.
 
@@ -36,7 +46,7 @@ it wants; at your DNS registrar create:
 
 | Type | Name | Value |
 |---|---|---|
-| A | `@` | `76.76.21.21` |
+| A | `@` | the apex IP Vercel shows for that domain |
 | CNAME | `www` | `cname.vercel-dns.com` |
 
 Set `getscorebug.app` (apex) as the **primary** domain in Vercel and let
@@ -62,7 +72,7 @@ rewrite does nothing useful until this domain resolves.
 
 Add `scorebug.ca` (and `www.scorebug.ca`) to the **same `scorebug-site`
 project** in Settings → Domains. At the `.ca` registrar create the same
-records as step 2 (A `@` → `76.76.21.21`, CNAME `www` → `cname.vercel-dns.com`).
+records as step 2 (the apex `A` and `www` `CNAME` values shown in the Vercel domain row).
 
 On the `scorebug.ca` domain row in Vercel, choose **Redirect to
 `getscorebug.app`** with status **308 (Permanent)** — Vercel's UI performs the
@@ -74,12 +84,32 @@ permanence, method-preserving. Search engines treat it identically.)
 Two vanity domains, wired the same way as each other and **not** the same way
 as `scorebug.ca` above. Read the difference before you touch the Vercel UI.
 
+**First, remove what is already there.** Measured 2026-09-08, both domains were
+answering on Squarespace parking IPs (`198.185.159.144/145`, `198.49.23.144/145`)
+and issuing a **302 to `http://getscorebug.app`** — a temporary redirect, on the
+plaintext scheme, with the path discarded. That is worse than any option in this
+runbook: a 302 tells Google the SOURCE stays canonical, so `scorebug.football`
+was being canonicalised as a page with no content. Squarespace also set a
+`crumb=` cookie on every hit, on a host these domains' own privacy policy has
+never heard of.
+
+Delete the Squarespace forwarding/parking configuration for both domains before
+adding the records below, or the old records will keep answering.
+
+`www.scorebug.football` and `www.scorebug.hockey` were **NXDOMAIN** — no record
+at all, so anyone typing `www.` got a browser DNS error. The `www` records are
+not optional; `next.config.js` already generates redirect rules for them.
+
 **At each registrar** create the same two records as step 2:
 
-| Type  | Name  | Value                   |
-|-------|-------|-------------------------|
-| A     | `@`   | `76.76.21.21`           |
-| CNAME | `www` | `cname.vercel-dns.com`  |
+| Type  | Name  | Value                                      |
+|-------|-------|--------------------------------------------|
+| A     | `@`   | the apex IP shown in the Vercel domain row  |
+| CNAME | `www` | the CNAME shown in the Vercel domain row    |
+
+At the time of writing the apex answers on `216.198.79.1` and the CNAME is
+`cname.vercel-dns.com` — but read them off Vercel rather than trusting this
+table. See the warning at the top of this file.
 
 **In Vercel**, add all four hosts — `scorebug.football`, `www.scorebug.football`,
 `scorebug.hockey`, `www.scorebug.hockey` — to the **same `scorebug-site`
@@ -120,7 +150,28 @@ curl -sI https://scorebug.hockey/   | grep -iE '^HTTP/|^location'
 curl -sI https://scorebug.football/ | grep -iE '^HTTP/|^location'
 ```
 
-Both must answer `308` with a `location` on `getscorebug.app`. A `200` means
+All four must answer **`308`** — not `302` — with an **`https`** location on
+`getscorebug.app`, and the deep link must keep its path:
+
+```bash
+curl -sI https://scorebug.football/leagues/epl | grep -iE '^HTTP/|^location'
+curl -sI https://www.scorebug.hockey/          | grep -iE '^HTTP/|^location'
+```
+
+A `302`, an `http://` location, or a location with the path stripped all mean
+DNS has not finished moving off Squarespace. Confirm with
+`nslookup scorebug.football` that it no longer answers on a `198.*` address.
+
+Do **not** submit either vanity domain to hstspreload.org. `next.config.js`
+emits `Strict-Transport-Security: max-age=63072000; includeSubDomains; preload`
+unscoped by host, so both will assert preload consent — and preload is
+effectively irreversible while buying nothing on a host that only redirects.
+
+Once all four pass, set `VANITY_LIVE = true` in `app/config.ts` and redeploy.
+That flag gates the "this page is also at scorebug.football" line on the hubs,
+which is false until this step is done.
+
+A `200` means
 the redirect rules are not deployed and the duplicate-content problem above is
 live right now.
 

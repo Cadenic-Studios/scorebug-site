@@ -90,7 +90,7 @@ export async function generateMetadata(
     description,
     alternates: { canonical: `${SITE}/shop/${p.handle}` },
     openGraph: {
-      type: 'website',
+      type: 'website', siteName: 'Scorebug',
       url: `${SITE}/shop/${p.handle}`,
       title,
       description,

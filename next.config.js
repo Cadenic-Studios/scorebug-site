@@ -135,6 +135,12 @@ const nextConfig = {
     const APP_ROUTES = [
       'activity', 'admin', 'auth', 'fan', 'go', 'linemates', 'player-card',
       'the-almanac', 'the-bleachers', 'the-docket',
+      // 'front-office' (no article) is the WEB CHECKOUT route the app's
+      // webBilling.ts returns buyers to after a Paddle purchase
+      // (`${origin}/front-office/?upgraded=1`). Without it that success
+      // redirect 404s on this domain. 'the-front-office' is the separate
+      // membership page; both are real folders in the app repo.
+      'front-office',
       'the-franchise', 'the-front-office', 'the-log', 'the-news',
       'the-playbook', 'the-rafters', 'the-slate', 'the-vault', 'the-pro-shop'
     ]

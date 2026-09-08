@@ -79,7 +79,16 @@ export default function Waitlist() {
           headers,
           body: JSON.stringify({
             email: value,
-            create_user: true,
+            /* FALSE, and this is a security decision, not a preference.
+               With `create_user: true` this fallback provisioned a real
+               Supabase account and emailed a magic SIGN-IN link to whatever
+               address was typed into a form headed "Join the Android test" —
+               while the success screen told the visitor to expect an invite
+               from Google, which is not the email that arrives. The form takes
+               an arbitrary address with no rate limit, so anyone could use it
+               to make this project send sign-in links to third parties.
+               A waitlist entry is a lead record. It is not an account. */
+            create_user: false,
             data: { source: 'waitlist', wants_android: platform === 'android', full_name: name.trim() },
           }),
         },

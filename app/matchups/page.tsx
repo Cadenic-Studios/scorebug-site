@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { pageMeta } from '../lib/meta'
 import Link from 'next/link'
 import { SITE } from '../config'
 import { MATCHUPS, MATCHUP_COUNT } from '../matchups'
@@ -11,13 +12,13 @@ import { SiteHeader, SiteFooter, BreadcrumbNav, AppCta } from '../components/Sit
  * pages are orphans that get crawled late and rank poorly. Grouped by league so
  * the list is scannable rather than 47 undifferentiated links.
  */
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMeta({
+  path: '/matchups',
   title: 'Track the biggest rivalries in sport, without gambling ads',
   description:
     `${MATCHUP_COUNT} of the most-watched rivalries across the NHL, NFL, NBA, MLB and MLS. `
     + `Live scores with no odds or sportsbook sponsorships, and a logbook that keeps every game you watch.`,
-  alternates: { canonical: `${SITE}/matchups` },
-}
+})
 
 export default function MatchupsIndex() {
   const byLeague = MATCHUPS.reduce<Record<string, typeof MATCHUPS>>((acc, m) => {
@@ -28,7 +29,7 @@ export default function MatchupsIndex() {
   return (
     <>
       <SiteHeader />
-      <main className="lit-red floodlights relative overflow-hidden">
+      <main id="main" className="lit-red floodlights relative overflow-hidden">
         <div className="relative z-10 mx-auto max-w-4xl px-5 pb-14 pt-14 sm:pb-20">
           <BreadcrumbNav trail={[{ name: 'Scorebug', href: '/' }, { name: 'Matchups' }]} />
 

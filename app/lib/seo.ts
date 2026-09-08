@@ -1,4 +1,4 @@
-import { SITE, WEB_APP } from '../config'
+import { SITE, appPlatforms } from '../config'
 
 /**
  * Structured data shared by the programmatic pages.
@@ -22,37 +22,43 @@ import { SITE, WEB_APP } from '../config'
  * support.
  */
 
-const PUBLISHER = {
-  '@type': 'SportsOrganization',
-  '@id': `${SITE}#organization`,
-  name: 'Scorebug',
-  url: SITE,
-  logo: `${SITE}/og.png`,
-  description:
-    'An independent sports logbook. Track live scores, then grade and write up '
-    + 'every game you watch. No gambling ads and no sportsbook sponsorships.',
-  areaServed: 'Worldwide',
-  knowsAbout: [] as string[],
-}
+/**
+ * ─── THESE NODES ARE REFERENCES, NOT DEFINITIONS ────────────────────────────
+ *
+ * app/layout.tsx injects the full Organization, WebSite and SoftwareApplication
+ * graph on EVERY page. These helpers used to define their own copies — and
+ * under a different @id, because `SITE` carries no trailing slash, so this file
+ * emitted `getscorebug.app#organization` while the layout emitted
+ * `getscorebug.app/#org`. Different IRIs are different entities: every hub,
+ * league and matchup page shipped TWO Scorebug organisations and TWO Scorebug
+ * apps, and the node being diluted was the layout's — the one carrying
+ * `parentOrganization` up to cadenic.studio.
+ *
+ * They now emit the SAME @id as the layout and carry ONLY what is genuinely
+ * per-page. A node repeating `@id` merges with the layout's; a node also
+ * repeating `name`, `logo` and `description` merges into a contradiction.
+ *
+ * Before adding a property here, check app/layout.tsx does not already say it.
+ * Two values for one property on one node is worse than none.
+ */
 
+/** Per-page topical scope. Everything else about the organisation is in the
+ *  layout's node, which this merges into. */
 export function organizationSchema(knowsAbout: string[]) {
-  return { ...PUBLISHER, knowsAbout }
+  return { '@id': `${SITE}/#org`, knowsAbout }
 }
 
-export function applicationSchema(name: string, description: string) {
-  return {
-    '@type': 'SoftwareApplication',
-    '@id': `${SITE}#app`,
-    name,
-    applicationCategory: 'SportsApplication',
-    operatingSystem: 'Android, Web',
-    url: WEB_APP,
-    description,
-    publisher: { '@id': `${SITE}#organization` },
-    // Free to use. The Front Office tier is an optional upgrade, not a gate on
-    // the product, so the entry price is the honest figure to publish.
-    offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
-  }
+/**
+ * Per-page nuance about the app.
+ *
+ * `description` is deliberately NOT accepted: the layout already supplies one,
+ * and schema.org has no notion of a "more specific" description — a second
+ * value is a conflict, not a refinement. `operatingSystem` comes from
+ * appPlatforms() so this file and the layout cannot disagree about whether
+ * Android is publicly available.
+ */
+export function applicationSchema() {
+  return { '@id': `${SITE}/#app`, operatingSystem: appPlatforms() }
 }
 
 export interface Faq { q: string; a: string }

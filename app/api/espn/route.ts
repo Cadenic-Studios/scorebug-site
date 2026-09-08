@@ -46,36 +46,53 @@ const ALLOWED_HOSTS = new Set([
 /** Only the web app may call this. */
 const ALLOWED_ORIGIN = 'https://app.getscorebug.app'
 
-function cors(origin: string | null): Record<string, string> {
-  // Echo only our own app origin. `*` would let any site borrow this proxy.
-  const allow = origin === ALLOWED_ORIGIN ? ALLOWED_ORIGIN : ALLOWED_ORIGIN
+/**
+ * The response is IDENTICAL for every caller, and saying so is the point.
+ *
+ * This used to read `origin === ALLOWED_ORIGIN ? ALLOWED_ORIGIN : ALLOWED_ORIGIN`
+ * under a comment describing a check. Both branches were the same value, so it
+ * checked nothing — and it read like a security control, which is worse than
+ * having none: the next person to touch this file would have trusted it.
+ *
+ * A single hardcoded `Access-Control-Allow-Origin` is the correct behaviour
+ * here — it is what actually stops another site's page from reading this proxy
+ * — so the fix is to stop pretending the value is computed.
+ *
+ * `Vary: Origin` is gone with it. The header never varied by origin, and
+ * declaring that it does fragments the CDN cache by request header for nothing.
+ *
+ * NOTE: CORS constrains BROWSERS only. It is not a rate limit and not
+ * authentication; any script can still call this endpoint directly and burn
+ * Vercel invocations against ESPN's limiter. A shared-secret header from the
+ * app is the real fix and is not built yet.
+ */
+function cors(): Record<string, string> {
   return {
-    'Access-Control-Allow-Origin': allow,
+    'Access-Control-Allow-Origin': ALLOWED_ORIGIN,
     'Access-Control-Allow-Methods': 'GET, OPTIONS',
     'Access-Control-Allow-Headers': 'content-type',
-    'Vary': 'Origin',
   }
 }
 
 export async function OPTIONS(req: Request) {
-  return new NextResponse(null, { status: 204, headers: cors(req.headers.get('origin')) })
+  return new NextResponse(null, { status: 204, headers: cors() })
 }
 
 export async function GET(req: Request) {
   const origin = req.headers.get('origin')
   const raw = new URL(req.url).searchParams.get('u')
   if (!raw) {
-    return NextResponse.json({ error: 'missing u' }, { status: 400, headers: cors(origin) })
+    return NextResponse.json({ error: 'missing u' }, { status: 400, headers: cors() })
   }
 
   let target: URL
   try {
     target = new URL(raw)
   } catch {
-    return NextResponse.json({ error: 'bad url' }, { status: 400, headers: cors(origin) })
+    return NextResponse.json({ error: 'bad url' }, { status: 400, headers: cors() })
   }
   if (target.protocol !== 'https:' || !ALLOWED_HOSTS.has(target.hostname)) {
-    return NextResponse.json({ error: 'host not allowed' }, { status: 403, headers: cors(origin) })
+    return NextResponse.json({ error: 'host not allowed' }, { status: 403, headers: cors() })
   }
 
   try {
@@ -91,19 +108,19 @@ export async function GET(req: Request) {
       // or a 5xx as itself and backs off correctly, rather than seeing our 200.
       return NextResponse.json(
         { error: `upstream-${upstream.status}` },
-        { status: upstream.status, headers: cors(origin) },
+        { status: upstream.status, headers: cors() },
       )
     }
     const body = await upstream.text()
     return new NextResponse(body, {
       status: 200,
       headers: {
-        ...cors(origin),
+        ...cors(),
         'Content-Type': 'application/json; charset=utf-8',
         'Cache-Control': 'public, max-age=0, s-maxage=30, stale-while-revalidate=60',
       },
     })
   } catch {
-    return NextResponse.json({ error: 'upstream-unreachable' }, { status: 502, headers: cors(origin) })
+    return NextResponse.json({ error: 'upstream-unreachable' }, { status: 502, headers: cors() })
   }
 }

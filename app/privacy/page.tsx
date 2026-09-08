@@ -1,5 +1,6 @@
 import Image from 'next/image'
 import type { Metadata } from 'next'
+import { pageMeta } from '../lib/meta'
 import {
   SITE, CONTACT_EMAIL, COMPANY, COMPANY_LOCATION,
   LEGAL_PATHS, LEGAL_UPDATED, LEGAL_UPDATED_ISO,
@@ -19,12 +20,12 @@ import {
  * cannot be pointed at in the app's code.
  */
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMeta({
+  path: LEGAL_PATHS.privacy,
   title: 'Privacy Policy',
   description:
     'How Scorebug handles your account, your game logs, your photos and your notifications — what we collect, who processes it, and the rights you have over it.',
-  alternates: { canonical: `${SITE}${LEGAL_PATHS.privacy}` },
-}
+})
 
 /* ── Shared page furniture ───────────────────────────────────────────────────
  * Deliberately local to this file rather than a shared component. The three
@@ -305,13 +306,23 @@ export default function PrivacyPolicy() {
                 privacy policies, not this one. We do not send them your account, your email or
                 anything you have logged.
               </P>
+              <P>
+                Some sponsored cards also carry a <Term>1&times;1 impression pixel</Term> from CJ —
+                served from ftjcfx.com, and from tqlkg.com on the NordVPN card. It loads when the
+                card is drawn, not when you tap it. Its only purpose is to tell CJ the ad was
+                shown, and CJ may set its own cookie at that point. It carries nothing about you
+                or your account.
+              </P>
             </Section>
 
             <Section id="analytics" title="Analytics">
               <P>
                 Our analytics are <Term>minimal and first-party</Term>: counts of what got used, so
                 we know which parts of the app are worth improving. We do not embed a third-party
-                analytics vendor, and there is no cross-site tracking pixel in Scorebug.
+                analytics vendor. The one third-party request we do make is CJ&apos;s advertising
+                impression pixel, described under Affiliate links above — it measures that an ad
+                was delivered, not what you do, and nothing else on any page reports back to
+                anyone.
               </P>
             </Section>
 
@@ -324,7 +335,18 @@ export default function PrivacyPolicy() {
                 <LI><Term>Supabase</Term> — the database, authentication and photo storage.</LI>
                 <LI><Term>Google Firebase</Term> — push notification delivery.</LI>
                 <LI><Term>Google AdMob and AdSense</Term> — ads for free accounts.</LI>
-                <LI><Term>Google Play Billing and RevenueCat</Term> — subscription payments and entitlements.</LI>
+                {/* Paddle was missing from this list entirely while a live
+                    production Paddle token shipped in the app bundle — so the
+                    processor actually taking money on the web was undisclosed.
+                    Naming the merchant of record is also what a payment
+                    provider looks for when it verifies a domain. */}
+                <LI>
+                  <Term>Paddle</Term> — web subscription payments. Paddle is the merchant of record
+                  for a purchase made on the web and handles your payment details directly; we
+                  never see your card.
+                </LI>
+                <LI><Term>Google Play Billing</Term> — subscription payments made inside the Android app.</LI>
+                <LI><Term>RevenueCat</Term> — matching a subscription from either storefront to your account.</LI>
                 <LI><Term>Vercel</Term> — hosting for Scorebug Online and this site.</LI>
                 <LI>
                   Sports scores, schedules and news come from third-party data providers. Those are
@@ -345,12 +367,15 @@ export default function PrivacyPolicy() {
                   subscription. Without this data there is no app to provide.
                 </LI>
                 <LI>
-                  <Term>Consent</Term> — push notifications, and personalised advertising where
-                  consent is required. You can withdraw it at any time.
+                  <Term>Consent</Term> — push notifications, which you grant on the device and
+                  can withdraw at any time in your system settings.
                 </LI>
                 <LI>
                   <Term>Legitimate interests</Term> — keeping the service secure, preventing abuse,
-                  and understanding which features are used.
+                  understanding which features are used, and measuring that a sponsored card was
+                  delivered. Our advertising is <Term>contextual</Term>: cards are chosen by the
+                  sport and league on screen, never by a profile of you, so none of it is
+                  personalised advertising.
                 </LI>
                 <LI><Term>Legal obligation</Term> — tax and accounting records for purchases.</LI>
               </UL>

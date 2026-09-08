@@ -79,4 +79,10 @@ export const FAQS: { q: string; a: string }[] = [
     q: 'Does Scorebug cover college sports and soccer?',
     a: `Yes. College coverage is NCAA football and men’s Division I basketball. Soccer covers the Premier League, La Liga, Serie A, Bundesliga, Ligue 1, the Champions League, MLS, the Chinese Super League, the Indian Super League and Japan’s J1 League. Cricket is the Indian Premier League. Alongside those it tracks the NHL, NFL, NBA, MLB, the CFL and Formula 1 — ${LEAGUE_COUNT} leagues in total, and the list keeps growing: new leagues are added as fast as they can be done properly, so if yours is missing it is a not-yet rather than a no.`,
   },
+  {
+    q: 'Is scorebug.football the same site as Scorebug?',
+    a: 'Yes. scorebug.football and scorebug.hockey are short addresses for the same product. '
+      + 'Both redirect permanently to getscorebug.app — scorebug.football to the football pages '
+      + 'and scorebug.hockey to the hockey pages. There is no separate site behind either.',
+  },
 ]

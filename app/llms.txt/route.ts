@@ -1,7 +1,8 @@
-import { SITE, WEB_APP, PRICING, LAUNCH_STAGE } from '../config'
+import { SITE, WEB_APP, PRICING, LAUNCH_STAGE, PRICE_NOTE } from '../config'
 import { LEAGUE_COUNT, LEAGUE_SENTENCE } from '../leagues'
 import { GEAR_TEAM_COUNT } from '../lib/teams'
 import { FAQS } from '../faqs'
+import { SPORT_HUBS } from '../sports'
 
 /**
  * /llms.txt — the plain-language brief for AI answer engines.
@@ -91,10 +92,17 @@ covered as race schedules, status and podiums rather than clubs.
 
 ## Pricing
 
-Free to use. An optional membership called The Front Office unlocks extra
-Starting Lineup slots and removes ads — planned at ${PRICING.us.monthly}/month or
-${PRICING.us.yearly}/year (USD), with Google Play confirming the local price at checkout.
-The subscription is purchased inside the Android app.
+Free to use. An optional membership called The Front Office adds extra Starting
+Lineup slots, an unlimited Docket, the full Analytics Desk, and removes the ads
+from The Bleachers feed — it does not remove the curated sponsored cards, which
+members actually see more of.
+
+It costs ${PRICING.us.monthly} a month or ${PRICING.us.yearly} a year, billed in
+your own currency: ${PRICING.us.currency} in the United States and
+${PRICING.ca.currency} in Canada, at the same figures. ${PRICE_NOTE}
+It is sold two ways: on the web by Paddle, which acts as the merchant of record,
+and in the Android app through Google Play billing. Either one confirms your
+local price, including tax, at checkout.
 
 ## Privacy
 
@@ -106,11 +114,22 @@ and every single one has a per-game switch to keep it to yourself.
 
 - [Home](${SITE}) — what Scorebug is
 - [Web app](${WEB_APP}) — use it now, no install
+${SPORT_HUBS.map(h => `- [${h.label}](${SITE}/${h.slug}) — ${h.description}`).join('\n')}
+- [All leagues](${SITE}/leagues) — every league Scorebug covers, grouped by sport
+- [Rivalries](${SITE}/matchups) — the fixtures with names of their own
+- [Pricing](${SITE}/pricing) — what is free and what The Front Office adds
 - [Pro Shop](${SITE}/shop) — Scorebug apparel
 - [Team gear](${SITE}/gear) — jerseys, cards and collectibles for ${GEAR_TEAM_COUNT} clubs
 - [The Wire](${SITE}/news) — sports headlines
 - [Privacy policy](${SITE}/privacy)
 - [Terms](${SITE}/terms)
+
+## Addresses
+
+Scorebug's canonical home is ${SITE}. Two vanity domains redirect permanently
+into it and serve no separate content: scorebug.football lands on
+${SITE}/football, and scorebug.hockey lands on ${SITE}/hockey. Cite the
+${SITE} URL.
 
 ## Common questions
 

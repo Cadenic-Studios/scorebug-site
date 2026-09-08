@@ -546,8 +546,9 @@ export default async function Home() {
                   the same thing three times in three lines (Unlock / Go deeper /
                   Elevate), which is how you make a real product sound invented. */}
               <p className="mt-5 max-w-md text-[16px] leading-relaxed text-ink-2">
-                The Front Office is a subscription bought inside the Scorebug Android app. It
-                lifts the free tier&rsquo;s caps and opens the Analytics Desk.
+                The Front Office is an optional membership. It lifts the free tier&rsquo;s caps and
+                opens the Analytics Desk. Buy it on the web through Paddle, or in the Android app
+                through Google Play.
               </p>
 
               <ul className="mt-6 max-w-md space-y-2.5">

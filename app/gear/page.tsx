@@ -16,7 +16,7 @@ export const metadata: Metadata = {
   title: TITLE,
   description: DESCRIPTION,
   alternates: { canonical: `${SITE}/gear` },
-  openGraph: { type: 'website', url: `${SITE}/gear`, title: TITLE, description: DESCRIPTION, images: [{ url: '/og.png', width: 1200, height: 630, alt: 'Scorebug' }], },
+  openGraph: { type: 'website', siteName: 'Scorebug', url: `${SITE}/gear`, title: TITLE, description: DESCRIPTION, images: [{ url: '/og.png', width: 1200, height: 630, alt: 'Scorebug' }], },
   twitter: { card: 'summary_large_image', title: TITLE, description: DESCRIPTION },
 }
 
@@ -34,7 +34,7 @@ export default function GearIndex() {
     <>
       <Breadcrumbs trail={[{ name: 'Scorebug', url: SITE }, { name: 'Gear' }]} />
       <SiteHeader />
-      <main className="lit-blue floodlights relative overflow-hidden">
+      <main id="main" className="lit-blue floodlights relative overflow-hidden">
       <div className="relative z-10 mx-auto max-w-6xl px-5 pb-24 pt-14">
         <BreadcrumbNav trail={[{ name: 'Scorebug', href: '/' }, { name: 'Gear' }]} />
         <p className="glass-pill inline-flex items-center gap-2 rounded-full px-3.5 py-1.5 text-[11px] font-black uppercase" style={{ color: '#58A6FF' }}>

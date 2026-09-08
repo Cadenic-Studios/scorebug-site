@@ -75,10 +75,12 @@ export function ebayPlayerCardUrl(playerName: string, modifier?: string): string
 }
 
 /** Memorabilia scoped to a club. */
-export function ebayTeamUrl(teamName: string, modifier = 'memorabilia'): string | null {
+export function ebayTeamUrl(
+  teamName: string, modifier = 'memorabilia', placementId = 'public_gear',
+): string | null {
   const t = (teamName ?? '').trim()
   if (!t) return null
-  return ebaySearchUrl(`${t} ${modifier}`, 'public_gear')
+  return ebaySearchUrl(`${t} ${modifier}`, placementId)
 }
 
 // ─── Fanatics (Impact) ───────────────────────────────────────────────────────
@@ -139,11 +141,15 @@ const TICKETNETWORK_ORIGIN = 'https://www.ticketnetwork.com'
  * That registers a real click against the publisher account and reads as fraud.
  * Fetch the DESTINATION host (ticketnetwork.com) if you need to verify a query.
  */
-export function ticketNetworkTeamUrl(teamName: string): string | null {
+export function ticketNetworkTeamUrl(teamName: string, placementId = 'public_tickets'): string | null {
   const t = (teamName ?? '').trim()
   if (!t) return null
   const dest = `${TICKETNETWORK_ORIGIN}/search?q=${encodeURIComponent(t)}`
-  return `${CJ_CLICK_BASE}?url=${encodeURIComponent(dest)}`
+  // `sid` is CJ's sub-id. Without it every ticket click on this site arrived in
+  // the reports as one undifferentiated row, so there was no way to tell which
+  // surface earned — the same blind spot eBay's `customid` and Impact's
+  // `subId1` already close on the other two networks.
+  return `${CJ_CLICK_BASE}?url=${encodeURIComponent(dest)}&sid=${encodeURIComponent(placementId)}`
 }
 
 /** "Away at Home" — the matchup form used beside a fixture. */
@@ -194,8 +200,8 @@ export const SOCCERGARAGE_PIXEL =
   `https://www.ftjcfx.com/image-${CJ_PUBLISHER_ID}-${CJ_SOCCERGARAGE_LINK_ID}`
 
 /** The shop front. Takes no club, because it cannot honour one. */
-export function soccerGarageUrl(): string {
-  return SOCCERGARAGE_CLICK
+export function soccerGarageUrl(placementId = 'public_soccer_shop'): string {
+  return `${SOCCERGARAGE_CLICK}?sid=${encodeURIComponent(placementId)}`
 }
 
 /**

@@ -46,8 +46,44 @@ export const PLAY_TESTING_URL = 'https://play.google.com/apps/testing/ca.scorebu
 export const PLAY_URL =
   'https://play.google.com/store/apps/details?id=ca.scorebug.sports'
 
-/** The in-page signup section. Every waitlist-stage CTA targets this. */
-export const WAITLIST_ANCHOR = '#waitlist'
+/**
+ * The in-page signup section. ABSOLUTE, not a bare fragment, and that is
+ * load-bearing.
+ *
+ * `id="waitlist"` exists only on the homepage (app/page.tsx). `androidCta()`
+ * below feeds SiteHeader, AppCta and SiteFooter, which ship on every non-legal
+ * route — so as a bare '#waitlist' the "Join the test" button was inert on all
+ * fourteen of them, including both sport hubs, which are the pages the vanity
+ * domains land on. Three dead CTAs per hub at phone width.
+ *
+ * Leave the leading slash. On the homepage this is still a same-document
+ * fragment navigation, so the section's `scroll-mt-8` still applies.
+ */
+export const WAITLIST_ANCHOR = '/#waitlist'
+
+/**
+ * Where a visitor can actually RUN Scorebug today, as a schema.org
+ * `operatingSystem` string.
+ *
+ * Derived from LAUNCH_STAGE because it is a factual claim, and it was being
+ * made twice, differently: app/layout.tsx said 'Web' behind a docblock
+ * explaining that advertising Android while the test is closed "invites Google
+ * to surface an install intent that dead-ends", while app/lib/seo.ts said
+ * 'Android, Web'. RootLayout injects its graph on every page, so every hub,
+ * league and matchup page shipped BOTH claims in one document.
+ *
+ * One source, both emitters, and it flips by itself the day the listing goes
+ * public. Do not hard-code either value at a call site again.
+ *
+ * A FUNCTION, not a const, for the same reason `androidCta()` below is one:
+ * TypeScript narrows a module-scope `const` to its literal initialiser, so
+ * `LAUNCH_STAGE === 'live'` evaluated at module scope is a compile error
+ * ("types 'testing' and 'live' have no overlap"). Inside a function body the
+ * declared union type applies and the comparison is legal.
+ */
+export function appPlatforms(): string {
+  return LAUNCH_STAGE === 'live' ? 'Android, Web' : 'Web'
+}
 
 /**
  * Resolve the Android CTA for the current stage — one place, so the nav and the
@@ -271,6 +307,21 @@ export const LEGAL_UPDATED_ISO = '2026-08-24'
  * landing path MUST resolve on this deployment — a vanity domain that bounces
  * to a 404 is worse than one that was never wired up.
  */
+/**
+ * Whether the vanity DNS has actually been cut over to Vercel yet.
+ *
+ * It gates the "this page is also at scorebug.football" line on the hubs. That
+ * sentence is a factual claim about a live server, and until the registrar
+ * records move off the old parking host it is FALSE — measured 2026-09-08, both
+ * domains answered `302 → http://getscorebug.app` with the path discarded, so
+ * scorebug.football did not serve the football page at all.
+ *
+ * FLIP TO TRUE only after all four curl checks in DEPLOY.md §5 return 308 to
+ * the right path, then redeploy. Shipping it true early is a House Rule 1
+ * violation that the live server itself disproves.
+ */
+export const VANITY_LIVE: boolean = false
+
 export const VANITY_DOMAINS: { host: string; landing: string; sport: string }[] = [
   { host: 'scorebug.hockey', landing: '/hockey', sport: 'Hockey' },
   { host: 'scorebug.football', landing: '/football', sport: 'Football' },

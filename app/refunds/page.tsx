@@ -1,5 +1,6 @@
 import Image from 'next/image'
 import type { Metadata } from 'next'
+import { pageMeta } from '../lib/meta'
 import {
   SITE, CONTACT_EMAIL, COMPANY, COMPANY_LOCATION,
   LEGAL_PATHS, REFUNDS_UPDATED, REFUNDS_UPDATED_ISO,
@@ -26,13 +27,13 @@ import {
  *
  * Keep in step with the Terms' "Front Office subscription" section. */
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMeta({
+  path: LEGAL_PATHS.refunds,
   title: 'Refund Policy',
   description:
     'How refunds, cancellations and billing work for The Front Office — the windows, how to ask, '
     + 'and what happens on Google Play versus a web subscription.',
-  alternates: { canonical: `${SITE}${LEGAL_PATHS.refunds}` },
-}
+})
 
 function LegalHeader() {
   return (

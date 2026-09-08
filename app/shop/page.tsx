@@ -53,7 +53,7 @@ export const metadata: Metadata = {
   description: DESCRIPTION,
   alternates: { canonical: `${SITE}/shop` },
   openGraph: {
-    type: 'website',
+    type: 'website', siteName: 'Scorebug',
     url: `${SITE}/shop`,
     title: TITLE,
     description: DESCRIPTION,

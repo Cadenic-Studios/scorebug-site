@@ -1,5 +1,6 @@
 import Image from 'next/image'
 import type { Metadata } from 'next'
+import { pageMeta } from '../lib/meta'
 import {
   SITE, CONTACT_EMAIL, COMPANY, COMPANY_LOCATION, COMPANY_JURISDICTION,
   LEGAL_PATHS, LEGAL_UPDATED, LEGAL_UPDATED_ISO, WEB_APP,
@@ -14,12 +15,12 @@ import {
  * names a mechanism — Play Billing, the ad tiers, the affiliate links — matches
  * the Privacy Policy's account of the same mechanism; if one moves, both move. */
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMeta({
+  path: LEGAL_PATHS.terms,
   title: 'Terms of Service',
   description:
     'The agreement between you and Cadenic Studios for using Scorebug — your account, your content, the community rules, The Front Office subscription, and the limits on our liability.',
-  alternates: { canonical: `${SITE}${LEGAL_PATHS.terms}` },
-}
+})
 
 /* Page furniture is intentionally duplicated across the three legal pages
    rather than shared — see the note in app/privacy/page.tsx. */
@@ -242,23 +243,48 @@ export default function TermsOfService() {
 
             <Section id="front-office" title="The Front Office subscription">
               <P>
-                The Front Office is Scorebug&apos;s paid tier. It is sold as an auto-renewing
-                subscription through <Term>Google Play Billing</Term>, and managed with RevenueCat.
+                The Front Office is Scorebug&apos;s paid tier. It is an auto-renewing subscription
+                sold through <Term>two different storefronts</Term>, and which one you used decides
+                who you bought from — and therefore who handles a refund.
               </P>
               <UL>
-                <LI>Your price is confirmed by Google Play at checkout in your local currency.</LI>
                 <LI>
-                  It renews automatically at the end of each period until you cancel. Cancel any
-                  time in the Google Play app under Payments &amp; subscriptions — cancelling stops
-                  the next renewal and you keep the benefits until the current period ends.
+                  <Term>On the web</Term>, it is sold and processed by <Term>Paddle</Term>, which
+                  acts as the merchant of record. Paddle&apos;s name is what appears on your
+                  statement.
                 </LI>
                 <LI>
-                  <Term>Refunds are handled by Google Play</Term> under its refund policy, not by
-                  us, because Google is the merchant of record.
+                  <Term>In the Android app</Term>, it is sold through{' '}
+                  <Term>Google Play Billing</Term>, and Google is the merchant of record.
+                </LI>
+              </UL>
+              <P>
+                Entitlements from either storefront are managed with RevenueCat, so a membership
+                bought on one appears on the same account in the other.
+              </P>
+              <UL>
+                <LI>
+                  Your price, including any applicable tax, is confirmed at checkout in your local
+                  currency — by Paddle on the web, by Google Play in the app — before you are
+                  charged.
                 </LI>
                 <LI>
-                  If we change the price, we will tell you before it takes effect and Google will
-                  ask you to accept it. You can cancel instead.
+                  It renews automatically at the end of each period until you cancel. Cancel a web
+                  subscription from the link in your Paddle receipt or by writing to us; cancel a
+                  Play subscription in the Google Play app under Payments &amp; subscriptions.
+                  Either way, cancelling stops the next renewal and you keep the benefits until the
+                  current period ends.
+                </LI>
+                <LI>
+                  <Term>Refunds follow the storefront you bought from.</Term> A web subscription is
+                  refunded by us through Paddle; a Google Play subscription is refunded by Google
+                  under its own policy, because Google is the merchant of record on that purchase
+                  and the money never passes through us. The Refund Policy sets out both paths in
+                  full.
+                </LI>
+                <LI>
+                  If we change the price, we will tell you before it takes effect, and the
+                  storefront will ask you to accept it. You can cancel instead.
                 </LI>
                 <LI>
                   Deleting your Scorebug account does <Term>not</Term> cancel a Play subscription.

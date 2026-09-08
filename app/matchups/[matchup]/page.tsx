@@ -45,7 +45,7 @@ export async function generateMetadata(
     description,
     alternates: { canonical: `${SITE}/matchups/${m.slug}` },
     openGraph: {
-      type: 'website', url: `${SITE}/matchups/${m.slug}`, title, description,
+      type: 'website', siteName: 'Scorebug', url: `${SITE}/matchups/${m.slug}`, title, description,
       images: [{ url: '/og.png', width: 1200, height: 630, alt: 'Scorebug' }],
     },
     twitter: { card: 'summary_large_image', title, description },
@@ -81,10 +81,7 @@ export default function MatchupPage({ params }: { params: { matchup: string } })
     organizationSchema([
       full, `${m.a.name}`, `${m.b.name}`, `${m.a.name} vs ${m.b.name}`,
     ]),
-    applicationSchema(
-      'Scorebug',
-      `Track ${m.a.name} vs ${m.b.name} live, then log and grade the game.`,
-    ),
+    applicationSchema(),
     faqSchema(faqs),
   ])
 
@@ -98,7 +95,7 @@ export default function MatchupPage({ params }: { params: { matchup: string } })
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <SiteHeader />
 
-      <main className="lit-red floodlights relative overflow-hidden">
+      <main id="main" className="lit-red floodlights relative overflow-hidden">
         <div className="relative z-10 mx-auto max-w-4xl px-5 pb-14 pt-14 sm:pb-20">
           <BreadcrumbNav trail={[
             { name: 'Scorebug', href: '/' },

@@ -120,7 +120,20 @@ const HUB_LINKS = [
 export function SiteHeader() {
   const android = androidCta()
   return (
-    <header className="mx-auto max-w-6xl px-5 pt-5 pb-3 md:pb-5">
+    <>
+      {/* SKIP LINK — WCAG 2.4.1, Level A, and the site shipped without one.
+          /football carries 86 anchors in its body: a keyboard user arriving
+          from scorebug.football had to traverse the header, thirteen league
+          cards, fourteen sponsored links and forty-seven rivalry links before
+          reaching anything they came for, on every page load. Visually hidden
+          until focused, then it appears in place. */}
+      <a
+        href="#main"
+        className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-lg focus:bg-sb-red focus:px-4 focus:py-2 focus:text-[14px] focus:font-black focus:text-white"
+      >
+        Skip to content
+      </a>
+      <header className="mx-auto max-w-6xl px-5 pt-5 pb-3 md:pb-5">
       <div className="flex items-center justify-between gap-4">
         <a href="/" aria-label="Scorebug home" className="flex min-w-0 items-center gap-2.5">
           <Image src="/app-icon.png" alt="" width={36} height={36} className="rounded-[9px]" priority />
@@ -160,7 +173,8 @@ export function SiteHeader() {
           </a>
         ))}
       </nav>
-    </header>
+      </header>
+    </>
   )
 }
 
@@ -177,6 +191,20 @@ export function SiteFooter() {
           <a href={APP_LINKS.proShop} className="py-2 -my-2 hover:text-ink-2">Pro Shop</a>
           <a href="/gear" className="py-2 -my-2 hover:text-ink-2">Gear</a>
           <a href="/news" className="py-2 -my-2 hover:text-ink-2">News</a>
+          {/* ── THE HUB CLUSTER WAS ORPHANED ──────────────────────────────
+              Nothing outside /leagues, /matchups and the hubs themselves
+              linked to any of them: the sitemap was their only discovery
+              path, which is the exact failure app/leagues/page.tsx opens by
+              warning against. The footer ships on every non-legal route, so
+              these three lines alone put the whole programmatic set at
+              crawl depth 1 sitewide.
+
+              They are here rather than in HUB_LINKS because that strip is
+              capped at three items for a measured reason — see the note on
+              HUB_LINKS above; a fourth pill clips at 320px. */}
+          <a href="/football" className="py-2 -my-2 hover:text-ink-2">Football</a>
+          <a href="/hockey" className="py-2 -my-2 hover:text-ink-2">Hockey</a>
+          <a href="/leagues" className="py-2 -my-2 hover:text-ink-2">All leagues</a>
           {/* Pricing and Refunds are in the footer because a payment provider
               verifying this domain checks that the site LINKS to its terms,
               privacy and refund policies — not merely that the URLs resolve.
@@ -188,6 +216,22 @@ export function SiteFooter() {
           <a href={androidCta().href} className="py-2 -my-2 hover:text-ink-2">{androidCta().label}</a>
         </nav>
         <p className="text-[12px] text-ink-3">© {new Date().getFullYear()} Scorebug™ · Made in Canada</p>
+      </div>
+
+      {/* ── TRADEMARK NOTICE ───────────────────────────────────────────────
+          This site names 853 club marks and 19 league marks commercially —
+          across the two sport hubs and 154 /gear/[team] pages titled
+          "<Club> gear, jerseys and memorabilia". The Terms carry a correct
+          non-affiliation notice and it appeared NOWHERE else, least of all on
+          the pages actually using the marks. It is also a genuine E-E-A-T
+          signal: saying plainly what you are not is how a reader knows what
+          you are. */}
+      <div className="mx-auto mt-6 max-w-6xl border-t border-white/[0.06] pt-5">
+        <p className="text-center text-[11.5px] leading-relaxed text-ink-3 sm:text-left">
+          Team and league names, marks and logos are the property of their respective owners.
+          Scorebug is an independent fan app and is not affiliated with, endorsed by or sponsored
+          by any league, club or broadcaster.
+        </p>
       </div>
 
       {/* ── COLOPHON ───────────────────────────────────────────────────────

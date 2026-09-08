@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { SITE } from '../config'
+import { SITE, VANITY_LIVE } from '../config'
 import type { SiteLeague } from '../leagues'
 import {
   type SportHub, leaguesFor, leaguesInFamily, clubsInLeagues,
@@ -121,13 +121,19 @@ function ClubList({ leagues }: { leagues: SiteLeague[] }) {
  * The whole rail collapses if nothing resolves, rather than rendering a heading
  * over an empty box.
  */
-function GearRail({ leagues, heading }: { leagues: SiteLeague[]; heading: string }) {
+function GearRail(
+  { leagues, heading, placement }: { leagues: SiteLeague[]; heading: string; placement: string },
+) {
   /* The merchant comes back FROM the link builder, never from a second lookup
      beside it. An earlier version asked `merchantForLeague` separately and
      every European row rendered "SoccerGarage" over a link to eBay — a false
      disclosure, because SoccerGarage has no per-league URL to build. */
   const rows = leagues.flatMap(l => {
-    const link = leagueGearLink(l)
+    /* League-grain sub-id. Every row used to emit the default `public_hub`,
+       so the affiliate reports could never show WHICH league earned — which is
+       the exact signal app/leagues.ts tells the next person to act on when a
+       rail underperforms ("this string is the first thing to change"). */
+    const link = leagueGearLink(l, `hub_${placement}_${l.id.toLowerCase()}`)
     // flatMap rather than map+filter: it narrows away the null without a type
     // predicate, and a null link means the league genuinely has no honest
     // destination, so it should render nothing rather than a dead button.
@@ -177,7 +183,7 @@ function GearRail({ leagues, heading }: { leagues: SiteLeague[]; heading: string
             For boots, keeper gear and training kit rather than a specific club:
           </p>
           <AffiliateLink
-            href={soccerGarageUrl()}
+            href={soccerGarageUrl(`hub_${placement}_shop`)}
             ariaLabel="Shop football boots and kit at SoccerGarage — sponsored"
             className="sb-cta mt-2.5 inline-block rounded-xl px-5 py-2.5 text-[13.5px] font-black"
             style={{
@@ -199,6 +205,12 @@ function GearRail({ leagues, heading }: { leagues: SiteLeague[]; heading: string
             alt=""
             aria-hidden="true"
             className="hidden"
+            /* React 18.3's SSR renderer emits a <link rel="preload" as="image">
+               into <head> for every <img> whose fetchPriority is not "low" —
+               so a hidden 1x1 beacon was being preloaded ahead of real content.
+               NOT loading="lazy": a display:none image may never intersect the
+               viewport, and the impression would be silently lost. */
+            fetchPriority="low"
             {...({ border: '0' } as React.ImgHTMLAttributes<HTMLImageElement>)}
           />
         </>
@@ -214,6 +226,10 @@ export default function SportHubPage({ hub }: { hub: SportHub }) {
   const rivalries = rivalriesFor(hub)
   const countries = countriesFor(hub)
   const clubs = distinctClubCount(leagues)
+  /* What ClubList will actually put on the page — the sum over leagues, with
+     no dedupe, because it renders each league's full field. Compared against
+     `clubs` to decide whether the overlap note is needed. */
+  const renderedClubs = leagues.reduce((n, l) => n + clubsInLeagues([l]).length, 0)
   const families = hub.families ?? []
 
   const jsonLd = graph([
@@ -223,11 +239,7 @@ export default function SportHubPage({ hub }: { hub: SportHub }) {
       ...leagues.map(l => `${l.full} scores`),
       ...countries.map(c => `${hub.label} in ${c}`),
     ]),
-    applicationSchema(
-      'Scorebug',
-      `Track live scores across ${leagues.map(l => l.label).join(', ')} and log, grade and keep `
-      + `every ${hub.label.toLowerCase()} match you watch.`,
-    ),
+    applicationSchema(),
     faqSchema(hub.faqs),
   ])
 
@@ -243,7 +255,7 @@ export default function SportHubPage({ hub }: { hub: SportHub }) {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <SiteHeader />
 
-      <main className="lit-blue floodlights relative overflow-hidden">
+      <main id="main" className="lit-blue floodlights relative overflow-hidden">
         <div className="relative z-10 mx-auto max-w-4xl px-5 pb-14 pt-14 sm:pb-20">
           <BreadcrumbNav trail={[{ name: 'Scorebug', href: '/' }, { name: hub.label }]} />
 
@@ -259,7 +271,7 @@ export default function SportHubPage({ hub }: { hub: SportHub }) {
             {hub.label}
           </p>
 
-          <h1 className="headline mt-5 text-3xl leading-[1.08] text-ink sm:text-4xl">{hub.h1}</h1>
+          <h1 className="headline mt-5 text-3xl text-ink sm:text-4xl">{hub.h1}</h1>
           <p className="mt-5 max-w-[44rem] text-[17px] leading-relaxed text-ink-2">{hub.lede}</p>
 
           {/* ── The coverage figures ──────────────────────────────────────
@@ -298,7 +310,7 @@ export default function SportHubPage({ hub }: { hub: SportHub }) {
                   {fl.map(l => <li key={l.id}><LeagueCard l={l} /></li>)}
                 </ul>
                 <div className="mt-4">
-                  <GearRail leagues={fl} heading={`${f.name} kit`} />
+                  <GearRail leagues={fl} heading={`${f.name} kit`} placement={hub.slug} />
                 </div>
               </section>
             )
@@ -318,7 +330,7 @@ export default function SportHubPage({ hub }: { hub: SportHub }) {
                 {unclaimed.map(l => <li key={l.id}><LeagueCard l={l} /></li>)}
               </ul>
               <div className="mt-4">
-                <GearRail leagues={unclaimed} heading={`${hub.label} gear`} />
+                <GearRail leagues={unclaimed} heading={`${hub.label} gear`} placement={hub.slug} />
               </div>
             </section>
           )}
@@ -348,10 +360,10 @@ export default function SportHubPage({ hub }: { hub: SportHub }) {
             </div>
           </section>
 
-          {/* ── Named rivalries ──────────────────────────────────────────── */}
+          {/* ── Rivalries ─────────────────────────────────────────────────── */}
           {rivalries.length > 0 && (
             <section className="mt-14">
-              <SectionHead sub={`${rivalries.length} fixtures with a name of their own. Each has its own page, and every meeting is loggable like any other match.`}>
+              <SectionHead sub={`${rivalries.length} fixtures with a page of their own, ${rivalries.filter(m => m.nickname).length} of them known by name. Every meeting is loggable like any other match.`}>
                 The rivalries
               </SectionHead>
               <ul className="mt-5 grid gap-2 sm:grid-cols-2">
@@ -383,6 +395,19 @@ export default function SportHubPage({ hub }: { hub: SportHub }) {
             >
               {clubs} clubs, league by league
             </SectionHead>
+            {/* THE HEADING AND THE LIST DISAGREE, AND THIS IS WHY.
+                `clubs` is distinct-by-name; ClubList renders each league's full
+                field, so a Champions League entrant whose domestic league is
+                also covered appears twice. Saying so is better than either
+                lying (drop the dedupe, overstate by 20) or breaking the
+                directory (a UCL section showing 16 of 36 clubs looks broken).
+                Derived, so it disappears by itself if the overlap ever does. */}
+            {renderedClubs > clubs && (
+              <p className="mt-2 text-[13.5px] leading-relaxed text-ink-3">
+                Champions League entrants also appear under their domestic league, so{' '}
+                {renderedClubs - clubs} names repeat below.
+              </p>
+            )}
             <ClubList leagues={leagues} />
           </section>
 
@@ -405,7 +430,13 @@ export default function SportHubPage({ hub }: { hub: SportHub }) {
 
           <AppCta className="mt-14" line={`${clubs} clubs are waiting. Start with the one you actually support.`} />
 
-          {hub.vanityHost && (
+          {/* GATED ON VANITY_LIVE, because this is a factual claim about a
+              server. Measured 2026-09-08, before the DNS cutover, both vanity
+              domains answered `302 -> http://getscorebug.app` with the path
+              discarded — so the sentence was false, and disproved by the very
+              host it names. Flip VANITY_LIVE in app/config.ts once the curl
+              checks in DEPLOY.md §5 pass, then redeploy. */}
+          {VANITY_LIVE && hub.vanityHost && (
             <p className="mt-8 text-[13px] text-ink-3">
               This page is also at <span className="font-bold text-ink-2">{hub.vanityHost}</span>.
             </p>

@@ -1,4 +1,5 @@
 import { GEAR_TEAMS, type GearTeam } from './lib/teams'
+import { CLUBS } from './clubs'
 
 /**
  * The rivalries that get their own page.
@@ -84,6 +85,33 @@ const PAIRS: Array<[string, string, string?]> = [
   ['baltimore-orioles', 'new-york-yankees'],
   ['toronto-blue-jays', 'boston-red-sox'],
 
+  // ── Association football, outside North America ──
+  // Curated the same way the North American pairs are: each of these is a
+  // fixture with a name people actually type, not a generated permutation.
+  ['real-madrid', 'barcelona', 'El Clásico'],
+  ['atletico-madrid', 'real-madrid', 'the Madrid derby'],
+  ['real-betis', 'sevilla', 'the Seville derby'],
+  ['manchester-united', 'liverpool', 'the North West derby'],
+  ['manchester-city', 'manchester-united', 'the Manchester derby'],
+  ['arsenal', 'tottenham-hotspur', 'the North London derby'],
+  ['liverpool', 'everton', 'the Merseyside derby'],
+  ['inter-milan', 'ac-milan', 'the Derby della Madonnina'],
+  ['juventus', 'inter-milan', 'the Derby d\'Italia'],
+  ['as-roma', 'lazio', 'the Derby della Capitale'],
+  ['bayern-munich', 'borussia-dortmund', 'Der Klassiker'],
+  ['borussia-dortmund', 'borussia-monchengladbach'],
+  ['paris-sg', 'marseille', 'Le Classique'],
+  ['lyon', 'marseille', 'the Olympico'],
+
+  // ── CFL ──
+  ['calgary-stampeders', 'edmonton-elks', 'the Battle of Alberta'],
+  ['saskatchewan-roughriders', 'winnipeg-blue-bombers', 'the Banjo Bowl'],
+  ['toronto-argonauts', 'hamilton-tiger-cats', 'the Labour Day Classic'],
+
+  // ── NCAA football ──
+  ['alabama-crimson-tide', 'auburn-tigers', 'the Iron Bowl'],
+  ['ohio-state-buckeyes', 'michigan-wolverines', 'The Game'],
+
   // ── MLS ──
   ['portland-timbers', 'seattle-sounders', 'the Cascadia rivalry'],
   ['la-galaxy', 'lafc', 'El Trafico'],
@@ -92,7 +120,43 @@ const PAIRS: Array<[string, string, string?]> = [
   ['atlanta-united', 'orlando-city'],
 ]
 
-const bySlug = new Map(GEAR_TEAMS.map(t => [t.slug, t]))
+/**
+ * ─── RESOLUTION FALLS BACK TO THE FULL DIRECTORY ────────────────────────────
+ * `GEAR_TEAMS` holds only the five leagues Fanatics stocks per-club shops for,
+ * so for as long as it was the only source, a rivalry could only exist between
+ * NHL/NFL/NBA/MLB/MLS clubs. The visible consequence was that /football argued
+ * "not a North American app" and then showed a rivalry list in which ten of its
+ * thirteen leagues did not appear — no Clásico for a reader arriving from
+ * scorebug.football in Madrid, no Labour Day Classic on the page calling the
+ * CFL first-class.
+ *
+ * `CLUBS` (generated, 853 entries) resolves the rest. GEAR_TEAMS is still tried
+ * FIRST so that a club with a /gear page keeps the richer record and the pair's
+ * `league` stays the gear league.
+ *
+ * This does NOT open the door to mass generation: PAIRS is still hand-curated,
+ * and the docblock above still governs. It just stops the curator from being
+ * limited to a third of the product.
+ */
+const bySlug = new Map<string, GearTeam>()
+const asGearTeam = (c: (typeof CLUBS)[number]): GearTeam => ({
+  slug: c.slug, name: c.name, short: c.short,
+  league: c.league as GearTeam['league'], color: '#8B949E',
+})
+/* DOMESTIC LEAGUE FIRST, CONTINENTAL SECOND, and the order is load-bearing.
+   Real Madrid, Bayern and Juventus all appear twice in CLUBS — once in their
+   domestic league and once in the Champions League field — and CLUBS is in
+   registry order, which puts UCL ahead of La Liga, Serie A, the Bundesliga and
+   Ligue 1. Taking the first match filed El Clásico and Der Klassiker under UCL,
+   so they vanished from their own league pages and the La Liga rivalry list
+   read as one fixture. A club's identity is its domestic league. */
+/* FIRST wins within the domestic pass, so registry order decides. Alabama and
+   Ohio State exist in both NCAAF and NCAAB, and NCAAF is registered first —
+   last-wins filed the Iron Bowl and The Game under college BASKETBALL. */
+for (const c of CLUBS) if (c.league !== 'UCL' && !bySlug.has(c.slug)) bySlug.set(c.slug, asGearTeam(c))
+for (const c of CLUBS) if (c.league === 'UCL' && !bySlug.has(c.slug)) bySlug.set(c.slug, asGearTeam(c))
+/* GEAR_TEAMS last: a club with a /gear page keeps the richer record. */
+for (const t of GEAR_TEAMS) bySlug.set(t.slug, t)
 
 export const MATCHUPS: Matchup[] = PAIRS.flatMap(([aSlug, bSlug, nickname]) => {
   const a = bySlug.get(aSlug)

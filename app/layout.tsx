@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import { Anton, Inter, Oswald } from 'next/font/google'
-import { SITE, WEB_APP } from './config'
+import { SITE, WEB_APP, appPlatforms } from './config'
 // Derived — a hand-typed league count in metadata is a claim that goes stale
 // silently and ships to every search and answer engine before anyone notices.
 import { LEAGUE_COUNT } from './leagues'
@@ -107,7 +107,7 @@ const JSON_LD = {
       // testing and cannot be installed by the public, so listing it invites
       // Google to surface an install intent that dead-ends. Add 'Android' back
       // the day the listing is public.
-      operatingSystem: 'Web',
+      operatingSystem: appPlatforms(),
       applicationCategory: 'SportsApplication',
       // `installUrl` pointed at a Play listing that does not exist yet and
       // answers 404. Structured data is a machine-readable factual claim —
@@ -134,7 +134,12 @@ const JSON_LD = {
       ],
     },
     {
-      '@type': 'Organization',
+      /* SportsOrganization, a subtype of Organization: `parentOrganization`,
+         `logo` and the WebSite `publisher` reference all stay valid, and it
+         preserves the typing app/lib/seo.ts documents as load-bearing — that
+         being a SportsOrganization is what lets an answer engine attribute a
+         claim about coverage to us. seo.ts merges INTO this node now. */
+      '@type': 'SportsOrganization',
       '@id': `${SITE}/#org`,
       name: 'Scorebug',
       url: SITE,

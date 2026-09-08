@@ -1,5 +1,6 @@
 import Image from 'next/image'
 import type { Metadata } from 'next'
+import { pageMeta } from '../lib/meta'
 import {
   SITE, CONTACT_EMAIL, COMPANY, COMPANY_LOCATION,
   LEGAL_PATHS, LEGAL_UPDATED, LEGAL_UPDATED_ISO,
@@ -25,12 +26,12 @@ import {
  * Two documents quoting different numbers is the version of this that gets
  * flagged. */
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMeta({
+  path: LEGAL_PATHS.accountDeletion,
   title: 'Delete your account',
   description:
     'How to delete your Scorebug account and data: in the app under Profile then Settings, or by email. What gets removed, what is retained, and how long it takes.',
-  alternates: { canonical: `${SITE}${LEGAL_PATHS.accountDeletion}` },
-}
+})
 
 /* Page furniture is intentionally duplicated across the three legal pages
    rather than shared — see the note in app/privacy/page.tsx. */

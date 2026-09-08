@@ -35,7 +35,7 @@ export async function generateMetadata(
     title,
     description,
     alternates: { canonical: `${SITE}/gear/${t.slug}` },
-    openGraph: { type: 'website', url: `${SITE}/gear/${t.slug}`, title, description, images: [{ url: '/og.png', width: 1200, height: 630, alt: 'Scorebug' }], },
+    openGraph: { type: 'website', siteName: 'Scorebug', url: `${SITE}/gear/${t.slug}`, title, description, images: [{ url: '/og.png', width: 1200, height: 630, alt: 'Scorebug' }], },
     twitter: { card: 'summary_large_image', title, description },
   }
 }
@@ -117,7 +117,7 @@ export default function TeamGearPage({ params }: { params: { team: string } }) {
       ]} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <SiteHeader />
-      <main className="lit-blue floodlights relative overflow-hidden">
+      <main id="main" className="lit-blue floodlights relative overflow-hidden">
       <div className="relative z-10 mx-auto max-w-4xl px-5 pb-24 pt-14">
         <BreadcrumbNav trail={[
           { name: 'Scorebug', href: '/' },

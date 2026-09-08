@@ -52,7 +52,7 @@ export async function generateMetadata(
     description,
     alternates: { canonical: `${SITE}/leagues/${slugOf(l)}` },
     openGraph: {
-      type: 'website', url: `${SITE}/leagues/${slugOf(l)}`, title, description,
+      type: 'website', siteName: 'Scorebug', url: `${SITE}/leagues/${slugOf(l)}`, title, description,
       images: [{ url: '/og.png', width: 1200, height: 630, alt: 'Scorebug' }],
     },
     twitter: { card: 'summary_large_image', title, description },
@@ -102,7 +102,8 @@ export default function LeaguePage({ params }: { params: { league: string } }) {
     {
       q: `Can I log and rate ${l.label} games I have watched?`,
       a: `Yes. Scorebug is a logbook first: after a ${l.label} game ends you grade it out of 5.0, write `
-        + `what it meant, record whether you watched at home or were in the building, and it stays in `
+        + `what it meant, record how you took it in — at the game, at home, at a bar or catching up `
+        + `later — and it stays in `
         + `your vault permanently.`,
     },
     {
@@ -113,16 +114,13 @@ export default function LeaguePage({ params }: { params: { league: string } }) {
     {
       q: `Is Scorebug free for ${l.label} fans?`,
       a: `Yes. Tracking scores and logging games is free. An optional Front Office membership adds a `
-        + `larger Starting Lineup and deeper history, but nothing about ${l.label} coverage is paywalled.`,
+        + `bigger Starting Lineup and the Analytics Desk, but nothing about ${l.label} coverage is paywalled.`,
     },
   ]
 
   const jsonLd = graph([
     organizationSchema([l.full, `${l.sport}`, `${l.full} scores`, `${l.full} standings`]),
-    applicationSchema(
-      'Scorebug',
-      `Track live ${l.full} scores and log, grade and keep every game you watch.`,
-    ),
+    applicationSchema(),
     faqSchema(faqs),
   ])
 
@@ -136,7 +134,7 @@ export default function LeaguePage({ params }: { params: { league: string } }) {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <SiteHeader />
 
-      <main className="lit-blue floodlights relative overflow-hidden">
+      <main id="main" className="lit-blue floodlights relative overflow-hidden">
         <div className="relative z-10 mx-auto max-w-4xl px-5 pb-14 pt-14 sm:pb-20">
           <BreadcrumbNav trail={[
             { name: 'Scorebug', href: '/' },

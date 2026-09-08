@@ -22,7 +22,7 @@ export const metadata: Metadata = {
   description: HUB.description,
   alternates: { canonical: `${SITE}/hockey` },
   openGraph: {
-    type: 'website',
+    type: 'website', siteName: 'Scorebug',
     url: `${SITE}/hockey`,
     title: HUB.title,
     description: HUB.description,

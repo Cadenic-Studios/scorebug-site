@@ -12,7 +12,7 @@ export const metadata: Metadata = {
   title: TITLE,
   description: DESCRIPTION,
   alternates: { canonical: `${SITE}/news` },
-  openGraph: { type: 'website', url: `${SITE}/news`, title: TITLE, description: DESCRIPTION, images: [{ url: '/og.png', width: 1200, height: 630, alt: 'Scorebug' }], },
+  openGraph: { type: 'website', siteName: 'Scorebug', url: `${SITE}/news`, title: TITLE, description: DESCRIPTION, images: [{ url: '/og.png', width: 1200, height: 630, alt: 'Scorebug' }], },
   twitter: { card: 'summary_large_image', title: TITLE, description: DESCRIPTION },
 }
 
@@ -95,7 +95,7 @@ export default async function NewsPage() {
     <>
       <Breadcrumbs trail={[{ name: 'Scorebug', url: SITE }, { name: 'News' }]} />
       <SiteHeader />
-      <main className="lit-gold floodlights relative overflow-hidden">
+      <main id="main" className="lit-gold floodlights relative overflow-hidden">
       <div className="relative z-10 mx-auto max-w-4xl px-5 pb-24 pt-14">
         <BreadcrumbNav trail={[{ name: 'Scorebug', href: '/' }, { name: 'News' }]} />
         <p className="glass-pill inline-flex items-center gap-2 rounded-full px-3.5 py-1.5 text-[11px] font-black uppercase" style={{ color: '#E5B53C' }}>
