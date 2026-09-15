@@ -78,10 +78,15 @@ export const metadata: Metadata = {
  * unpublished or published only to a channel this token cannot see. The fix for
  * that lives in Shopify admin, not here.
  *
- * The shorter window is still worth having: it cuts the publish-to-visible gap
- * from ten minutes to one, and nobody waits on it either way.
+ * ─── AND WHY IT IS BACK UP TO 30 MINUTES ─────────────────────────────────────
+ * It sat at 60s for a while on the reasoning that a shorter gap costs nothing.
+ * It does cost something: every expiry is a billed ISR write, and a crawler
+ * that visits hourly pays for 24 regenerations a day of a catalogue that
+ * changes a few times a month. Shop ISR writes were a large share of one
+ * month's allowance. Thirty minutes is still faster than anyone publishing a
+ * Printify product will notice, and it is a thirtieth of the writes.
  */
-export const revalidate = 60
+export const revalidate = 1800
 
 function ProductCard({ p }: { p: ShopifyProduct }) {
   const img = p.featuredImage

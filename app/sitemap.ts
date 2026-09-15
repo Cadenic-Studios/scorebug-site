@@ -31,6 +31,40 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   return [
     { url: SITE, lastModified: new Date(), changeFrequency: 'weekly', priority: 1 },
     /**
+     * /slate is the archive of the weekly fixture pages the marketing engine
+     * publishes (app/slate). Weekly: a new page every Monday. The individual
+     * weeks are discovered from the archive rather than listed here, because
+     * the engine, not this build, knows which weeks exist.
+     */
+    { url: `${SITE}/slate`, lastModified: new Date(), changeFrequency: 'weekly', priority: 0.7 },
+    /**
+     * /game is the index of games fans have graded, and the individual game
+     * pages are discovered FROM it rather than listed here — the same reasoning
+     * as /slate directly above.
+     *
+     * It is also the only honest option. A game's canonical URL contains the
+     * date it was played, and the database stores when somebody WATCHED, not
+     * when the game happened. The index links through a resolver that finds the
+     * real date and 301s. Listing those resolver URLs would break this file's
+     * own rule — never advertise a URL that redirects — and listing guessed
+     * dated URLs would fill the sitemap with 404s for every back-logged game.
+     *
+     * `daily`: the list changes every night somebody logs a game.
+     */
+    { url: `${SITE}/game`, lastModified: new Date(), changeFrequency: 'daily', priority: 0.8 },
+    /**
+     * /discord answers "<product> discord", which is about the highest-intent
+     * query a small product gets — the person already knows what you are and is
+     * looking for the door. A discord.gg invite cannot rank for it: those pages
+     * are noindex and the link carries no readable text. This page can, lives on
+     * our domain, and survives the invite being regenerated.
+     *
+     * `monthly`: the channel and command lists change rarely, and claiming daily
+     * freshness for a page that does not change trains a crawler to ignore the
+     * signal on the pages that do.
+     */
+    { url: `${SITE}/discord`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.7 },
+    /**
      * /shop is the reason the Pro Shop was invisible to search, and the fix is
      * this line plus the robots rule beside it — not the "unlock" it looked
      * like. The catalogue was always public on the app; robots.txt just blocked

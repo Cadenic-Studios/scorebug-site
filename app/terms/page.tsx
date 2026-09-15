@@ -29,7 +29,7 @@ function LegalHeader() {
   return (
     <header className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-5 py-5">
       <a href="/" aria-label="Scorebug home" className="flex min-w-0 items-center gap-2.5">
-        <Image src="/app-icon.png" alt="" width={36} height={36} className="rounded-[9px]" priority />
+        <Image src="/app-icon.png" alt="" width={36} height={36} className="rounded-[9px]" priority unoptimized />
         <span className="headline hidden text-2xl text-ink sm:inline">Scorebug</span>
       </a>
       <a

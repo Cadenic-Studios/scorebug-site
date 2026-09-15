@@ -1,0 +1,26 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // The marketing engine's ledger (functions/dispatch). Written only by the
+    // Admin SDK from Cloud Functions; no client ever reads it.
+    //
+    // The ONE exception is the weekly slate the engine publishes: the site
+    // renders it at /slate/[week] over the Firestore REST API, so it must be
+    // world-readable. It is generated content with no personal data in it and
+    // no client may write it. Everything else under /dispatch — the event
+    // ledger, metrics, reply drafts, review drafts, the budget — stays closed.
+    match /dispatch/public/articles/{slug} {
+      allow read: if true;
+      allow write: if false;
+    }
+    match /dispatch/{document=**} {
+      allow read, write: if false;
+    }
+
+    // This project holds nothing else. Deny by default.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

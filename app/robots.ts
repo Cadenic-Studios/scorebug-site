@@ -14,6 +14,10 @@ export default function robots(): MetadataRoute.Robots {
         disallow: [
           '/the-', '/player-card', '/linemates', '/fan', '/activity',
           '/auth', '/admin', '/go',
+          // The engine console, the two tagged redirectors and the card press:
+          // none is a page, and a crawler following /get would land on the waitlist
+          // with a campaign tag it invented.
+          '/ops', '/get', '/r/', '/api/', '/newsletter/',
         ],
       },
     ],

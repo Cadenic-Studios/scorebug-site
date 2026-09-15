@@ -330,3 +330,24 @@ export const VANITY_DOMAINS: { host: string; landing: string; sport: string }[] 
   { host: 'scorebug.hockey', landing: '/hockey', sport: 'Hockey' },
   { host: 'scorebug.football', landing: '/football', sport: 'Football' },
 ]
+
+/**
+ * ─── THE BRAND ACCOUNTS ─────────────────────────────────────────────────────
+ *
+ * Every public profile the marketing engine posts to, for the Organization's
+ * `sameAs` in app/layout.tsx and for the footer. Empty until an account
+ * exists: a sameAs pointing at a handle nobody registered is a false claim
+ * about identity, and the one place a squatter could be handed our name.
+ * Add a URL only after the account is created and signed in.
+ */
+export const SOCIAL_LINKS: readonly { label: string; href: string }[] = [
+  // Created 2026-09-09. The Bluesky URL is by DID on purpose: it resolves
+  // whether the profile shows @scorebug-app.bsky.social or, once
+  // /.well-known/atproto-did verifies, @getscorebug.app.
+  { label: 'X', href: 'https://x.com/scorebug_app' },
+  { label: 'Bluesky', href: 'https://bsky.app/profile/did:plc:j6ypvmvjbaya4mbwxrrrci24' },
+  { label: 'Mastodon', href: 'https://mastodon.social/@scorebug' },
+  { label: 'TikTok', href: 'https://www.tiktok.com/@scorebugapp' },
+  // Threads and Instagram: add when the Meta accounts exist (RUNBOOK §2).
+]
+export const SOCIAL_PROFILES: readonly string[] = SOCIAL_LINKS.map((s) => s.href)

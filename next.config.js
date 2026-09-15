@@ -174,6 +174,37 @@ const nextConfig = {
     remotePatterns: [
       { protocol: 'https', hostname: 'cdn.shopify.com', pathname: '/s/files/**' },
     ],
+
+    /*
+     * ─── WHY THIS TTL IS A YEAR AND NOT THE DEFAULT ─────────────────────────
+     *
+     * Next 14 defaults `minimumCacheTTL` to 60 SECONDS. That is the expiry on
+     * the OPTIMISED copy, not on the source file — so an image the optimiser
+     * has already built is thrown away a minute later and rebuilt on the next
+     * request. On a site whose header carries a logo on every single page,
+     * that turns one 36px PNG into a cache write per page view per width, for
+     * every visitor and every crawler, forever.
+     *
+     * Measured consequence: Image Optimization cache writes went past the
+     * whole monthly allowance while the site had almost no human traffic.
+     *
+     * A year is safe here because nothing this optimiser touches is mutable at
+     * a stable URL: local files are fingerprinted by the build, and Shopify's
+     * CDN puts a new path on a re-uploaded asset. If an image ever does need
+     * to change in place, changing its filename is the correct fix — not
+     * re-expiring every other image on the site every sixty seconds.
+     */
+    minimumCacheTTL: 31536000,
+
+    /*
+     * Every entry here is a separate transformation and a separate cache
+     * entry, and the defaults carry eight device widths up to 3840px for a
+     * layout whose widest image slot is a product card. Trimming to the four
+     * breakpoints this site actually renders at cuts both metrics by half
+     * without a visible difference on any screen we support.
+     */
+    deviceSizes: [640, 828, 1200, 1920],
+    imageSizes: [64, 128, 256],
   },
 
   async headers() {
@@ -218,10 +249,46 @@ const nextConfig = {
       {
         // Both stores fetch these with strict content-type expectations, and
         // Apple's CDN caches aggressively — say exactly what they are.
-        source: '/.well-known/:file*',
+        //
+        // NAMED ONE BY ONE, NOT '/.well-known/:file*'. That wildcard was here,
+        // and it stamped application/json onto EVERY well-known path — which
+        // silently broke the Bluesky handle below, because atproto's spec
+        // requires text/plain and a body that is the bare DID "with no prefix
+        // or wrapper formatting". A DID served as JSON is not JSON. Add a file
+        // here when you add a file there; do not restore the wildcard.
+        source: '/.well-known/assetlinks.json',
         headers: [
           { key: 'Content-Type', value: 'application/json' },
           { key: 'Cache-Control', value: 'public, max-age=3600' },
+        ],
+      },
+      {
+        source: '/.well-known/apple-app-site-association',
+        headers: [
+          { key: 'Content-Type', value: 'application/json' },
+          { key: 'Cache-Control', value: 'public, max-age=3600' },
+        ],
+      },
+      {
+        /**
+         * The Bluesky domain handle. `public/.well-known/atproto-did` holds the
+         * DID as 32 bytes with no trailing newline.
+         *
+         * A STATIC FILE, NOT AN APP ROUTE. `app/.well-known/…/route.ts` was the
+         * first attempt. Next's app scanner does walk dot-directories (only
+         * '_' parts are skipped), so it very likely would have worked — but the
+         * two files above have been served from public/.well-known on this
+         * exact domain since August, and a handle that Bluesky re-checks
+         * forever should sit on the path already proven in production rather
+         * than on a routing behaviour that happens to hold today.
+         *
+         * Short max-age on purpose: if the DID ever has to change, the old one
+         * is out of every cache within five minutes.
+         */
+        source: '/.well-known/atproto-did',
+        headers: [
+          { key: 'Content-Type', value: 'text/plain; charset=utf-8' },
+          { key: 'Cache-Control', value: 'public, max-age=300' },
         ],
       },
     ]

@@ -33,7 +33,7 @@
  * tree) into a marketing page whose entire JS budget is this form.
  */
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import {
   SUPABASE_URL,
   SUPABASE_ANON_KEY,
@@ -61,6 +61,30 @@ export default function Waitlist() {
   const [platform, setPlatform] = useState<Platform>('android')
   const [status, setStatus] = useState<Status>('idle')
   const [message, setMessage] = useState('')
+  /**
+   * ─── THE WEEKLY SLATE, AND WHY IT IS A BOX ──────────────────────────────
+   * Unchecked by default, and the only way onto the weekly-slate email. This
+   * form was built for test invites, and the footer below promises "nothing
+   * else" — under CASL a tester signup is consent for the invite, not for a
+   * weekly marketing message from the same address. The marketing engine
+   * reads ONLY rows with newsletter = true (database-v54.sql), so the box is
+   * the entire mechanism, not a preference it may override.
+   */
+  const [slate, setSlate] = useState(false)
+  /**
+   * Where the signup came from, when the marketing engine sent them: /get
+   * carries `s` (network) and `c` (campaign) onto the homepage. Falls back to
+   * the plain site tag so an organic signup is still counted as one.
+   */
+  const [source, setSource] = useState('site-waitlist')
+  useEffect(() => {
+    try {
+      const q = new URLSearchParams(window.location.search)
+      const s = (q.get('s') ?? '').toLowerCase().replace(/[^a-z0-9-]/g, '').slice(0, 20)
+      const c = (q.get('c') ?? '').toLowerCase().replace(/[^a-z0-9-]/g, '').slice(0, 24)
+      if (s) setSource(`dispatch:${s}${c ? `:${c}` : ''}`.slice(0, 60))
+    } catch { /* no window, no tags */ }
+  }, [])
 
   const configured = Boolean(SUPABASE_URL && SUPABASE_ANON_KEY)
   const headers = {
@@ -115,7 +139,7 @@ export default function Waitlist() {
       const res = await fetch(`${SUPABASE_URL}/rest/v1/tester_signups`, {
         method: 'POST',
         headers: { ...headers, Prefer: 'return=minimal' },
-        body: JSON.stringify({ name: who, email: value, platform, source: 'site-waitlist' }),
+        body: JSON.stringify({ name: who, email: value, platform, source, newsletter: slate }),
       })
 
       if (res.ok) { setStatus('sent'); return }
@@ -300,6 +324,20 @@ export default function Waitlist() {
           </div>
         </fieldset>
 
+        <label className="flex cursor-pointer items-start gap-3 rounded-xl bg-black/25 px-4 py-3 text-[13px] leading-relaxed text-ink-2" style={{ border: '1px solid rgba(255,255,255,0.10)' }}>
+          <input
+            type="checkbox"
+            checked={slate}
+            onChange={e => setSlate(e.target.checked)}
+            disabled={busy}
+            className="mt-0.5 h-4 w-4 shrink-0 accent-[#F85149]"
+          />
+          <span>
+            Also send me <span className="font-bold text-ink">the week&rsquo;s slate</span> every Monday — every game across 19 leagues,
+            with Mountain times. One email a week, unsubscribe in one tap.
+          </span>
+        </label>
+
         <button
           type="submit"
           disabled={busy}
@@ -315,8 +353,8 @@ export default function Waitlist() {
         )}
 
         <p className="text-center text-[12px] leading-relaxed text-ink-3">
-          We email you about access, and nothing else. No marketing blasts, and we never
-          sell your address.
+          We email you about access, and the weekly slate only if you ticked the box. No
+          marketing blasts, and we never sell your address.
         </p>
       </form>
     </div>

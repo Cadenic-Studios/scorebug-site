@@ -47,3 +47,47 @@ peek.png
 # it carries an absolute cwd and a port chosen to dodge whatever else is
 # running locally, so it is not a shared setting.
 .claude/
+
+# ── CREDENTIALS, EVERYWHERE, NOT JUST WHERE WE EXPECT THEM ──────────────────
+# The only ignore file in this tree used to be engine/functions/.gitignore,
+# which scopes to that one directory. An audit found three real gaps:
+#   • no keystore rule anywhere, though the rule for this project names .jks
+#     and keystore files explicitly;
+#   • engine/secrets/ — a directory ignite.mjs SCANS for service-account keys —
+#     was not covered, so a key placed exactly where the script looks for it
+#     was committable;
+#   • ignite.mjs tells the operator to run `vercel env pull .env.recover`, and
+#     .env.recover matches neither `.env` nor `*.local`. That file holds
+#     DISPATCH_OPS_SECRET, OPS_CONSOLE_PASSWORD, ENGINE_KEY and DISPATCH_KEY in
+#     plaintext.
+# These are anchored nowhere on purpose: they must match at any depth.
+*.jks
+*.keystore
+*.p12
+*.p8
+*.pem
+*.key
+keystore.properties
+google-services.json
+GoogleService-Info.plist
+*-sa.json
+service-account*.json
+*serviceaccount*.json
+scorebug-engine-*.json
+secrets/
+.env
+.env.*
+# ...but never hide the checked-in examples, which contain no values.
+!*.example
+.secrets.local
+*.local
+
+# The build tarball staged for a container build, and anything parked for deletion.
+_to_delete/
+
+# The filename Firebase ACTUALLY gives you. The earlier rules covered the name
+# the runbook asks you to save it as (scorebug-engine-sa.json) but not the one
+# that lands in your Downloads folder — "<project>-firebase-adminsdk-<hash>.json"
+# — which matched nothing and was committable. It is a private key.
+*-firebase-adminsdk-*.json
+*firebase-adminsdk*

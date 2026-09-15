@@ -1,5 +1,5 @@
 import Image from 'next/image'
-import { LEGAL_PATHS, androidCta, WEB_APP, APP_LINKS } from '../config'
+import { LEGAL_PATHS, androidCta, WEB_APP, APP_LINKS, SOCIAL_LINKS } from '../config'
 
 /**
  * The in-feed conversion banner — "chronicle this on Scorebug", dropped inside
@@ -136,7 +136,7 @@ export function SiteHeader() {
       <header className="mx-auto max-w-6xl px-5 pt-5 pb-3 md:pb-5">
       <div className="flex items-center justify-between gap-4">
         <a href="/" aria-label="Scorebug home" className="flex min-w-0 items-center gap-2.5">
-          <Image src="/app-icon.png" alt="" width={36} height={36} className="rounded-[9px]" priority />
+          <Image src="/app-icon.png" alt="" width={36} height={36} className="rounded-[9px]" priority unoptimized />
           {/* Icon only below sm. The wordmark and a full-width "Open Scorebug"
               cannot both fit a 360px bar, and a truncated "SCORE…" is worse than
               no wordmark beside a logo that already says it. */}
@@ -183,7 +183,7 @@ export function SiteFooter() {
     <footer className="border-t border-white/10 px-5 py-10">
       <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 sm:flex-row">
         <div className="flex items-center gap-2.5">
-          <Image src="/app-icon.png" alt="" width={26} height={26} className="rounded-[7px]" />
+          <Image src="/app-icon.png" alt="" width={26} height={26} className="rounded-[7px]" unoptimized />
           <span className="text-[13px] font-bold text-ink-2">Scorebug</span>
         </div>
         <nav aria-label="Footer" className="flex flex-wrap items-center justify-center gap-5 text-[13px] font-semibold text-ink-3">
@@ -205,6 +205,8 @@ export function SiteFooter() {
           <a href="/football" className="py-2 -my-2 hover:text-ink-2">Football</a>
           <a href="/hockey" className="py-2 -my-2 hover:text-ink-2">Hockey</a>
           <a href="/leagues" className="py-2 -my-2 hover:text-ink-2">All leagues</a>
+          <a href="/game" className="py-2 -my-2 hover:text-ink-2">Game ratings</a>
+          <a href="/discord" className="py-2 -my-2 hover:text-ink-2">Discord</a>
           {/* Pricing and Refunds are in the footer because a payment provider
               verifying this domain checks that the site LINKS to its terms,
               privacy and refund policies — not merely that the URLs resolve.
@@ -216,6 +218,25 @@ export function SiteFooter() {
           <a href={androidCta().href} className="py-2 -my-2 hover:text-ink-2">{androidCta().label}</a>
         </nav>
         <p className="text-[12px] text-ink-3">© {new Date().getFullYear()} Scorebug™ · Made in Canada</p>
+        {/* ── THE ACCOUNTS ─────────────────────────────────────────────────
+            The same list as the Organization's sameAs (SOCIAL_LINKS in
+            config.ts), stated where a reader can act on it. rel="me" is not
+            decoration: Mastodon verifies a profile's website link by fetching
+            that site and looking for a link BACK carrying rel="me" — this is
+            the one line that earns @scorebug@mastodon.social its green
+            verified link, and Bluesky and IndieWeb tooling read it the same
+            way. Plain anchors; nothing here needs JavaScript. */}
+        {SOCIAL_LINKS.length ? (
+          <p className="text-[12px] text-ink-3">
+            Follow{' '}
+            {SOCIAL_LINKS.map((s, i) => (
+              <span key={s.href}>
+                {i ? ' · ' : ''}
+                <a href={s.href} target="_blank" rel="me noopener noreferrer" className="font-semibold text-ink-2 hover:text-ink">{s.label}</a>
+              </span>
+            ))}
+          </p>
+        ) : null}
       </div>
 
       {/* ── TRADEMARK NOTICE ───────────────────────────────────────────────

@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
-import { SITE, WEB_APP } from '../../config'
+import { SITE, WEB_APP, appPlatforms } from '../../config'
 import { LEAGUES, LEAGUE_COUNT, type SiteLeague } from '../../leagues'
 import { GEAR_TEAMS } from '../../lib/teams'
 import { clubsInLeague } from '../../clubs'
@@ -40,6 +40,18 @@ function getLeague(slug: string): SiteLeague | undefined {
   return LEAGUES.find(l => slugOf(l) === slug.toLowerCase())
 }
 
+/**
+ * The platform claim, DERIVED from LAUNCH_STAGE through appPlatforms() and
+ * never typed. This page said "free to use on web and Android" in its meta
+ * description and its body on all nineteen league pages while the Android
+ * test was closed — exactly the claim appPlatforms() exists to prevent.
+ */
+function platformsSentence(): string {
+  return appPlatforms().includes('Android')
+    ? 'Free to use in any browser and on Android.'
+    : 'Free to use in any browser, with Android early access open.'
+}
+
 export async function generateMetadata(
   { params }: { params: { league: string } },
 ): Promise<Metadata> {
@@ -48,7 +60,7 @@ export async function generateMetadata(
   const title = `Where to track live ${l.full} scores without gambling ads`
   const description =
     `Scorebug tracks live ${l.full} scores and lets you grade every game you watch out of 5.0 `
-    + `and keep it forever. No odds, no spreads and no sportsbook sponsorships. Free to use on web and Android.`
+    + `and keep it forever. No odds, no spreads and no sportsbook sponsorships. ${platformsSentence()}`
   return {
     title,
     description,
@@ -168,8 +180,8 @@ export default function LeaguePage({ params }: { params: { league: string } }) {
           <p className="mt-5 max-w-[42rem] text-[17px] leading-relaxed text-ink-2">
             Scorebug tracks live {l.full} scores and lets you grade every game you watch out of
             5.0, write what it meant, and keep it forever. There are no odds, no spreads and no
-            sportsbook sponsorships anywhere in it. It is free to use in any browser and on
-            Android, and it covers {LEAGUE_COUNT} leagues in total.
+            sportsbook sponsorships anywhere in it. {platformsSentence()} It covers {LEAGUE_COUNT}{' '}
+            leagues in total.
           </p>
 
           <div className="mt-8">

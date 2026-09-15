@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import { Anton, Inter, Oswald } from 'next/font/google'
-import { SITE, WEB_APP, appPlatforms } from './config'
+import { SITE, WEB_APP, appPlatforms, SOCIAL_PROFILES } from './config'
 // Derived — a hand-typed league count in metadata is a claim that goes stale
 // silently and ships to every search and answer engine before anyone notices.
 import { LEAGUE_COUNT } from './leagues'
@@ -148,6 +148,10 @@ const JSON_LD = {
       // on all three legal pages (COMPANY in config.ts) is the studio, and
       // this is that same fact stated where a machine can read it.
       parentOrganization: { '@id': STUDIO_ID },
+      // The brand's own profiles, from config.ts SOCIAL_PROFILES — empty until
+      // each account exists, because a sameAs nobody registered is a false
+      // claim about identity. Omitted entirely rather than emitted empty.
+      ...(SOCIAL_PROFILES.length ? { sameAs: [...SOCIAL_PROFILES] } : {}),
     },
     {
       '@type': 'Organization',

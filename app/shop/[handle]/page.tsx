@@ -26,7 +26,7 @@ import ProductView from './ProductView'
  * that is the whole publish-to-live path.
  */
 
-export const revalidate = 60
+export const revalidate = 1800
 
 /**
  * Turn a print-on-demand description into prose + a bullet list.

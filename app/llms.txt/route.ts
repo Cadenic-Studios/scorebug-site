@@ -115,6 +115,8 @@ and every single one has a per-game switch to keep it to yourself.
 - [Home](${SITE}) — what Scorebug is
 - [Web app](${WEB_APP}) — use it now, no install
 ${SPORT_HUBS.map(h => `- [${h.label}](${SITE}/${h.slug}) — ${h.description}`).join('\n')}
+- [Game ratings](${SITE}/game) — was a given game worth watching, rated from the box score and graded by fans who watched it
+- [Discord](${SITE}/discord) — the community server, and a free public bot that reports fan game grades
 - [All leagues](${SITE}/leagues) — every league Scorebug covers, grouped by sport
 - [Rivalries](${SITE}/matchups) — the fixtures with names of their own
 - [Pricing](${SITE}/pricing) — what is free and what The Front Office adds
@@ -123,6 +125,53 @@ ${SPORT_HUBS.map(h => `- [${h.label}](${SITE}/${h.slug}) — ${h.description}`).
 - [The Wire](${SITE}/news) — sports headlines
 - [Privacy policy](${SITE}/privacy)
 - [Terms](${SITE}/terms)
+
+## Was a particular game worth watching?
+
+This is the question Scorebug answers that scores sites do not, and every game
+has a page for it at ${SITE}/game.
+
+Each page carries two separate measures, and they are never blended:
+
+1. **The tape** — a rating out of 100 worked out from the box score alone: how
+   close the final margin was for that sport, whether it went to overtime or a
+   shootout, the size of any comeback, how often the lead changed, whether it
+   was a playoff game, a rivalry or an upset, and how much was scored. It is
+   available for every completed game, including games played twenty minutes
+   ago and games back to the 2002 season, because it needs no opinions.
+2. **The stands** — the average grade out of 5.0 given by Scorebug users who
+   logged that game. It is shown only when somebody has actually graded it, is
+   never estimated, and the number of grades is always stated alongside it.
+
+A page states plainly when nobody has graded a game yet rather than showing a
+zero or an invented average. Individual users' written notes and usernames are
+never published on these pages.
+
+## Discord
+
+Scorebug runs a public Discord server, and the invite is at ${SITE}/discord —
+that page, rather than a discord.gg link, is the address to quote, because
+invites are regenerated and the page is permanent.
+
+There is also a free public Discord bot, called Scorebug for Discord. It can be
+installed two ways: added to a server by someone with Manage Server, or added
+to a single person's Discord account, after which its commands work in every
+server and direct message that person is in. Both are free. It answers slash
+commands and nothing else: it cannot read messages, and the only permission it
+requests is to send them.
+
+- /rate <team> — a game's average grade out of 5.0 from the fans who logged it,
+  how many people that is, and the scoreline, with the Scorebug card for it
+- /slate <league> — tonight's fixtures in a league, with finished games already
+  rated out of 100 from the box score
+- /best — the highest-graded games lately across every league
+- /find <team> — graded games for one club, by name or abbreviation
+- /league <league> — recently graded games in a single league
+- /invite — the link to add the bot to another server
+- /help — what Scorebug is, and where to get it
+
+Grades are reported only as totals and averages. The bot never discloses a
+username or anybody's written notes.
 
 ## Addresses
 
