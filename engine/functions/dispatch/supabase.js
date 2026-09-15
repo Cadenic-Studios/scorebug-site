@@ -95,7 +95,34 @@ export function supabaseClient({ url, anonKey, fetchImpl = fetch, log = () => {}
     } catch (e) { log('supabase recipients', String(e.message)); return null; }
   }
 
-  return { rpc, gameAggregates, counts, signupSources, newsletterRecipients };
+  /**
+   * Cards shared per week — the first step in the growth loop that is both
+   * measurable and ours to influence.
+   *
+   * Logs measure whether the people who found us stayed. This measures whether
+   * anything is going back out. With a signup count of zero against a healthy
+   * log count, the second number is the only one that can move first, and this
+   * engine had no way to see it.
+   *
+   * Aggregate only, from engine_share_counts. The table itself is unreadable
+   * with the anon key by design — see database-v55.sql.
+   */
+  async function shareCounts({ weeks = 8 } = {}) {
+    try {
+      const rows = await rpc('engine_share_counts', { p_weeks: weeks });
+      if (!Array.isArray(rows)) return null;
+      return rows.map((r) => ({
+        week: String(r.week || ''),
+        surface: String(r.surface || ''),
+        league: String(r.league || ''),
+        shares: Number(r.shares) || 0,
+        sharers: Number(r.sharers) || 0,
+        unmarked: Number(r.unmarked) || 0,
+      }));
+    } catch (e) { log('supabase shareCounts', String(e.message)); return null; }
+  }
+
+  return { rpc, gameAggregates, counts, signupSources, shareCounts, newsletterRecipients };
 }
 
 /**

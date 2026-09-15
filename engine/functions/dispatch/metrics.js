@@ -196,6 +196,11 @@ export async function metricsTick({ store, secrets = {}, publishers = {}, now = 
      is working: how many people reached the waitlist on a link this engine
      posted, split by the network and the closing line that brought them. */
   await soft('acquisition', async () => (supabase ? (await supabase.signupSources({ sinceDays: 30 })) || { error: 'no answer from the database' } : { error: 'SUPABASE_URL / SUPABASE_ANON_KEY not set' }));
+  /* Reach, not engagement. Cards shared per week: the step between a fan
+     logging a game and a stranger hearing about Scorebug. Soft, like every
+     other collector here — a digest that fails because one RPC is missing is
+     a digest nobody gets on the morning it mattered. */
+  await soft('shares', async () => (supabase ? (await supabase.shareCounts({ weeks: 8 })) || { error: 'no answer from the database' } : { error: 'SUPABASE_URL / SUPABASE_ANON_KEY not set' }));
 
   const followers = {};
   for (const [name, pub] of Object.entries(publishers)) {

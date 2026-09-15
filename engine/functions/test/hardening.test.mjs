@@ -22,6 +22,7 @@ import { reserve as reserveX, monthKey } from '../dispatch/xspend.js';
 import { todaysBudget, markSlot, sendApproved, SLOTS, EV } from '../dispatch/run.js';
 import { select } from '../dispatch/rank.js';
 import { findAnniversary } from '../dispatch/archive.js';
+import { buildDigest } from '../dispatch/digest.js';
 
 /* ─────────────────────────────────────────── THE BRAND'S HARDEST PROMISE */
 
@@ -261,4 +262,32 @@ test('the billing month is the Mountain month', () => {
   // inside the evening window where finals land.
   assert.equal(monthKey(new Date('2026-10-01T01:00:00Z')), '2026-09', 'still September in Edmonton');
   assert.equal(monthKey(new Date('2026-10-01T12:00:00Z')), '2026-10');
+});
+
+/* ─────────────────────────────────────────────── the reach number (v55) ── */
+
+test('the digest prints cards shared, and says so when the migration has not run', async () => {
+  // The engine could report likes and logs and could not report whether a
+  // single card had ever left the app — the one step between a fan logging a
+  // game and a stranger hearing about Scorebug. This is the readout, and the
+  // failure case matters as much as the success case: a silent zero reads as
+  // "nobody shared", which is a different fact from "the table is missing".
+  const store = memoryStore();
+  await store.update('dispatch/state/metrics/2026-09-18', {
+    shares: [
+      { week: '2026-09-14', surface: 'native', league: 'NHL', shares: 9, sharers: 4, unmarked: 0 },
+      { week: '2026-09-14', surface: 'save', league: 'EPL', shares: 3, sharers: 2, unmarked: 1 },
+      { week: '2026-09-07', surface: 'native', league: 'NHL', shares: 6, sharers: 3, unmarked: 0 },
+    ],
+  });
+  const d = await buildDigest({ store, now: Date.parse('2026-09-18T13:00:00Z') });
+  assert.match(d.text, /CARDS SHARED: 12 this week from 4 people, 6 last week \(\+100%\)/);
+  assert.match(d.text, /native 9/);
+  assert.match(d.text, /NHL 9/);
+
+  const empty = memoryStore();
+  await empty.update('dispatch/state/metrics/2026-09-18', { shares: { error: 'function engine_share_counts does not exist' } });
+  const d2 = await buildDigest({ store: empty, now: Date.parse('2026-09-18T13:00:00Z') });
+  assert.match(d2.text, /CARDS SHARED: no data/);
+  assert.match(d2.html, /database-v55\.sql has not been run/);
 });

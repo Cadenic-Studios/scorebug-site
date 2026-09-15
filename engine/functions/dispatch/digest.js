@@ -245,6 +245,51 @@ export async function buildDigest({ store, publishers = {}, upcoming = [], now =
     T.push('WHERE THE SIGNUPS CAME FROM', '- nobody yet on a tagged link', '');
   }
 
+  /* ─── CARDS SHARED, BY WEEK ────────────────────────────────────────────────
+   *
+   * Reported ABOVE the waitlist nudge and below the signup table on purpose:
+   * it is the step between them. A fan logging a game is retention, a stranger
+   * reaching the waitlist is acquisition, and a card leaving the app is the
+   * only thing that connects the two. For as long as signups are zero, this is
+   * the number that has to move first, and a digest that does not print it is
+   * asking to be judged on likes again.
+   *
+   * Two weeks, side by side, because the shape of this number matters more
+   * than its size at this stage. Everything else is detail: which surface (the
+   * OS share sheet or the save button) and which leagues actually travel.
+   */
+  const shares = Array.isArray(metrics.shares) ? metrics.shares : [];
+  if (shares.length) {
+    const weeks = [...new Set(shares.map((r) => r.week))].sort().reverse();
+    const sum = (w) => shares.filter((r) => r.week === w).reduce((n, r) => n + r.shares, 0);
+    const people = (w) => Math.max(0, ...shares.filter((r) => r.week === w).map((r) => r.sharers));
+    const thisWeek = weeks[0] ? sum(weeks[0]) : 0;
+    const lastWeek = weeks[1] ? sum(weeks[1]) : 0;
+    const delta = lastWeek ? Math.round(((thisWeek - lastWeek) / lastWeek) * 100) : null;
+    const bySurface = new Map();
+    for (const r of shares.filter((x) => x.week === weeks[0])) bySurface.set(r.surface, (bySurface.get(r.surface) || 0) + r.shares);
+    const byLeague = new Map();
+    for (const r of shares.filter((x) => x.week === weeks[0])) byLeague.set(r.league, (byLeague.get(r.league) || 0) + r.shares);
+    const topLeagues = [...byLeague.entries()].sort((a, b) => b[1] - a[1]).slice(0, 5);
+    const unmarked = shares.filter((r) => r.week === weeks[0]).reduce((n, r) => n + r.unmarked, 0);
+
+    H.push(h('Cards shared', thisWeek));
+    H.push(`<div style="font:400 15px/1.55 system-ui,sans-serif;color:${C.ink};margin:0 0 10px">
+      ${thisWeek} this week from ${people(weeks[0])} ${people(weeks[0]) === 1 ? 'person' : 'people'}${lastWeek ? ` · ${lastWeek} last week` : ''}${delta === null ? '' : ` <span style="color:${delta >= 0 ? C.phos : C.alert}">${delta >= 0 ? '+' : ''}${delta}%</span>`}
+      </div>
+      <div style="font:400 13px/1.6 ui-monospace,monospace;color:${C.dim}">
+      ${esc([...bySurface.entries()].sort((a, b) => b[1] - a[1]).map(([k, v]) => `${k} ${v}`).join(' · ') || 'no shares this week')}<br>
+      ${esc(topLeagues.map(([k, v]) => `${k} ${v}`).join(' · '))}${unmarked ? ` <span style="color:${C.gold}">· ${unmarked} without the watermark</span>` : ''}
+      </div>`);
+    T.push(`CARDS SHARED: ${thisWeek} this week from ${people(weeks[0])} people${lastWeek ? `, ${lastWeek} last week` : ''}${delta === null ? '' : ` (${delta >= 0 ? '+' : ''}${delta}%)`}`,
+      `  by surface: ${[...bySurface.entries()].map(([k, v]) => `${k} ${v}`).join(', ') || 'none'}`,
+      `  by league:  ${topLeagues.map(([k, v]) => `${k} ${v}`).join(', ') || 'none'}`, '');
+  } else if (metrics.shares && metrics.shares.error) {
+    H.push(h('Cards shared', 0));
+    H.push(`<div style="color:${C.dim};font:400 15px system-ui,sans-serif">No share data yet — ${esc(String(metrics.shares.error))}. If this says the function is missing, database-v55.sql has not been run.</div>`);
+    T.push('CARDS SHARED: no data — ' + String(metrics.shares.error), '');
+  }
+
   /* The waitlist is not the goal; a tester is. A signup nobody invites is a
      person who asked to use the product and never got to. */
   const waitingToBeInvited = prod.signups ? (Number(prod.signups.android) || 0) - (Number(prod.signups.invited) || 0) : 0;

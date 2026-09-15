@@ -111,10 +111,34 @@ const nextConfig = {
      * step: a host added there and forgotten here serves a duplicate of the
      * whole site, and a host added here whose `landing` page does not exist
      * bounces every visitor to a 404.
+     *
+     * ONE DELIBERATE ASYMMETRY. VANITY_DOMAINS in app/config.ts is typed with a
+     * `sport`, because app/sports.ts uses it to print "also at scorebug.hockey"
+     * on a sport hub. wasitagoodgame.com is not a sport hub and has no sport to
+     * give, so it lives here only. It redirects; it is never printed anywhere,
+     * which is the whole reason that field exists.
      */
     const VANITY = [
       ['scorebug.hockey', '/hockey'],
       ['scorebug.football', '/football'],
+      /*
+       * wasitagoodgame.com is not a brand name, it is the question.
+       *
+       * It is what somebody types the morning after — and, increasingly, what
+       * they say out loud to an assistant, which is why the phrasing matters
+       * more than the spelling. It lands on /game, the index of games fans
+       * have graded, because that page is the literal answer to it.
+       *
+       * It redirects rather than serving its own copy of the site, for the
+       * same reason the other two do: two hosts serving the same pages is two
+       * sets of rankings for one body of work, and the exact-match domain is
+       * worth far less than the link equity it hands to the host that can
+       * actually rank. Nothing is ever printed on this domain except the
+       * domain itself.
+       *
+       * Inert until the DNS points here, so this can ship ahead of the domain.
+       */
+      ['wasitagoodgame.com', '/game'],
     ]
     const VANITY_RULES = VANITY.flatMap(([host, landing]) =>
       [host, `www.${host}`].flatMap(h => [

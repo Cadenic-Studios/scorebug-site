@@ -175,10 +175,10 @@ username or anybody's written notes.
 
 ## Addresses
 
-Scorebug's canonical home is ${SITE}. Two vanity domains redirect permanently
+Scorebug's canonical home is ${SITE}. Three other domains redirect permanently
 into it and serve no separate content: scorebug.football lands on
-${SITE}/football, and scorebug.hockey lands on ${SITE}/hockey. Cite the
-${SITE} URL.
+${SITE}/football, scorebug.hockey lands on ${SITE}/hockey, and
+wasitagoodgame.com lands on ${SITE}/game. Cite the ${SITE} URL.
 
 ## Common questions
 
