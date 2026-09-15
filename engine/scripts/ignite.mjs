@@ -491,7 +491,27 @@ async function main() {
      * dailyDigest (the 07:00 email). The engine looked deployed, the ops
      * endpoint answered, and nothing would ever have run. So: count what was
      * attempted against what succeeded, and name the difference. */
-    const log = dep.out + dep.err;
+    /* ── STRIP THE COLOUR BEFORE READING THE LOG ──────────────────────────
+     *
+     * This is the third time this block has been wrong, and the first two
+     * fixes both assumed the text arriving here looked like the text on the
+     * screen. It does not. The Firebase CLI writes ANSI escape sequences into
+     * the stream even when it is piped, so
+     *     functions[dispatchTick(us-central1)] Successful update operation
+     * arrives with escape codes wrapping the function name, and a pattern that
+     * matched the visible characters matched nothing at all.
+     *
+     * Observed on a real run: nine functions updated successfully, the CLI
+     * exited 0, and this script printed "deployed — 0 function(s) live" in
+     * green. Which is the SAME failure the block was written to prevent, only
+     * inverted — it could not see success, so it also could not have seen
+     * failure. A parser that reads zero of everything agrees with a total
+     * wipe-out just as happily as it agrees with a clean deploy.
+     *
+     * So: strip the escapes first, and treat "parsed nothing" as an unknown
+     * rather than as a number. */
+    const ANSI = /\u001b\[[0-9;]*[A-Za-z]/g;
+    const log = (dep.out + dep.err).replace(ANSI, '');
     const attempted = [...log.matchAll(/functions:\s+(?:creating|updating)\b[^\n]*?\bfunction\s+([A-Za-z0-9_]+)\(/g)].map((m) => m[1]);
     const succeeded = new Set([...log.matchAll(/functions\[([A-Za-z0-9_]+)\([^)]*\)\]\s+Successful\s+(?:create|update)\s+operation/g)].map((m) => m[1]));
     const missing = [...new Set(attempted)].filter((n) => !succeeded.has(n));
@@ -510,7 +530,17 @@ async function main() {
       fail('deploy failed before it reached any function — see the output above');
       process.exit(1);
     }
-    if (missing.length) {
+    /* PARSED NOTHING IS NOT ZERO, AND IT IS NOT SUCCESS.
+     *
+     * If the CLI exited 0 but this block could not find a single function name
+     * in its output, the honest report is "cannot tell". Printing a green tick
+     * with a count of zero is how a completely failed deploy would look, and
+     * it is what this script did before the ANSI strip above went in. */
+    if (!attempted.length && !succeeded.size) {
+      warn('deploy finished, but the log could not be read — count unverified');
+      say(`  ${C.dim}The CLI exited ${dep.code}. Check the Firebase console before trusting this.${C.r}`);
+      say(`  ${C.dim}https://console.firebase.google.com/project/${PROJECT}/functions${C.r}`);
+    } else if (missing.length) {
       fail(`${missing.length} of ${new Set(attempted).size} function(s) did not deploy: ${missing.join(', ')}`);
       if (/Could not create bucket gcf-v2-sources/.test(log)) {
         say(`  ${C.y}This is the first-deploy race, not a broken engine.${C.r}`);
