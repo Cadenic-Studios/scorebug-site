@@ -35,6 +35,7 @@
 
 import { PROSPECTS, normalizeProspect, inviteCode } from './prospects.js';
 import { search, searchProvider, queriesForDay, USER_AGENT } from './sources.js';
+import { harvest } from './feeds.js';
 
 export const CANDIDATES = 'dispatch/state/candidates/';
 export const SUPPRESSION = 'dispatch/state/suppression/';
@@ -135,7 +136,39 @@ export function extract(html, { host }) {
   // A contact-ish path on the same site, for a second look if we found no address.
   const contactPath = (page.match(/href=["'](\/[^"']*(?:contact|about|support|press|impressum)[^"']*)["']/i) || [])[1] || '';
 
-  return { invites, email, name, contactPath };
+  return { invites, email, name, contactPath, notice: noUnsolicitedNotice(page, email) };
+}
+
+/* ═══════════════════════════════════════════ THE CASL NOTICE CHECK */
+
+/**
+ * WHY A STRING SEARCH IS A LEGAL CONTROL.
+ *
+ * CASL lets us email a business address the business published itself, without
+ * prior consent — but only when "the publication is not accompanied by a
+ * statement that the person does not wish to receive unsolicited commercial
+ * electronic messages at the electronic address". That clause is the whole
+ * basis on which this engine is allowed to exist, and it has a condition
+ * attached that a crawler can actually check.
+ *
+ * So we check it, and we record the answer, because the burden of proving
+ * implied consent falls on the sender. "We did not notice the notice" is not a
+ * defence anybody has ever won with.
+ *
+ * The window matters. A "no unsolicited offers" line in a careers section
+ * three thousand characters away is about recruiters, not about us; a line
+ * beside the address is about us. Twelve hundred characters either side is
+ * roughly the surrounding block on a contact page.
+ */
+const NOTICE_RE = /\b(no[\s-]?unsolicited|unsolicited (?:commercial )?(?:e-?mail|messages|offers|enquir|inquir|pitch|solicitation)|do not (?:send|email) (?:us )?(?:any )?(?:unsolicited|marketing|sales|promotional)|no (?:sales|marketing|vendor|spam) (?:e-?mail|enquir|inquir|pitch|solicitation)|not accept unsolicited|we do not accept (?:sales|vendor|marketing))/i;
+
+export function noUnsolicitedNotice(html, email, window = 1200) {
+  const page = String(html || '');
+  if (!email) return '';
+  const at = page.toLowerCase().indexOf(String(email).toLowerCase());
+  const near = at < 0 ? page.slice(0, 4000) : page.slice(Math.max(0, at - window), at + window);
+  const hit = near.match(NOTICE_RE);
+  return hit ? hit[0].replace(/\s+/g, ' ').trim() : '';
 }
 
 /* ══════════════════════════════════════════════════════ SUPPRESSION LIST */
@@ -210,10 +243,36 @@ export async function assess(result, { store, segment, fetchImpl = fetch }) {
   }
 
   if (!found.invites.length) return { ...base, verdict: 'no Discord on the site' };
+
+  /* Steam publishes a support address as structured data on the store page.
+     It is used only when the company's own site shows none, and it carries its
+     own provenance URL, because the address was published there and not here. */
+  let emailSource = result.url;
+  if (!found.email && result.emailHint) {
+    found = { ...found, email: result.emailHint, notice: '' };
+    emailSource = result.emailHintSource || result.url;
+  }
+
   if (!found.email) return { ...base, verdict: 'no published contact address' };
+
+  /* They said not to. That is the end of it — recorded as a candidate so the
+     same site is not re-assessed tomorrow, and never promoted to a prospect. */
+  if (found.notice) return { ...base, verdict: 'asked not to receive unsolicited email', notice: found.notice };
+
   if (await isSuppressed(store, { email: found.email })) return { ...base, verdict: 'suppressed' };
 
-  return { ...base, verdict: 'qualified', name: found.name, email: found.email, discordInvite: found.invites[0], inviteCode: inviteCode(found.invites[0]) };
+  return {
+    ...base, verdict: 'qualified', name: found.name, email: found.email,
+    discordInvite: found.invites[0], inviteCode: inviteCode(found.invites[0]),
+    /* ── THE CASL RECORD ──────────────────────────────────────────────────
+       Where the address was published, when we saw it, and that no notice
+       refusing unsolicited mail accompanied it. Kept per lead because the
+       sender carries the burden of demonstrating implied consent, and an
+       argument made eighteen months later is only as good as what was
+       written down on the day. Conspicuous-publication consent does not
+       expire, so this record does not either. */
+    provenance: { source: emailSource, via: result.via || 'search', checkedAt: base.seenAt, noticeFound: false, basis: 'CASL s.10(9)(b) conspicuous publication' },
+  };
 }
 
 /* ══════════════════════════════════════════════════════════════════ TICK */
@@ -230,41 +289,76 @@ export async function assess(result, { store, segment, fetchImpl = fetch }) {
  */
 export async function discoverTick({ store, secrets = {}, settings = {}, now = Date.now(), fetchImpl = fetch, log = () => {} }) {
   const cfg = settings.cadenic || {};
-  const summary = { provider: searchProvider(secrets), searched: 0, seen: 0, qualified: 0, added: 0, rejected: {} };
+  const summary = { provider: searchProvider(secrets), searched: 0, seen: 0, qualified: 0, added: 0, rejected: {}, feeds: {} };
   if (cfg.discover === false) { summary.note = 'discovery off'; return summary; }
-  if (!summary.provider) { summary.note = 'no search key — set GOOGLE_CSE_KEY and GOOGLE_CSE_CX (free, 100/day, no card) or BRAVE_SEARCH_KEY'; return summary; }
 
   const maxNew = Number(cfg.maxNewPerRun) || 8;
   const maxPages = Number(cfg.maxPagesPerRun) || 40;
   const { segment, queries } = queriesForDay(now, Number(cfg.queriesPerRun) || 3);
 
-  for (const q of queries) {
-    if (summary.added >= maxNew || summary.seen >= maxPages) break;
-    const found = await search({ secrets, query: q, count: 10, fetchImpl });
-    summary.searched++;
-    if (!found.ok) { summary.note = found.reason; log('discover', q, found.reason); continue; }
+  /**
+   * ── TWO POPULATIONS, ONE ASSESSOR ──────────────────────────────────────
+   *
+   * The keyless feeds run first, and they run whether or not a search key
+   * exists. That ordering is deliberate: this beat used to return on its
+   * second line when GOOGLE_CSE_CX was unset, which meant the entire revenue
+   * side of the engine was gated behind a console setup nobody had finished,
+   * and the digest reported "no search key" every morning for days while
+   * finding nothing. A machine that cannot start without a key it does not
+   * have is not a machine.
+   *
+   * Both populations go through exactly the same `assess`: robots.txt, the
+   * company's own page, a published address, no notice refusing unsolicited
+   * mail. A lead from Hacker News gets no easier ride than one from Google.
+   */
+  const leads = [];
+  if (cfg.feeds !== false) {
+    const h = await harvest({ secrets, now, perDay: Number(cfg.feedsPerRun) || 2, fetchImpl, log });
+    summary.feeds = h.notes;
+    leads.push(...h.results.map((r) => ({ ...r, segment: r.via })));
+  }
 
-    for (const r of found.results) {
-      if (summary.added >= maxNew || summary.seen >= maxPages) break;
-      summary.seen++;
-      try {
-        const c = await assess(r, { store, segment: segment.label, fetchImpl });
-        await store.set(CANDIDATES + suppressionKey(c.host || c.url), c);
-        if (c.verdict !== 'qualified') {
-          summary.rejected[c.verdict] = (summary.rejected[c.verdict] || 0) + 1;
-          continue;
-        }
-        summary.qualified++;
-        const p = normalizeProspect({ email: c.email, name: '', company: c.name, site: `https://${c.host}`, discord: c.discordInvite, segment: segment.label }, now);
-        if (!p) continue;
-        if (await store.get(PROSPECTS + p.id)) continue;   // one contact per company, ever
-        await store.set(PROSPECTS + p.id, { ...p, foundBy: 'discovery', foundQuery: q });
-        summary.added++;
-      } catch (e) {
-        log('discover', r.url, String(e.message || e));
+  if (summary.provider) {
+    for (const q of queries) {
+      const found = await search({ secrets, query: q, count: 10, fetchImpl });
+      summary.searched++;
+      if (!found.ok) { summary.note = found.reason; log('discover', q, found.reason); continue; }
+      leads.push(...found.results.map((r) => ({ ...r, segment: segment.label, foundQuery: q })));
+    }
+  } else if (!leads.length) {
+    summary.note = 'no search key and no feed returned anything — set GOOGLE_CSE_KEY and GOOGLE_CSE_CX (free, 100/day, no card) or BRAVE_SEARCH_KEY';
+    return summary;
+  } else {
+    summary.note = 'running on the keyless feeds only; a search key would widen this';
+  }
+
+  for (const r of leads) {
+    if (summary.added >= maxNew || summary.seen >= maxPages) break;
+    summary.seen++;
+    try {
+      const c = await assess(r, { store, segment: r.segment || segment.label, fetchImpl });
+      await store.set(CANDIDATES + suppressionKey(c.host || c.url), c);
+      if (c.verdict !== 'qualified') {
+        summary.rejected[c.verdict] = (summary.rejected[c.verdict] || 0) + 1;
+        continue;
       }
+      summary.qualified++;
+      const p = normalizeProspect({ email: c.email, name: '', company: c.name, site: `https://${c.host}`, discord: c.discordInvite, segment: c.segment }, now);
+      if (!p) continue;
+      if (await store.get(PROSPECTS + p.id)) continue;   // one contact per company, ever
+      await store.set(PROSPECTS + p.id, { ...p, foundBy: r.via || 'discovery', foundQuery: r.foundQuery || '', provenance: c.provenance || null });
+      summary.added++;
+    } catch (e) {
+      log('discover', r.url, String(e.message || e));
     }
   }
+
+  /* The digest runs hours after this beat and in a different process, so the
+     only way it can report which sources produced anything is if the beat
+     writes it down. A feed silently returning nothing for a week is otherwise
+     invisible, which is the failure mode that matters here: discovery does not
+     crash when a source dies, it just quietly finds less. */
+  await store.set('dispatch/state/meta/discovery', { at: new Date(now).toISOString(), ...summary });
   return summary;
 }
 

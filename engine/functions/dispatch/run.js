@@ -35,7 +35,7 @@ import { loadSettings } from './store.js';
 import { reserve as reserveXSpend } from './xspend.js';
 import { POLICY, policyFor } from './optimize.js';
 import { loadAttachment } from './media.js';
-import { fetchFacts, FALLBACK_FACTS } from './facts.js';
+import { fetchFacts } from './facts.js';
 import { findAnniversary } from './archive.js';
 import { weekInNumbers, communityFor } from './supabase.js';
 import { localParts } from './leagues.js';

@@ -20,6 +20,7 @@ import { engagementScore } from './metrics.js';
 import { POLICY } from './optimize.js';
 import { SITE } from './facts.js';
 import { PROSPECTS, outreachStats } from './prospects.js';
+import { INBOX, inboxStats } from './inbox.js';
 import { CANDIDATES, discoveryStats } from './discover.js';
 
 const EV = 'dispatch/state/events/';
@@ -88,6 +89,9 @@ export async function buildDigest({ store, publishers = {}, upcoming = [], now =
   const reviews = (await store.list(RV)).map((d) => d.data).filter((r) => r.status === 'drafted' || r.status === 'needs-human');
   const prospectDocs = await store.list(PROSPECTS);
   const prospects = prospectDocs.map((d) => d.data);
+  const discovery = (await store.get('dispatch/state/meta/discovery')) || {};
+  const inboxDocs = await store.list(INBOX);
+  const inbox = inboxDocs.map((d) => ({ id: d.id, ...d.data }));
   const candidates = (await store.list(CANDIDATES)).map((d) => d.data);
   const metrics = (await store.get(`${MET}${day}`)) || (await store.get(`${MET}${ymd(now - DAY)}`)) || {};
   const policy = (await store.get(POLICY)) || {};
@@ -203,6 +207,64 @@ export async function buildDigest({ store, publishers = {}, upcoming = [], now =
    * Every send is a signed link. The reason each draft passed the linter is
    * NOT printed; the reason it failed is, because a blocked draft is a fact
    * the owner needs and a passed one is just a draft. */
+  /* ── CADENIC — REPLIES ────────────────────────────────────────────────────
+     Above the cold-email queue, deliberately and permanently. A person who
+     wrote back is waiting on an answer; a draft to a stranger is waiting on
+     nothing. If this email is skimmed for ten seconds, the ten seconds should
+     land here.
+
+     What has ALREADY happened by the time this is read: the follow-up was
+     cancelled, a stop was honoured and suppressed, a bounce was marked. None
+     of that waited for anyone. What is left in this section is the only part
+     that should need a person — the words that get sent back. */
+  const answers = inbox.filter((x) => x.status === 'drafted');
+  const needHuman = inbox.filter((x) => x.status === 'needs-human');
+  const settledToday = inbox.filter((x) => (x.status === 'closed') && now - Date.parse(x.at || 0) <= DAY);
+  if (answers.length || needHuman.length || settledToday.length) {
+    H.push(h('Cadenic — replies', answers.length + needHuman.length));
+    T.push(`CADENIC REPLIES (${answers.length} drafted, ${needHuman.length} need you)`);
+
+    for (const x of answers) {
+      H.push(card(`<div style="font:600 11px/1.4 ui-monospace,monospace;letter-spacing:.12em;text-transform:uppercase;color:${C.go}">reply · ${esc(x.kind || 'other')}</div>
+        <div style="font:600 16px/1.4 system-ui,sans-serif;color:${C.ink};margin:6px 0 0">${esc(x.company || x.from)}</div>
+        <div style="font:400 12px/1.5 ui-monospace,monospace;color:${C.dim};margin:2px 0 8px">${esc(x.summary || x.subject || '')}</div>
+        <pre style="white-space:pre-wrap;font:400 13px/1.55 system-ui,sans-serif;color:${C.dim};margin:0 0 8px;padding:8px 10px;background:${C.void};border-radius:6px;max-height:140px;overflow:auto">${esc((x.excerpt || '').slice(0, 400))}</pre>
+        <div style="font:600 11px/1.4 ui-monospace,monospace;letter-spacing:.1em;text-transform:uppercase;color:${C.dim};margin:0 0 4px">your answer</div>
+        <pre style="white-space:pre-wrap;font:400 13px/1.55 system-ui,sans-serif;color:${C.ink};margin:0 0 10px;padding:10px 12px;background:${C.void};border-radius:6px;max-height:240px;overflow:auto">${esc(x.answer || '')}</pre>
+        ${btn(link('inbox-send', x.id), 'Send reply', C.go)} ${btn(link('inbox-skip', x.id), 'Handle it myself', C.dim)}`, C.go));
+      T.push(`- REPLY ${x.company || x.from} (${x.kind}) — ${x.summary || ''}`, `  they said: ${(x.excerpt || '').slice(0, 200).replace(/\n/g, ' ')}`, `  send: ${link('inbox-send', x.id)}`, `  skip: ${link('inbox-skip', x.id)}`);
+    }
+
+    /* A reply we could not draft an answer to is MORE urgent than one we
+       could, not less — it is usually the interesting one. It gets the alert
+       colour and the sender's own words, because that is all Wyatt needs to
+       write two lines himself. */
+    for (const x of needHuman) {
+      const why = (x.problems || []).join('; ') || x.answerProblem || 'no draft';
+      H.push(card(`<div style="font:600 11px/1.4 ui-monospace,monospace;letter-spacing:.12em;text-transform:uppercase;color:${C.alert}">write this one yourself · ${esc(x.kind || 'other')}</div>
+        <div style="font:600 16px/1.4 system-ui,sans-serif;color:${C.ink};margin:6px 0 0">${esc(x.company || x.from)}</div>
+        <div style="font:400 12px/1.5 ui-monospace,monospace;color:${C.alert};margin:2px 0 8px">${esc(why)}</div>
+        <pre style="white-space:pre-wrap;font:400 13px/1.55 system-ui,sans-serif;color:${C.ink};margin:0 0 10px;padding:10px 12px;background:${C.void};border-radius:6px;max-height:240px;overflow:auto">${esc(x.excerpt || '')}</pre>
+        ${btn(`mailto:${encodeURIComponent(x.from)}?subject=${encodeURIComponent(/^re:/i.test(x.subject || '') ? x.subject : `Re: ${x.subject || ''}`)}`, 'Reply in your mail app', C.alert)} ${btn(link('inbox-skip', x.id), 'Done', C.dim)}`, C.alert));
+      T.push(`- NEEDS YOU ${x.company || x.from} (${x.kind}) — ${why}`, `  they said: ${(x.excerpt || '').slice(0, 300).replace(/\n/g, ' ')}`, `  done: ${link('inbox-skip', x.id)}`);
+    }
+
+    /* The quiet line. Stops and bounces are handled without anybody, and the
+       only thing owed to the reader is the count — but it is owed, because an
+       unsubscribe that happens invisibly is indistinguishable from one that
+       did not happen at all. */
+    if (settledToday.length) {
+      const by = {};
+      for (const x of settledToday) by[x.kind] = (by[x.kind] || 0) + 1;
+      const line = Object.entries(by).map(([k, v]) => `${v} ${k}`).join(' · ');
+      H.push(`<div style="font:400 13px/1.6 ui-monospace,monospace;color:${C.dim};margin:2px 0 10px">handled without you in 24h: ${esc(line)}</div>`);
+      T.push(`  handled without you: ${line}`);
+    }
+    const ist = inboxStats(inboxDocs);
+    T.push('');
+    if (ist.total) H.push(`<div style="font:400 13px/1.6 system-ui,sans-serif;color:${C.dim};margin:0 0 14px">${ist.total} message(s) received in total</div>`);
+  }
+
   const drafted = prospects.filter((x) => x.status === 'drafted').sort((a, b) => (a.draftedAt < b.draftedAt ? 1 : -1));
   const followUps = prospects.filter((x) => x.status === 'follow-up-drafted');
   const blocked = prospects.filter((x) => x.status === 'blocked');
@@ -244,6 +306,15 @@ export async function buildDigest({ store, publishers = {}, upcoming = [], now =
       const why = Object.entries(disc.by).filter(([k]) => k !== 'qualified').sort((a, b) => b[1] - a[1]).slice(0, 4);
       H.push(`<div style="font:400 13px/1.6 ui-monospace,monospace;color:${C.dim};margin:2px 0 8px">found ${disc.seen} site(s) in 24h · ${disc.qualified} qualified${why.length ? ` · ${esc(why.map(([k, v]) => `${v} ${k}`).join(', '))}` : ''}</div>`);
       T.push(`  discovery: ${disc.seen} seen, ${disc.qualified} qualified${why.length ? ` (${why.map(([k, v]) => `${v} ${k}`).join(', ')})` : ''}`);
+    }
+    /* Which sources are actually producing. A feed that has been returning
+       nothing for a week is a broken feed, and the only way anybody finds out
+       is if the digest says so on the days it finds nothing. */
+    const feedNotes = Object.entries(discovery.feeds || {});
+    if (feedNotes.length) {
+      const line = feedNotes.map(([k, v]) => `${k}: ${v}`).join(' · ');
+      H.push(`<div style="font:400 12px/1.6 ui-monospace,monospace;color:${C.dim};margin:0 0 8px">sources — ${esc(line)}</div>`);
+      T.push(`  sources: ${line}`);
     }
     H.push(`<div style="font:400 14px/1.6 system-ui,sans-serif;color:${C.ink};margin:6px 0 14px">${stats.sent} sent · ${stats.replied} replied${stats.replyRate !== null ? ` (${stats.replyRate}%)` : ''} · <span style="color:${C.gold};font-weight:700">${stats.converted} client${stats.converted === 1 ? '' : 's'}</span> · ${stats.by.new || 0} queued</div>`);
     T.push(`  ${stats.sent} sent · ${stats.replied} replied${stats.replyRate !== null ? ` (${stats.replyRate}%)` : ''} · ${stats.converted} clients · ${stats.by.new || 0} queued`, '');
@@ -478,10 +549,29 @@ function headline({ mode, sent, waiting, replies, reviews, liveNets, metrics }) 
 }
 
 /** Resend transactional send; one call, no SDK. */
-export async function sendEmail({ apiKey, from, to, subject, text, html, fetchImpl = fetch }) {
+/**
+ * `headers` carries In-Reply-To and References when this is a reply, which is
+ * what puts the message inside the thread the prospect started rather than
+ * beside it as a second cold approach. Resend takes them as a flat object.
+ *
+ * The user-agent is not decoration: Resend answers 403 with error code 1010 to
+ * any API request that arrives without one, and Node's fetch does not always
+ * set a default. A send that works in testing and fails in production on a
+ * header nobody set is a bad afternoon.
+ */
+export async function sendEmail({ apiKey, from, to, subject, text, html, headers, replyTo, fetchImpl = fetch }) {
   const res = await fetchImpl('https://api.resend.com/emails', {
-    method: 'POST', headers: { authorization: `Bearer ${apiKey}`, 'content-type': 'application/json' },
-    body: JSON.stringify({ from, to: Array.isArray(to) ? to : [to], subject, text, html }),
+    method: 'POST',
+    headers: {
+      authorization: `Bearer ${apiKey}`,
+      'content-type': 'application/json',
+      'user-agent': 'CadenicStudios-engine/1.0 (+https://cadenic.studio)',
+    },
+    body: JSON.stringify({
+      from, to: Array.isArray(to) ? to : [to], subject, text, html,
+      ...(headers && Object.keys(headers).length ? { headers } : {}),
+      ...(replyTo ? { reply_to: replyTo } : {}),
+    }),
   });
   if (!res.ok) throw new Error(`resend ${res.status}: ${(await res.text()).slice(0, 200)}`);
   return res.json();

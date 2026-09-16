@@ -60,6 +60,7 @@ import { supabaseClient } from './supabase.js';
 import { fetchFacts } from './facts.js';
 import { prospectsTick, sendOutreach, PROSPECTS, normalizeProspect } from './prospects.js';
 import { discoverTick, suppress, CANDIDATES } from './discover.js';
+import { verifyWebhook, handleInbound, sendAnswer, INBOX } from './inbox.js';
 import { localParts, clock, LEAGUE_BY_ID } from './leagues.js';
 import { teamName } from './draft.js';
 
@@ -82,6 +83,9 @@ const SECRET_NAMES = [
   // with neither, the beat says so in the digest and finds nothing. It never
   // falls back to scraping a results page.
   'GOOGLE_CSE_KEY', 'GOOGLE_CSE_CX', 'BRAVE_SEARCH_KEY', 'GITHUB_TOKEN',
+  // Inbound replies. Without it the webhook refuses every request it is sent,
+  // which is the correct behaviour for an unauthenticated public endpoint.
+  'RESEND_WEBHOOK_SECRET',
 ];
 
 /**
@@ -321,6 +325,53 @@ export const weeklyDispatch = onSchedule(opts({ schedule: '0 9 * * 1' }), async 
 
 /* ─────────────────────────────────────────────────────────────────── OPS */
 
+/**
+ * CADENIC — INBOUND REPLIES.
+ *
+ * Resend receives at the studio's inbound domain and posts `email.received`
+ * here. This is a public URL with no shared secret in it, so the Svix
+ * signature IS the authentication: an unsigned or mis-signed request is
+ * refused before a single byte of it is believed, and a request that arrives
+ * without RESEND_WEBHOOK_SECRET configured is refused too, because an endpoint
+ * that accepts anything while the secret is missing is worse than one that is
+ * switched off.
+ *
+ * `req.rawBody` and not `req.body`. Svix signs the exact bytes that were sent;
+ * Express parses the JSON and any re-serialisation of it changes key spacing,
+ * which changes the hash, which fails forever in a way that looks like a
+ * misconfigured secret. Firebase preserves the original buffer for exactly
+ * this case.
+ *
+ * It answers 200 to anything it has authenticated, including events it does
+ * not handle. Svix retries a non-2xx eight times over about a day and disables
+ * an endpoint that keeps failing — so an event type we ignore must not look
+ * like an outage.
+ */
+export const cadenicInbox = onRequest({ secrets: secretList, cors: false, timeoutSeconds: 120 }, async (req, res) => {
+  const { s, store } = await deps();
+  if (String(req.method).toUpperCase() !== 'POST') { res.status(405).send('POST only'); return; }
+
+  const raw = req.rawBody ? Buffer.from(req.rawBody).toString('utf8') : JSON.stringify(req.body || {});
+  const v = verifyWebhook({ secret: s.RESEND_WEBHOOK_SECRET, headers: req.headers, rawBody: raw });
+  if (!v.ok) { logger.warn('inbox refused', v.reason); res.status(401).json({ error: v.reason }); return; }
+
+  let event;
+  try { event = JSON.parse(raw); } catch { res.status(400).json({ error: 'not json' }); return; }
+  if (event.type !== 'email.received') { res.json({ ok: true, ignored: event.type }); return; }
+
+  try {
+    const settings = await loadSettings(store);
+    const out = await handleInbound({ store, event, secrets: s, settings, log });
+    logger.info('inbox', out);
+    res.json({ ok: true, ...out });
+  } catch (e) {
+    /* A 500 earns a retry, and a retry is what we want for a transient fault:
+       the message is already marked seen, so the retry is cheap and idempotent. */
+    logger.error('inbox', String(e.message || e));
+    res.status(500).json({ error: 'handler failed' });
+  }
+});
+
 export const dispatchOps = onRequest({ secrets: secretList, cors: false, timeoutSeconds: 120 }, async (req, res) => {
   const { s, store, publishers, sa } = await deps();
   const action = String(req.query.action || '');
@@ -361,6 +412,7 @@ export const dispatchOps = onRequest({ secrets: secretList, cors: false, timeout
       store.get('dispatch/state/meta/slots'), store.get('dispatch/state/meta/facts'),
       store.list(PROSPECTS), store.list(CANDIDATES),
     ]);
+    const inbox = await store.list(INBOX);
     res.json({
       settings, policy: policy || null, budget: { plan: PLAN, ...(budget || {}) }, health: health(s, publishers), facts: facts || null,
       events: events.map((d) => d.data).sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1)).slice(0, 200),
@@ -370,6 +422,7 @@ export const dispatchOps = onRequest({ secrets: secretList, cors: false, timeout
       slots: (slots && slots.fired) || {}, slotNotes: (slots && slots.notes) || {},
       prospects: prospects.map((d) => d.data).sort((a, b) => (a.addedAt < b.addedAt ? 1 : -1)),
       candidates: candidates.map((d) => d.data).sort((a, b) => (a.seenAt < b.seenAt ? 1 : -1)).slice(0, 300),
+      inbox: inbox.map((d) => ({ id: d.id, ...d.data })).sort((a, b) => (a.at < b.at ? 1 : -1)).slice(0, 200),
     });
     return;
   }
@@ -402,6 +455,17 @@ export const dispatchOps = onRequest({ secrets: secretList, cors: false, timeout
     res.send(confirmPage(action, id, req.query));
     return;
   }
+
+  /* ── WHY THIS LINE EXISTS ────────────────────────────────────────────────
+     Three actions below pass `settings` to a send function that refuses in dry
+     run. The only `settings` in this handler was declared inside the `status`
+     block, which returns before ever reaching here — so every one of those
+     three was a ReferenceError waiting for the first person to press the
+     button, and the dry-run guard they were passing it to could never have
+     run. Nothing had been sent yet, so nothing had ever exercised the path.
+     `npm test` now runs eslint's no-undef over the engine for this reason:
+     `node --check` validates syntax and says nothing at all about scope. */
+  const settings = await loadSettings(store);
 
   try {
     switch (action) {
@@ -464,6 +528,20 @@ export const dispatchOps = onRequest({ secrets: secretList, cors: false, timeout
         res.status(r.ok ? 200 : 409).send(page(r.ok ? 'Follow-up sent. That is the last message this person gets.' : `Not sent: ${r.reason}.`));
         break;
       }
+      /* ── THE INBOX ────────────────────────────────────────────────────
+         A reply is answered by a person pressing a button, never by the
+         engine deciding on its own. Everything else about an inbound message
+         — cancelling the follow-up, honouring a stop, marking a bounce — has
+         already happened automatically by the time this link is pressed. */
+      case 'inbox-send': {
+        const r = await sendAnswer({ store, id, secrets: s, settings, sendEmail });
+        res.status(r.ok ? 200 : 409).send(page(r.ok ? 'Replied, inside their thread.' : `Not sent: ${r.reason}.`));
+        break;
+      }
+      case 'inbox-skip':
+        await store.update(INBOX + id, { status: 'closed', decidedAt: new Date().toISOString() });
+        res.send(page('Left alone. It will not come back.'));
+        break;
       case 'outreach-skip':
         await store.update(PROSPECTS + id, { status: 'skipped', decidedAt: new Date().toISOString() });
         res.send(page('Skipped. They will not be contacted.'));

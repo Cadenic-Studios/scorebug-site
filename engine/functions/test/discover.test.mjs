@@ -174,14 +174,81 @@ test('the full tick searches, qualifies, promotes — and never adds the same co
   assert.equal((await store.list(PROSPECTS)).length, 1, 'one contact per company, ever');
 });
 
-test('with no search key it says so and touches nothing', async () => {
+test('with no search key, and feeds off, it says so and touches nothing', async () => {
   const store = memoryStore();
   let called = false;
-  const s = await discoverTick({ store, secrets: {}, fetchImpl: async () => { called = true; return html('{}'); } });
+  const s = await discoverTick({ store, secrets: {}, settings: { cadenic: { feeds: false } }, fetchImpl: async () => { called = true; return html('{}'); } });
   assert.equal(s.provider, null);
   assert.match(s.note, /GOOGLE_CSE_KEY/);
-  assert.equal(called, false, 'no key means no requests at all, and never a SERP scrape');
+  assert.equal(called, false, 'nothing to search with and nothing to harvest means no requests');
   assert.equal((await store.list(PROSPECTS)).length, 0);
+});
+
+/**
+ * THE RULE THIS REPLACED, AND WHY THE WORDING CHANGED.
+ *
+ * The old version of the test above asserted "no key means no requests at
+ * all". That was the right instinct expressed as the wrong rule: what must
+ * never happen is fetching a search engine's HTML results page and parsing it,
+ * because that is the line between using a service and abusing one. Requests
+ * to keyless, documented, purpose-built APIs are not that, and forbidding them
+ * wholesale is what left the entire revenue side of this engine idle whenever
+ * GOOGLE_CSE_CX was unset.
+ *
+ * So the rule is now stated as the rule, and it is stated about destinations
+ * rather than about counts.
+ */
+const SERP = /^https?:\/\/(?:www\.)?(google\.[a-z.]+\/search|bing\.com\/search|duckduckgo\.com\/(?:\?|html)|search\.yahoo\.|startpage\.com|ecosia\.org\/search|search\.marginalia\.nu|lite\.duckduckgo\.com)/i;
+
+test('with no search key it harvests the keyless feeds and never scrapes a results page', async () => {
+  const store = memoryStore();
+  const seen = [];
+  const fetchImpl = async (url) => {
+    seen.push(String(url));
+    if (String(url).includes('hn.algolia.com')) {
+      return html(JSON.stringify({ hits: [{ url: 'https://roundtable.example/', title: 'Show HN: a thing', story_text: 'discord.gg/abc' }] }));
+    }
+    if (String(url).endsWith('/robots.txt')) return html('User-agent: *\n');
+    if (String(url).includes('roundtable.example')) {
+      return html('<title>Roundtable</title><a href="https://discord.gg/abc">d</a><a href="mailto:hi@roundtable.example">c</a>');
+    }
+    return html('{}');
+  };
+
+  const s = await discoverTick({
+    store, secrets: {}, now: 0,                       // day 0 puts Hacker News first
+    settings: { cadenic: { feedsPerRun: 1 } },
+    fetchImpl,
+  });
+
+  assert.equal(s.provider, null, 'still no search provider');
+  assert.match(s.note, /keyless feeds/, 'the digest should say what it is running on');
+  assert.ok(seen.length > 0, 'the feeds do make requests, and that is the point');
+  for (const u of seen) assert.doesNotMatch(u, SERP, `scraped a results page: ${u}`);
+  assert.equal(s.added, 1, 'a qualified lead from a keyless feed enters the queue like any other');
+
+  const [p] = await store.list(PROSPECTS);
+  assert.equal(p.data.email, 'hi@roundtable.example');
+  assert.equal(p.data.foundBy, 'hn/show_hn', 'where a lead came from is part of its record');
+  assert.ok(p.data.provenance, 'and so is the basis on which we may write to it');
+  assert.equal(p.data.provenance.noticeFound, false);
+});
+
+test('a site that asks for no unsolicited email is never promoted to a prospect', async () => {
+  const store = memoryStore();
+  const fetchImpl = async (url) => {
+    const u = String(url);
+    if (u.includes('customsearch')) return html(JSON.stringify({ items: [{ link: 'https://polite.example/', title: 'Polite Co' }] }));
+    if (u.endsWith('/robots.txt')) return html('User-agent: *\n');
+    return html('<title>Polite Co</title><a href="https://discord.gg/x">d</a><a href="mailto:hi@polite.example">hi@polite.example</a> — please, no unsolicited sales email.');
+  };
+  const s = await discoverTick({
+    store, secrets: { GOOGLE_CSE_KEY: 'k', GOOGLE_CSE_CX: 'c' },
+    settings: { cadenic: { feeds: false, queriesPerRun: 1 } }, fetchImpl,
+  });
+  assert.equal(s.added, 0);
+  assert.equal(s.rejected['asked not to receive unsolicited email'], 1);
+  assert.equal((await store.list(PROSPECTS)).length, 0, 'they said no before we ever asked');
 });
 
 test('the ceilings hold: a generous search cannot flood the queue', async () => {
