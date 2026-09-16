@@ -111,8 +111,16 @@ const FROM_EMAIL = defineString('DISPATCH_FROM_EMAIL', { default: 'Scorebug <dis
  * Firebase treats an empty default as no default and a non-interactive deploy
  * stops. This is the deterministic alias every Cloud Functions deployment
  * answers on; ignite.mjs overwrites it with whatever the deploy prints.
+ *
+ * The project is scorebug-dba70. This default said `scorebug-engine`, which is
+ * not a project that exists — a name carried over from Delta-V when this engine
+ * was ported. It has never caused a failure because functions/.env always
+ * carries the real URL, which is exactly what makes it worth fixing now: the
+ * day .env is missing or stale, every one-tap link in the morning digest points
+ * at a host that does not resolve, and the symptom is "the buttons stopped
+ * working" with nothing in any log.
  */
-const OPS_URL = defineString('DISPATCH_OPS_URL', { default: 'https://us-central1-scorebug-engine.cloudfunctions.net/dispatchOps' });
+const OPS_URL = defineString('DISPATCH_OPS_URL', { default: 'https://us-central1-scorebug-dba70.cloudfunctions.net/dispatchOps' });
 const TZ = 'America/Edmonton';
 const opts = (extra = {}) => ({ secrets: secretList, timeZone: TZ, timeoutSeconds: 300, memory: '512MiB', ...extra });
 
