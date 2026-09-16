@@ -607,9 +607,33 @@ async function main() {
 
     if (!firstRun) {
       const s = existing.settings;
-      const mode = s.dryRun ? `${C.y}dry run${C.r}` : s.autopilot ? `${C.g}live, autopilot on${C.r}` : `${C.g}live, approval required${C.r}`;
+      /* ── PAUSED IS NOT DRY RUN, AND THIS LINE USED TO SAY IT WAS ──────────
+       *
+       * `mode` only ever read dryRun and autopilot. With enabled=false it
+       * printed "the engine stays dry run" in green — and dry run is the state
+       * where the engine DOES everything and sends nothing, which is exactly
+       * what you want to watch for a week. Paused is the state where it does
+       * not run at all.
+       *
+       * Those look identical in a digest (no posts either way) and are
+       * opposite in meaning: one is five days of drafts to read, the other is
+       * five empty emails while you wait for drafts that were never going to
+       * come. Which is what happened. So enabled is checked first, and when it
+       * is off the script says so at the top of its voice. */
+      const paused = s.enabled === false;
+      const mode = paused
+        ? `${C.y}${C.b}PAUSED${C.r}`
+        : s.dryRun ? `${C.y}dry run${C.r}` : s.autopilot ? `${C.g}live, autopilot on${C.r}` : `${C.g}live, approval required${C.r}`;
       ok(`settings left alone — the engine stays ${mode}`);
       say(`  ${C.dim}deploying is not a reason to change how you have it set.${C.r}`);
+      if (paused) {
+        say('');
+        warn('PAUSED MEANS NOTHING IS DRAFTED — not even into the digest.');
+        say(`  ${C.y}Every tick returns immediately. Tomorrow's 07:00 email will have${C.r}`);
+        say(`  ${C.y}no drafts in it, and so will the one after that.${C.r}`);
+        say(`  ${C.dim}To watch it work without anything reaching a network, you want${C.r}`);
+        say(`  ${C.dim}enabled=true AND dryRun=true. Press Resume at ${(secrets.SITE_BASE_URL || "https://getscorebug.app").replace(/\/+$/, "")}/ops.${C.r}`);
+      }
     } else {
       // Order matters on a fresh install: dry run BEFORE enabling, so there is
       // no window in which the engine is live and unmuzzled.
@@ -770,6 +794,13 @@ async function main() {
         verified = j;
         const s = j.settings || {};
         ok(`engine: enabled=${s.enabled} dryRun=${s.dryRun} autopilot=${s.autopilot}`);
+        /* The one combination that looks safe and is actually idle. Repeated
+           here because step 05 is a hundred lines further up the scroll, and
+           this is the block people actually read. */
+        if (s.enabled === false) {
+          warn('the engine is PAUSED — it will draft nothing until you press Resume');
+          say(`  ${C.dim}${(secrets.SITE_BASE_URL || "https://getscorebug.app").replace(/\/+$/, "")}/ops → Resume. Dry run stays on; nothing reaches a network.${C.r}`);
+        }
         ok(`networks live: ${(j.health?.publishers || []).join(', ') || 'none'}`);
         ok(`${j.health?.declaredSecrets ?? '?'} secret(s) bound to the deployment`);
         const missing = j.health?.missingSecrets || [];
