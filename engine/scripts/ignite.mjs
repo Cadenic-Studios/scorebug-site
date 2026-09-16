@@ -250,6 +250,10 @@ const SECRET_NAMES = [
   // without CADENIC_POSTAL, because CASL puts a mailing address in every
   // commercial email and 'we will add it later' is how that gets skipped.
   'CADENIC_POSTAL', 'CADENIC_FROM',
+  // Prospect discovery. Either the Google pair (free, 100/day, no card) or
+  // the Brave key is enough. Without one the beat reports that in the digest
+  // and finds nothing; it never falls back to scraping a results page.
+  'GOOGLE_CSE_KEY', 'GOOGLE_CSE_CX', 'BRAVE_SEARCH_KEY', 'GITHUB_TOKEN',
 ];
 
 /** The eight without which turning it on is not worth doing. */

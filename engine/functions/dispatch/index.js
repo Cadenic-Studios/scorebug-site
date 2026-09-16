@@ -59,6 +59,7 @@ import { toDiscord, findOpportunities, newsletterHtml, newsletterText, unsubscri
 import { supabaseClient } from './supabase.js';
 import { fetchFacts } from './facts.js';
 import { prospectsTick, sendOutreach, PROSPECTS, normalizeProspect } from './prospects.js';
+import { discoverTick, suppress, CANDIDATES } from './discover.js';
 import { localParts, clock, LEAGUE_BY_ID } from './leagues.js';
 import { teamName } from './draft.js';
 
@@ -77,6 +78,10 @@ const SECRET_NAMES = [
   // Cadenic outreach. The postal address is a CASL requirement on every
   // commercial email; without it the beat drafts and refuses to send.
   'CADENIC_POSTAL', 'CADENIC_FROM',
+  // Prospect discovery. Either the Google pair or the Brave key is enough;
+  // with neither, the beat says so in the digest and finds nothing. It never
+  // falls back to scraping a results page.
+  'GOOGLE_CSE_KEY', 'GOOGLE_CSE_CX', 'BRAVE_SEARCH_KEY', 'GITHUB_TOKEN',
 ];
 
 /**
@@ -208,6 +213,23 @@ export const optimizeTick = onSchedule(opts({ schedule: '40 3 * * *' }), async (
 });
 
 /**
+ * CADENIC — prospect discovery.
+ *
+ * Runs before the outreach beat so anything found at 05:30 is enriched at
+ * 06:30 and drafted by 18:30. Searches for COMPANIES whose own website links
+ * to a Discord — which is the filter that separates a community with a budget
+ * from a community without one — reads robots.txt before touching any page,
+ * takes only addresses those companies published themselves, and stops at a
+ * hard ceiling of new prospects per run.
+ */
+export const discoverBeat = onSchedule(opts({ schedule: '30 5 * * *', timeoutSeconds: 540 }), async () => {
+  const { s, store } = await deps();
+  const settings = await loadSettings(store);
+  if (!settings.enabled) return;
+  logger.info('discoverBeat', await discoverTick({ store, secrets: s, settings, log }));
+});
+
+/**
  * CADENIC — the outreach beat. Twice a day is plenty: enrichment reads two
  * public endpoints per prospect and drafting is one model call, and a prospect
  * added in the morning is drafted by lunch and waiting in tomorrow's digest.
@@ -332,12 +354,12 @@ export const dispatchOps = onRequest({ secrets: secretList, cors: false, timeout
   // The console reads with the secret in a HEADER, never a URL.
   if (action === 'status') {
     if (!s.OPS_SECRET || String(req.get('x-ops-secret') || '') !== s.OPS_SECRET) { res.status(401).json({ error: 'unauthorized' }); return; }
-    const [settings, events, replies, reviews, metrics, policy, budget, newsletters, digests, slots, facts, prospects] = await Promise.all([
+    const [settings, events, replies, reviews, metrics, policy, budget, newsletters, digests, slots, facts, prospects, candidates] = await Promise.all([
       loadSettings(store), store.list('dispatch/state/events/'), store.list('dispatch/state/replies/'),
       store.list('dispatch/state/reviews/'), store.list('dispatch/state/metrics/'), store.get('dispatch/state/meta/policy'),
       store.get('dispatch/state/meta/budget'), store.list('dispatch/state/newsletters/'), store.list('dispatch/state/digests/'),
       store.get('dispatch/state/meta/slots'), store.get('dispatch/state/meta/facts'),
-      store.list(PROSPECTS),
+      store.list(PROSPECTS), store.list(CANDIDATES),
     ]);
     res.json({
       settings, policy: policy || null, budget: { plan: PLAN, ...(budget || {}) }, health: health(s, publishers), facts: facts || null,
@@ -347,6 +369,7 @@ export const dispatchOps = onRequest({ secrets: secretList, cors: false, timeout
       newsletters: newsletters.map((d) => d.data), digests: digests.map((d) => ({ day: d.data.day, counts: d.data.counts })),
       slots: (slots && slots.fired) || {}, slotNotes: (slots && slots.notes) || {},
       prospects: prospects.map((d) => d.data).sort((a, b) => (a.addedAt < b.addedAt ? 1 : -1)),
+      candidates: candidates.map((d) => d.data).sort((a, b) => (a.seenAt < b.seenAt ? 1 : -1)).slice(0, 300),
     });
     return;
   }
@@ -453,10 +476,24 @@ export const dispatchOps = onRequest({ secrets: secretList, cors: false, timeout
         await store.update(PROSPECTS + id, { status: 'converted', convertedAt: new Date().toISOString() });
         res.send(page('Marked as a client. Well done.'));
         break;
-      case 'outreach-declined':
+      case 'outreach-declined': {
+        /* "Never contacted again" has to be true of the DISCOVERY beat too, or
+           the same company is found by a different query next month and walks
+           back into the queue. Status is a record; the suppression list is the
+           thing that actually stops it. */
+        const pr = await store.get(PROSPECTS + id);
         await store.update(PROSPECTS + id, { status: 'declined', declinedAt: new Date().toISOString() });
-        res.send(page('Marked as declined. They will never be contacted again.'));
+        if (pr) await suppress(store, { email: pr.email, host: (pr.site || '').replace(/^https?:\/\//, '').replace(/^www\./, '').split('/')[0], reason: 'declined' });
+        res.send(page('Marked as declined, and added to the do-not-contact list so discovery cannot find them again.'));
         break;
+      }
+      case 'outreach-stop': {
+        const pr = await store.get(PROSPECTS + id);
+        await store.update(PROSPECTS + id, { status: 'declined', stoppedAt: new Date().toISOString() });
+        if (pr) await suppress(store, { email: pr.email, host: (pr.site || '').replace(/^https?:\/\//, '').replace(/^www\./, '').split('/')[0], reason: 'asked to stop' });
+        res.send(page('Recorded. They will never be contacted again, by any beat.'));
+        break;
+      }
       case 'dismiss-review':
         await store.update(`dispatch/state/reviews/${id}`, { status: 'dismissed' });
         res.send(page('Left alone.'));

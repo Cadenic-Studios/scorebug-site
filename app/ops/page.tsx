@@ -133,13 +133,22 @@ export default async function OpsPage({ searchParams }: { searchParams: Record<s
   const status = await readStatus()
   if (!status.ok) return shell(<Panel title="The engine did not answer"><p className="text-ink-2">{status.error}</p></Panel>)
 
-  const { settings, policy, budget, health, facts, events, replies, reviews, metrics, newsletters, slots = {}, slotNotes = {} } = status.data
+  const { settings, policy, budget, health, facts, events, replies, reviews, metrics, newsletters, prospects = [], candidates = [], slots = {}, slotNotes = {} } = status.data
   const waiting = events.filter(e => e.status === 'approval')
   const refused = events.filter(e => e.status === 'refused' || e.status === 'stalled').slice(0, 10)
   const sent = events.filter(e => e.status === 'sent').sort((a, b) => ((a.sentAt ?? '') < (b.sentAt ?? '') ? 1 : -1)).slice(0, 14)
   const dry = events.filter(e => e.status === 'dry').slice(0, 10)
   const openReviews = reviews.filter(r => r.status === 'drafted' || r.status === 'needs-human')
   const openReplies = replies.filter(r => r.status === 'drafted')
+  const outreachDrafts = prospects.filter(p => p.status === 'drafted')
+  const outreachFollow = prospects.filter(p => p.status === 'follow-up-drafted')
+  const outreachBlocked = prospects.filter(p => p.status === 'blocked')
+  const outreachAwaiting = prospects.filter(p => p.status === 'sent')
+  const outreachSent = prospects.filter(p => ['sent', 'followed-up', 'replied', 'converted', 'declined'].includes(p.status)).length
+  const outreachReplied = prospects.filter(p => ['replied', 'converted', 'declined'].includes(p.status)).length
+  const outreachClients = prospects.filter(p => p.status === 'converted').length
+  const dayAgo = Date.now() - 86_400_000
+  const foundToday = candidates.filter(c => Date.parse(c.seenAt ?? '') >= dayAgo)
   const mode = settings.dryRun ? 'DRY RUN' : settings.autopilot ? 'AUTOPILOT' : 'APPROVAL'
   const m: OpsMetrics = metrics[0] ?? {}
   const spentByLine: Record<string, number> = {}
@@ -225,6 +234,67 @@ export default async function OpsPage({ searchParams }: { searchParams: Record<s
           </div>
         )) : <p className="text-ink-2">Nothing. The machine has no questions.</p>}
       </Panel>
+
+      {/* ── CADENIC ────────────────────────────────────────────────────────
+          The agency's queue, in the product's console, because there is one
+          person and one morning. Drafts are decisions; everything under them
+          is the scoreboard. */}
+      {prospects.length ? (
+        <Panel title="Cadenic — outreach" count={outreachDrafts.length + outreachFollow.length}>
+          <div className="mb-3 font-mono text-[12px] text-ink-3">
+            {outreachSent} sent · {outreachReplied} replied{outreachSent ? ` (${Math.round((outreachReplied / outreachSent) * 100)}%)` : ''} ·{' '}
+            <span className="text-sb-gold">{outreachClients} client{outreachClients === 1 ? '' : 's'}</span> ·{' '}
+            {prospects.filter(p => p.status === 'new' || p.status === 'enriched').length} in the queue
+            {foundToday.length ? ` · discovery found ${foundToday.length} site(s) in 24h, ${foundToday.filter(c => c.verdict === 'qualified').length} qualified` : ''}
+          </div>
+
+          {outreachDrafts.map(p => (
+            <div key={p.id} className="border-b border-white/5 py-3 last:border-0">
+              <div className="text-[11px] uppercase tracking-wider text-ink-3">
+                {p.segment ?? 'prospect'}{p.foundBy === 'discovery' ? ' · found automatically' : ''}
+              </div>
+              <div className="mt-1 text-ink">{p.company || p.email} <span className="text-ink-3">· {p.email}</span></div>
+              <div className="font-mono text-[12px] text-ink-3">{p.draft?.subject}</div>
+              <pre className="mt-2 max-h-64 overflow-auto whitespace-pre-wrap rounded-md bg-black/30 p-3 font-sans text-[13px] leading-relaxed text-ink-2">{p.draft?.body}</pre>
+              <Button action="outreach" id={p.id} label="Send" tone="teal" />
+              <Button action="outreach-skip" id={p.id} label="Skip" tone="dim" />
+            </div>
+          ))}
+
+          {outreachFollow.map(p => (
+            <div key={p.id} className="border-b border-white/5 py-3 last:border-0">
+              <div className="text-[11px] uppercase tracking-wider text-sb-gold">follow-up · the only one they get</div>
+              <div className="mt-1 text-ink">{p.company || p.email} <span className="text-ink-3">· sent {(p.sentAt ?? '').slice(0, 10)}</span></div>
+              <pre className="mt-2 max-h-48 overflow-auto whitespace-pre-wrap rounded-md bg-black/30 p-3 font-sans text-[13px] leading-relaxed text-ink-2">{p.followUp?.body}</pre>
+              <Button action="outreach-follow" id={p.id} label="Send follow-up" tone="gold" />
+              <Button action="outreach-replied" id={p.id} label="They replied" tone="teal" />
+              <Button action="outreach-skip" id={p.id} label="Drop" tone="dim" />
+            </div>
+          ))}
+
+          {outreachAwaiting.length ? (
+            <div className="border-t border-white/10 pt-3">
+              <p className="text-[11px] uppercase tracking-wider text-ink-3">Waiting on a reply</p>
+              {outreachAwaiting.map(p => (
+                <div key={p.id} className="mt-2 flex flex-wrap items-center gap-2">
+                  <span className="text-[14px] text-ink-2">{p.company || p.email}</span>
+                  <Button action="outreach-replied" id={p.id} label="Replied" tone="teal" />
+                  <Button action="outreach-converted" id={p.id} label="Became a client" tone="gold" />
+                  <Button action="outreach-declined" id={p.id} label="No — never again" tone="dim" />
+                </div>
+              ))}
+            </div>
+          ) : null}
+
+          {outreachBlocked.length ? (
+            <div className="mt-3 border-t border-white/10 pt-3 font-mono text-[12px] text-sb-red">
+              {outreachBlocked.map(p => (
+                <div key={p.id}>{p.company || p.email} — {(p.problems ?? []).join('; ')}</div>
+              ))}
+            </div>
+          ) : null}
+        </Panel>
+      ) : null}
 
       {openReplies.length ? (
         <Panel title="Mentions" count={openReplies.length}>

@@ -20,6 +20,7 @@ import { engagementScore } from './metrics.js';
 import { POLICY } from './optimize.js';
 import { SITE } from './facts.js';
 import { PROSPECTS, outreachStats } from './prospects.js';
+import { CANDIDATES, discoveryStats } from './discover.js';
 
 const EV = 'dispatch/state/events/';
 const RP = 'dispatch/state/replies/';
@@ -87,6 +88,7 @@ export async function buildDigest({ store, publishers = {}, upcoming = [], now =
   const reviews = (await store.list(RV)).map((d) => d.data).filter((r) => r.status === 'drafted' || r.status === 'needs-human');
   const prospectDocs = await store.list(PROSPECTS);
   const prospects = prospectDocs.map((d) => d.data);
+  const candidates = (await store.list(CANDIDATES)).map((d) => d.data);
   const metrics = (await store.get(`${MET}${day}`)) || (await store.get(`${MET}${ymd(now - DAY)}`)) || {};
   const policy = (await store.get(POLICY)) || {};
   const budgetDoc = (await store.get('dispatch/state/meta/budget')) || {};
@@ -232,6 +234,16 @@ export async function buildDigest({ store, publishers = {}, upcoming = [], now =
     if (blocked.length) {
       H.push(`<div style="font:400 13px/1.6 ui-monospace,monospace;color:${C.alert};margin:4px 0 10px">${blocked.length} draft(s) refused by the linter: ${blocked.map((x) => `${esc(x.name)} — ${esc((x.problems || []).join('; '))}`).join(' · ')}</div>`);
       T.push(...blocked.map((x) => `  REFUSED ${x.name}: ${(x.problems || []).join('; ')}`));
+    }
+    /* WHERE THE QUEUE CAME FROM. Printed with the outreach numbers rather than
+       in a section of its own, because a discovery beat that finds forty
+       companies and converts none of them is not a success worth its own
+       heading — and the rejection reasons are how the queries get tuned. */
+    const disc = discoveryStats(candidates, now - DAY);
+    if (disc.seen) {
+      const why = Object.entries(disc.by).filter(([k]) => k !== 'qualified').sort((a, b) => b[1] - a[1]).slice(0, 4);
+      H.push(`<div style="font:400 13px/1.6 ui-monospace,monospace;color:${C.dim};margin:2px 0 8px">found ${disc.seen} site(s) in 24h · ${disc.qualified} qualified${why.length ? ` · ${esc(why.map(([k, v]) => `${v} ${k}`).join(', '))}` : ''}</div>`);
+      T.push(`  discovery: ${disc.seen} seen, ${disc.qualified} qualified${why.length ? ` (${why.map(([k, v]) => `${v} ${k}`).join(', ')})` : ''}`);
     }
     H.push(`<div style="font:400 14px/1.6 system-ui,sans-serif;color:${C.ink};margin:6px 0 14px">${stats.sent} sent · ${stats.replied} replied${stats.replyRate !== null ? ` (${stats.replyRate}%)` : ''} · <span style="color:${C.gold};font-weight:700">${stats.converted} client${stats.converted === 1 ? '' : 's'}</span> · ${stats.by.new || 0} queued</div>`);
     T.push(`  ${stats.sent} sent · ${stats.replied} replied${stats.replyRate !== null ? ` (${stats.replyRate}%)` : ''} · ${stats.converted} clients · ${stats.by.new || 0} queued`, '');

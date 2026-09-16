@@ -161,6 +161,17 @@ export type OpsStatus = {
   metrics: OpsMetrics[]
   newsletters: Array<{ week: string; subject: string; body: string; approved?: boolean; sentAt?: string; recipients?: number }>
   digests: Array<{ day: string; counts: Record<string, number> }>
+  /* CADENIC. The agency's sales queue rides in the same status payload as the
+     product's post queue, because there is one operator and one console. */
+  prospects?: Array<{
+    id: string; email: string; name?: string; company?: string; site?: string
+    segment?: string; status: string; problems?: string[]
+    draft?: { subject: string; body: string }
+    followUp?: { subject: string; body: string }
+    sentAt?: string; followUpAt?: string; foundBy?: string; foundQuery?: string
+    found?: Array<{ key: string; text: string }>
+  }>
+  candidates?: Array<{ url: string; host: string; verdict: string; segment?: string; seenAt?: string; title?: string }>
   slots?: Record<string, string>
   slotNotes?: Record<string, string>
 }
@@ -200,6 +211,8 @@ export async function readStatus(): Promise<{ ok: true; data: OpsStatus } | { ok
         metrics: raw.metrics ?? [],
         newsletters: raw.newsletters ?? [],
         digests: raw.digests ?? [],
+        prospects: raw.prospects ?? [],
+        candidates: raw.candidates ?? [],
         slots: raw.slots ?? {},
         slotNotes: raw.slotNotes ?? {},
       },
