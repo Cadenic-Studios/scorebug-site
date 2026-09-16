@@ -138,9 +138,28 @@ async function googleSearch({ key, cx, query, count = 10, fetchImpl = fetch }) {
   u.searchParams.set('q', `${query} ${EXCLUDE}`);
   u.searchParams.set('num', String(Math.min(10, count)));
   const res = await fetchImpl(u.toString(), { headers: { accept: 'application/json' } });
-  if (!res.ok) return { ok: false, reason: `google ${res.status}` };
-  const j = await res.json();
-  return { ok: true, results: (j.items || []).map((i) => ({ url: i.link, title: i.title || '', snippet: i.snippet || '' })) };
+  const j = await res.json().catch(() => null);
+  if (!res.ok) {
+    /* ── SAY WHAT GOOGLE SAID ─────────────────────────────────────────────
+     * This returned `google 403` and nothing else, which is the least useful
+     * sentence available: the three things that produce a 4xx here have three
+     * completely different fixes, and two of them are one click each.
+     *
+     *   400 "API key not valid"          the key is wrong
+     *   403 "does not have the access"   the Custom Search API is not enabled
+     *                                    on that Cloud project
+     *   400 (no cx)                      the search engine ID is missing
+     *   429                              the free 100 a day is spent
+     *
+     * Google names which one it is. Passing that through means the digest can
+     * print a sentence somebody can act on instead of a status code. */
+    const said = (j && j.error && j.error.message) || '';
+    if (/API key not valid/i.test(said)) return { ok: false, reason: 'the Google API key is not valid' };
+    if (/does not have the access/i.test(said)) return { ok: false, reason: 'the Custom Search API is not enabled on that Google Cloud project — enable it at console.cloud.google.com, then wait a minute' };
+    if (res.status === 429) return { ok: false, reason: "the day's 100 free Google queries are spent; it resets at midnight Pacific" };
+    return { ok: false, reason: said ? `google: ${said}` : `google ${res.status}` };
+  }
+  return { ok: true, results: ((j && j.items) || []).map((i) => ({ url: i.link, title: i.title || '', snippet: i.snippet || '' })) };
 }
 
 async function braveSearch({ key, query, count = 10, fetchImpl = fetch }) {
@@ -148,7 +167,11 @@ async function braveSearch({ key, query, count = 10, fetchImpl = fetch }) {
   u.searchParams.set('q', `${query} ${EXCLUDE}`);
   u.searchParams.set('count', String(Math.min(20, count)));
   const res = await fetchImpl(u.toString(), { headers: { accept: 'application/json', 'X-Subscription-Token': key } });
-  if (!res.ok) return { ok: false, reason: `brave ${res.status}` };
+  if (!res.ok) {
+    if (res.status === 401 || res.status === 403) return { ok: false, reason: 'the Brave Search key was refused' };
+    if (res.status === 429) return { ok: false, reason: 'the Brave Search quota is spent for now' };
+    return { ok: false, reason: `brave ${res.status}` };
+  }
   const j = await res.json();
   return { ok: true, results: ((j.web && j.web.results) || []).map((r) => ({ url: r.url, title: r.title || '', snippet: r.description || '' })) };
 }
@@ -181,6 +204,13 @@ export async function githubSearch({ token, query = '"discord.gg" filename:READM
  * "set this up eventually".
  */
 export async function search({ secrets = {}, query, count = 10, fetchImpl = fetch }) {
+  /* A key with no engine id is the commonest half-finished setup, and it is
+     worth its own sentence: the key comes from one Google console and the id
+     from a different one, so having the first and not the second is the
+     normal way through. */
+  if (secrets.GOOGLE_CSE_KEY && !secrets.GOOGLE_CSE_CX && !secrets.BRAVE_SEARCH_KEY) {
+    return { ok: false, reason: 'GOOGLE_CSE_KEY is set but GOOGLE_CSE_CX is not — create the engine at programmablesearchengine.google.com, tick "Search the entire web", and copy its ID' };
+  }
   if (secrets.GOOGLE_CSE_KEY && secrets.GOOGLE_CSE_CX) {
     return googleSearch({ key: secrets.GOOGLE_CSE_KEY, cx: secrets.GOOGLE_CSE_CX, query, count, fetchImpl });
   }

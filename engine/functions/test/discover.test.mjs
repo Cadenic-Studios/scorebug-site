@@ -223,3 +223,30 @@ test('discoveryStats reports the refusals, because that is how the queries get t
   assert.equal(st.qualified, 1);
   assert.equal(st.by['no Discord on the site'], 2);
 });
+
+test('a failed search says what is actually wrong, because each cause has a different one-click fix', async () => {
+  const err = (status, message) => ({ ok: false, status, json: async () => ({ error: { message } }), text: async () => message });
+
+  const noCx = await search({ secrets: { GOOGLE_CSE_KEY: 'k' }, query: 'x', fetchImpl: async () => err(400, 'Request contains an invalid argument.') });
+  assert.match(noCx.reason, /GOOGLE_CSE_CX is not/, 'a key with no engine id is caught before the request');
+
+  const notEnabled = await search({ secrets: { GOOGLE_CSE_KEY: 'k', GOOGLE_CSE_CX: 'c' }, query: 'x', fetchImpl: async () => err(403, 'This project does not have the access to Custom Search JSON API.') });
+  assert.match(notEnabled.reason, /not enabled on that Google Cloud project/);
+
+  const badKey = await search({ secrets: { GOOGLE_CSE_KEY: 'k', GOOGLE_CSE_CX: 'c' }, query: 'x', fetchImpl: async () => err(400, 'API key not valid. Please pass a valid API key.') });
+  assert.match(badKey.reason, /key is not valid/);
+
+  const spent = await search({ secrets: { GOOGLE_CSE_KEY: 'k', GOOGLE_CSE_CX: 'c' }, query: 'x', fetchImpl: async () => err(429, 'Quota exceeded') });
+  assert.match(spent.reason, /100 free Google queries are spent/);
+
+  const brave = await search({ secrets: { BRAVE_SEARCH_KEY: 'b' }, query: 'x', fetchImpl: async () => err(401, 'nope') });
+  assert.match(brave.reason, /Brave Search key was refused/);
+});
+
+test('a half-finished setup is reported in the digest rather than failing silently', async () => {
+  const store = memoryStore();
+  const s = await discoverTick({ store, secrets: { GOOGLE_CSE_KEY: 'k' }, fetchImpl: async () => { throw new Error('should not be called'); } });
+  assert.equal(s.provider, null, 'a key without an engine id is not a usable provider');
+  assert.match(s.note, /GOOGLE_CSE_KEY/);
+  assert.equal((await store.list(PROSPECTS)).length, 0);
+});
