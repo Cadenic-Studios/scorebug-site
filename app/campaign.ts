@@ -28,11 +28,14 @@
  * that copies whatever is in the address bar onto whatever links it finds is a
  * way to smuggle values into somebody else's site.
  */
+/* The readyState guard is why this is correct wherever it sits in the
+   document. `defer` is ignored on an INLINE script — it applies only to
+   scripts with a src — so without the guard this would run the moment the
+   parser reached it, which is before the links it exists to rewrite. The
+   guard lives inside the emitted string; this comment does not, because a
+   backtick in a comment inside a template literal ends the template literal,
+   which is how this file spent ten minutes as a syntax error. */
 export const CAMPAIGN_BOOT_SCRIPT = `(function(){
-/* `defer` is ignored on an INLINE script — it applies only to scripts with a
-   src — so this runs the moment the parser reaches it, which is before the
-   links it needs to rewrite exist. The readyState check is what actually
-   waits, and it makes the script correct wherever in the document it sits. */
 function run(){try{
 var q=new URLSearchParams(location.search);
 var keys=['s','c','utm_source','utm_campaign','utm_medium'];
