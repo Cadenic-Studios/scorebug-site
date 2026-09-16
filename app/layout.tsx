@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { Anton, Inter, Oswald } from 'next/font/google'
 import { SITE, WEB_APP, appPlatforms, SOCIAL_PROFILES } from './config'
+import { CAMPAIGN_BOOT_SCRIPT } from './campaign'
 // Derived — a hand-typed league count in metadata is a claim that goes stale
 // silently and ships to every search and answer engine before anyone notices.
 import { LEAGUE_COUNT } from './leagues'
@@ -193,6 +194,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" className={`${inter.variable} ${oswald.variable} ${anton.variable}`}>
       <body className="font-sans bg-canvas text-ink min-h-screen">
+        {/* Carries ?s= and ?c= onto every link into the web app, so paid
+            traffic is still identifiable after it crosses the subdomain.
+            See app/campaign.ts. Deferred: it rewrites links rather than
+            rendering anything, so it waits for DOMContentLoaded itself
+            rather than relying on placement or on `defer`, which an inline
+            script ignores. */}
+        <script dangerouslySetInnerHTML={{ __html: CAMPAIGN_BOOT_SCRIPT }} />
         <script
           type="application/ld+json"
           // Serialized once at build; '<' is escaped so schema text can never

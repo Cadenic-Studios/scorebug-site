@@ -196,6 +196,12 @@ export async function metricsTick({ store, secrets = {}, publishers = {}, now = 
      is working: how many people reached the waitlist on a link this engine
      posted, split by the network and the closing line that brought them. */
   await soft('acquisition', async () => (supabase ? (await supabase.signupSources({ sinceDays: 30 })) || { error: 'no answer from the database' } : { error: 'SUPABASE_URL / SUPABASE_ANON_KEY not set' }));
+  /* WHERE THE MONEY WENT. Which campaign each real account arrived on, as
+     opposed to the waitlist tags above. This is the number that decides
+     whether paid spend continues, and it can only ever answer for accounts
+     created after database-v56 — attribution is not retroactive, which is why
+     it was built before the first dollar rather than after the first month. */
+  await soft('campaigns', async () => (supabase ? (await supabase.accountSources({ key: secrets.ENGINE_KEY, days: 30 })) || { error: 'no answer from the database' } : { error: 'SUPABASE_URL / SUPABASE_ANON_KEY not set' }));
   /* Reach, not engagement. Cards shared per week: the step between a fan
      logging a game and a stranger hearing about Scorebug. Soft, like every
      other collector here — a digest that fails because one RPC is missing is

@@ -8,7 +8,7 @@
   "main": "index.js",
   "scripts": {
     "lint": "node --check index.js && node --check dispatch/index.js && node ../scripts/scopecheck.mjs",
-    "test": "node ../scripts/scopecheck.mjs && node --test test/ported.test.mjs test/sports.test.mjs test/hardening.test.mjs test/prospects.test.mjs test/discover.test.mjs test/inbox.test.mjs"
+    "test": "node ../scripts/scopecheck.mjs && node --test test/ported.test.mjs test/sports.test.mjs test/hardening.test.mjs test/prospects.test.mjs test/discover.test.mjs test/inbox.test.mjs test/teardown.test.mjs"
   },
   "dependencies": {
     "firebase-admin": "^12.7.0",

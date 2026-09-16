@@ -21,6 +21,7 @@ import { POLICY } from './optimize.js';
 import { SITE } from './facts.js';
 import { PROSPECTS, outreachStats } from './prospects.js';
 import { INBOX, inboxStats } from './inbox.js';
+import { TEARDOWNS, teardownStats } from './teardown.js';
 import { CANDIDATES, discoveryStats } from './discover.js';
 
 const EV = 'dispatch/state/events/';
@@ -91,6 +92,8 @@ export async function buildDigest({ store, publishers = {}, upcoming = [], now =
   const prospects = prospectDocs.map((d) => d.data);
   const discovery = (await store.get('dispatch/state/meta/discovery')) || {};
   const inboxDocs = await store.list(INBOX);
+  const teardownDocs = await store.list(TEARDOWNS);
+  const teardowns = teardownDocs.map((d) => d.data);
   const inbox = inboxDocs.map((d) => ({ id: d.id, ...d.data }));
   const candidates = (await store.list(CANDIDATES)).map((d) => d.data);
   const metrics = (await store.get(`${MET}${day}`)) || (await store.get(`${MET}${ymd(now - DAY)}`)) || {};
@@ -265,6 +268,56 @@ export async function buildDigest({ store, publishers = {}, upcoming = [], now =
     if (ist.total) H.push(`<div style="font:400 13px/1.6 system-ui,sans-serif;color:${C.dim};margin:0 0 14px">${ist.total} message(s) received in total</div>`);
   }
 
+  /* ── CADENIC — TEARDOWNS ──────────────────────────────────────────────────
+     The thing that was actually promised. Somebody asked for this, we said it
+     was free, and every day it sits here is a day the promise is outstanding —
+     so it sits above the cold-email queue and below a live reply.
+
+     The document is not printed in full. It is a thousand words and this is an
+     email; the first lines and a link to the console are what a decision
+     actually needs, and the console is where it gets read properly. */
+  const tdReady = teardowns.filter((x) => x.status === 'drafted');
+  const tdBlocked = teardowns.filter((x) => x.status === 'blocked');
+  const tdWorking = teardowns.filter((x) => ['new', 'inspected'].includes(x.status));
+  if (tdReady.length || tdBlocked.length || tdWorking.length) {
+    H.push(h('Cadenic — teardowns', tdReady.length + tdBlocked.length));
+    T.push(`CADENIC TEARDOWNS (${tdReady.length} ready to send)`);
+
+    for (const x of tdReady) {
+      const keys = (x.found || []).map((f) => f.key).join(', ');
+      const words = String(x.draft?.body || '').trim().split(/\s+/).filter(Boolean).length;
+      H.push(card(`<div style="font:600 11px/1.4 ui-monospace,monospace;letter-spacing:.12em;text-transform:uppercase;color:${C.gold}">teardown ready · ${words} words</div>
+        <div style="font:600 16px/1.4 system-ui,sans-serif;color:${C.ink};margin:6px 0 0">${esc(x.company || x.email)}</div>
+        <div style="font:400 12px/1.5 ui-monospace,monospace;color:${C.dim};margin:2px 0 8px">asked ${esc(String(x.askedAt || '').slice(0, 10))} · found: ${esc(keys)}</div>
+        <pre style="white-space:pre-wrap;font:400 13px/1.55 system-ui,sans-serif;color:${C.ink};margin:0 0 10px;padding:10px 12px;background:${C.void};border-radius:6px;max-height:220px;overflow:auto">${esc(String(x.draft?.body || '').slice(0, 900))}…</pre>
+        ${btn(link('teardown-send', x.id), 'Send it', C.gold)} ${btn(link('teardown-skip', x.id), 'I will write this one', C.dim)}`, C.gold));
+      T.push(`- TEARDOWN ${x.company || x.email} (${words} words, found: ${keys})`, `  send: ${link('teardown-send', x.id)}`, `  skip: ${link('teardown-skip', x.id)}`);
+    }
+
+    /* A blocked teardown is an unkept promise with a name on it, so it is
+       printed in the alert colour with the reason and a way to try again —
+       not folded into a count. */
+    for (const x of tdBlocked) {
+      const why = (x.problems || []).join('; ');
+      H.push(card(`<div style="font:600 11px/1.4 ui-monospace,monospace;letter-spacing:.12em;text-transform:uppercase;color:${C.alert}">teardown refused</div>
+        <div style="font:600 16px/1.4 system-ui,sans-serif;color:${C.ink};margin:6px 0 0">${esc(x.company || x.email)}</div>
+        <div style="font:400 12px/1.5 ui-monospace,monospace;color:${C.alert};margin:2px 0 8px">${esc(why)}</div>
+        <div style="font:400 13px/1.55 system-ui,sans-serif;color:${C.dim};margin:0 0 10px">They asked ${esc(String(x.askedAt || '').slice(0, 10))} and have not had it. If the invite expired, ask them for a fresh one.</div>
+        ${btn(link('teardown-retry', x.id), 'Try again', C.alert)} ${btn(link('teardown-skip', x.id), 'I will handle it', C.dim)}`, C.alert));
+      T.push(`- TEARDOWN REFUSED ${x.company || x.email}: ${why}`, `  retry: ${link('teardown-retry', x.id)}`);
+    }
+
+    if (tdWorking.length) {
+      H.push(`<div style="font:400 13px/1.6 ui-monospace,monospace;color:${C.dim};margin:2px 0 10px">${tdWorking.length} being read and written now</div>`);
+      T.push(`  ${tdWorking.length} in progress`);
+    }
+    const ts = teardownStats(teardownDocs);
+    if (ts.sent) {
+      H.push(`<div style="font:400 14px/1.6 system-ui,sans-serif;color:${C.ink};margin:0 0 14px">${ts.sent} teardown${ts.sent === 1 ? '' : 's'} delivered in total</div>`);
+      T.push(`  ${ts.sent} delivered in total`, '');
+    }
+  }
+
   const drafted = prospects.filter((x) => x.status === 'drafted').sort((a, b) => (a.draftedAt < b.draftedAt ? 1 : -1));
   const followUps = prospects.filter((x) => x.status === 'follow-up-drafted');
   const blocked = prospects.filter((x) => x.status === 'blocked');
@@ -318,6 +371,24 @@ export async function buildDigest({ store, publishers = {}, upcoming = [], now =
     }
     H.push(`<div style="font:400 14px/1.6 system-ui,sans-serif;color:${C.ink};margin:6px 0 14px">${stats.sent} sent · ${stats.replied} replied${stats.replyRate !== null ? ` (${stats.replyRate}%)` : ''} · <span style="color:${C.gold};font-weight:700">${stats.converted} client${stats.converted === 1 ? '' : 's'}</span> · ${stats.by.new || 0} queued</div>`);
     T.push(`  ${stats.sent} sent · ${stats.replied} replied${stats.replyRate !== null ? ` (${stats.replyRate}%)` : ''} · ${stats.converted} clients · ${stats.by.new || 0} queued`, '');
+  }
+
+  /* ── WHERE THE ACCOUNTS CAME FROM ────────────────────────────────────────
+     Printed only when there is something to print. A paid campaign is the
+     one thing in this engine that costs real money every day it runs, so the
+     line that says whether it is working belongs above the vanity numbers and
+     needs no interpretation: source, campaign, count.
+
+     `direct` is deliberately included rather than filtered out. A table
+     showing only campaign traffic makes every campaign look like it accounts
+     for all growth, which is the most flattering possible lie. */
+  const campaigns = Array.isArray(metrics.campaigns) ? metrics.campaigns.filter((c) => c.signups > 0) : [];
+  if (campaigns.length) {
+    const total = campaigns.reduce((n, c) => n + c.signups, 0);
+    const paid = campaigns.filter((c) => c.source !== 'direct');
+    H.push(h('Where the accounts came from'));
+    H.push(`<div style="font:400 14px/1.7 system-ui,sans-serif;color:${C.ink};margin:0 0 14px">${campaigns.slice(0, 8).map((c) => `<span style="color:${c.source === 'direct' ? C.dim : C.gold};font-weight:${c.source === 'direct' ? 400 : 700}">${esc(c.source)}${c.campaign ? ` / ${esc(c.campaign)}` : ''}</span> ${c.signups}`).join(' &nbsp;·&nbsp; ')}<br><span style="color:${C.dim}">${total} account(s) in 30 days${paid.length ? ` · ${paid.reduce((n, c) => n + c.signups, 0)} of them tagged` : ' · none tagged, so every one of them is direct'}</span></div>`);
+    T.push('WHERE THE ACCOUNTS CAME FROM', ...campaigns.slice(0, 8).map((c) => `  ${c.source}${c.campaign ? ` / ${c.campaign}` : ''}: ${c.signups}`), `  ${total} in 30 days`, '');
   }
 
   /* ── 2. NUMBERS ── */

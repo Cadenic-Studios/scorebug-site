@@ -61,6 +61,7 @@ import { fetchFacts } from './facts.js';
 import { prospectsTick, sendOutreach, PROSPECTS, normalizeProspect } from './prospects.js';
 import { discoverTick, suppress, CANDIDATES } from './discover.js';
 import { verifyWebhook, handleInbound, sendAnswer, INBOX } from './inbox.js';
+import { teardownTick, sendTeardown, teardownId, TEARDOWNS } from './teardown.js';
 import { localParts, clock, LEAGUE_BY_ID } from './leagues.js';
 import { teamName } from './draft.js';
 
@@ -246,6 +247,24 @@ export const prospectsBeat = onSchedule(opts({ schedule: '30 6,18 * * *', timeou
   logger.info('prospectsBeat', await prospectsTick({ store, secrets: s, settings, log }));
 });
 
+/**
+ * CADENIC — the teardown beat.
+ *
+ * The deliverable every cold email promises. Reading a server takes three
+ * public calls and writing the document takes one long model call, so this
+ * runs twice a day and does one step per request per pass: a request that
+ * arrives in the morning is a finished document by the evening.
+ *
+ * It never sends. A free teardown is still a document going to a stranger with
+ * the studio's name on it.
+ */
+export const teardownBeat = onSchedule(opts({ schedule: '0 8,20 * * *', timeoutSeconds: 540 }), async () => {
+  const { s, store } = await deps();
+  const settings = await loadSettings(store);
+  if (!settings.enabled) return;
+  logger.info('teardownBeat', await teardownTick({ store, secrets: s, settings, log }));
+});
+
 export const reviewsTick = onSchedule(opts({ schedule: '0 4 * * *' }), async () => {
   const { s, store, sa } = await deps();
   const settings = await loadSettings(store);
@@ -402,6 +421,35 @@ export const dispatchOps = onRequest({ secrets: secretList, cors: false, timeout
     return;
   }
 
+  /* ── CADENIC: a teardown request ────────────────────────────────────────
+     Posted by the studio site when somebody fills in the form on /teardown.
+     Authenticated with the same console secret, because an open endpoint here
+     is a way for a stranger to make the engine fetch arbitrary URLs on their
+     behalf and then email the result to an address of their choosing.
+
+     Re-requesting is allowed and simply re-runs: people do ask again after
+     changing something, and a teardown of last month's server is worth less
+     than nothing. A request already sent is reset to 'new'; one mid-flight is
+     left alone so a double form submit cannot restart it. */
+  if (action === 'teardown' && String(req.method).toUpperCase() === 'POST') {
+    if (!s.OPS_SECRET || String(req.get('x-ops-secret') || '') !== s.OPS_SECRET) { res.status(401).json({ error: 'unauthorized' }); return; }
+    const b = req.body || {};
+    const email = String(b.email || '').trim().toLowerCase();
+    const invite = String(b.discordInvite || b.discord || '').trim();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) { res.status(400).json({ error: 'a valid email is required' }); return; }
+    if (!invite) { res.status(400).json({ error: 'a Discord invite is required' }); return; }
+    const tid = teardownId(email, invite);
+    const existing = await store.get(TEARDOWNS + tid);
+    if (existing && ['new', 'inspected'].includes(existing.status)) { res.json({ ok: true, id: tid, note: 'already in progress' }); return; }
+    await store.set(TEARDOWNS + tid, {
+      id: tid, email, name: String(b.name || '').trim(), company: String(b.company || b.server || '').trim(),
+      site: String(b.site || b.website || '').trim(), discordInvite: invite, notes: String(b.notes || b.message || '').slice(0, 1000),
+      status: 'new', askedAt: new Date().toISOString(),
+    });
+    res.json({ ok: true, id: tid });
+    return;
+  }
+
   // The console reads with the secret in a HEADER, never a URL.
   if (action === 'status') {
     if (!s.OPS_SECRET || String(req.get('x-ops-secret') || '') !== s.OPS_SECRET) { res.status(401).json({ error: 'unauthorized' }); return; }
@@ -412,7 +460,7 @@ export const dispatchOps = onRequest({ secrets: secretList, cors: false, timeout
       store.get('dispatch/state/meta/slots'), store.get('dispatch/state/meta/facts'),
       store.list(PROSPECTS), store.list(CANDIDATES),
     ]);
-    const inbox = await store.list(INBOX);
+    const [inbox, teardowns] = await Promise.all([store.list(INBOX), store.list(TEARDOWNS)]);
     res.json({
       settings, policy: policy || null, budget: { plan: PLAN, ...(budget || {}) }, health: health(s, publishers), facts: facts || null,
       events: events.map((d) => d.data).sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1)).slice(0, 200),
@@ -423,6 +471,7 @@ export const dispatchOps = onRequest({ secrets: secretList, cors: false, timeout
       prospects: prospects.map((d) => d.data).sort((a, b) => (a.addedAt < b.addedAt ? 1 : -1)),
       candidates: candidates.map((d) => d.data).sort((a, b) => (a.seenAt < b.seenAt ? 1 : -1)).slice(0, 300),
       inbox: inbox.map((d) => ({ id: d.id, ...d.data })).sort((a, b) => (a.at < b.at ? 1 : -1)).slice(0, 200),
+      teardowns: teardowns.map((d) => d.data).sort((a, b) => (a.askedAt < b.askedAt ? 1 : -1)).slice(0, 100),
     });
     return;
   }
@@ -533,6 +582,19 @@ export const dispatchOps = onRequest({ secrets: secretList, cors: false, timeout
          engine deciding on its own. Everything else about an inbound message
          — cancelling the follow-up, honouring a stop, marking a bounce — has
          already happened automatically by the time this link is pressed. */
+      case 'teardown-send': {
+        const r = await sendTeardown({ store, id, secrets: s, settings, sendEmail });
+        res.status(r.ok ? 200 : 409).send(page(r.ok ? 'Teardown sent. That is the whole of what was promised, delivered.' : `Not sent: ${r.reason}.`));
+        break;
+      }
+      case 'teardown-skip':
+        await store.update(TEARDOWNS + id, { status: 'skipped', decidedAt: new Date().toISOString() });
+        res.send(page('Left. You can write this one yourself.'));
+        break;
+      case 'teardown-retry':
+        await store.update(TEARDOWNS + id, { status: 'new', problems: [], draft: null });
+        res.send(page('Queued to be read and written again on the next pass.'));
+        break;
       case 'inbox-send': {
         const r = await sendAnswer({ store, id, secrets: s, settings, sendEmail });
         res.status(r.ok ? 200 : 409).send(page(r.ok ? 'Replied, inside their thread.' : `Not sent: ${r.reason}.`));

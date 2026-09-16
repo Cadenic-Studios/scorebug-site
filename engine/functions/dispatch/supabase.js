@@ -86,6 +86,31 @@ export function supabaseClient({ url, anonKey, fetchImpl = fetch, log = () => {}
     } catch (e) { log('supabase signupSources', String(e.message)); return null; }
   }
 
+  /**
+   * Which campaign each real ACCOUNT came from — distinct from signupSources
+   * above, which is about waitlist entries and tagged links. This one answers
+   * the question the paid spend actually asks: of the people who now have an
+   * account, how many arrived on an advert.
+   *
+   * Needs the engine key. The underlying table has no SELECT policy at all, so
+   * this function is the only way to see it, and it returns counts rather than
+   * rows: the digest can say "eleven from Vancouver" and nothing anywhere can
+   * say which eleven.
+   */
+  async function accountSources({ key, days = 30 } = {}) {
+    if (!key) return null;
+    try {
+      const rows = await rpc('engine_account_sources', { p_key: key, p_days: days });
+      if (!Array.isArray(rows)) return null;
+      return rows.map((r) => ({
+        source: String(r.source || 'direct'),
+        campaign: String(r.campaign || ''),
+        signups: Number(r.signups) || 0,
+        firstAt: r.first_at || null,
+      }));
+    } catch (e) { log('supabase accountSources', String(e.message)); return null; }
+  }
+
   /** Addresses that opted into the weekly slate. Needs the engine key; never the anon key alone. */
   async function newsletterRecipients({ key }) {
     if (!key) return null;
@@ -122,7 +147,7 @@ export function supabaseClient({ url, anonKey, fetchImpl = fetch, log = () => {}
     } catch (e) { log('supabase shareCounts', String(e.message)); return null; }
   }
 
-  return { rpc, gameAggregates, counts, signupSources, shareCounts, newsletterRecipients };
+  return { rpc, gameAggregates, counts, signupSources, accountSources, shareCounts, newsletterRecipients };
 }
 
 /**
