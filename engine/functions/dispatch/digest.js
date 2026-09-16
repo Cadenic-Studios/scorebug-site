@@ -19,6 +19,7 @@ import { status as budgetStatus, recommendation as budgetRecommendation, costPer
 import { engagementScore } from './metrics.js';
 import { POLICY } from './optimize.js';
 import { SITE } from './facts.js';
+import { PROSPECTS, outreachStats } from './prospects.js';
 
 const EV = 'dispatch/state/events/';
 const RP = 'dispatch/state/replies/';
@@ -84,6 +85,8 @@ export async function buildDigest({ store, publishers = {}, upcoming = [], now =
   const refused = events.filter((e) => (e.status === 'refused' || e.status === 'stalled') && now - Date.parse(e.createdAt) <= 3 * DAY);
   const replies = (await store.list(RP)).map((d) => d.data).filter((r) => r.status === 'drafted');
   const reviews = (await store.list(RV)).map((d) => d.data).filter((r) => r.status === 'drafted' || r.status === 'needs-human');
+  const prospectDocs = await store.list(PROSPECTS);
+  const prospects = prospectDocs.map((d) => d.data);
   const metrics = (await store.get(`${MET}${day}`)) || (await store.get(`${MET}${ymd(now - DAY)}`)) || {};
   const policy = (await store.get(POLICY)) || {};
   const budgetDoc = (await store.get('dispatch/state/meta/budget')) || {};
@@ -186,6 +189,52 @@ export async function buildDigest({ store, publishers = {}, upcoming = [], now =
       T.push(`- ${r.network} @${r.author}: "${String(r.comment || '').slice(0, 140)}"`, ...(r.candidates || []).map((c, i) => `  ${i + 1}. ${c}`), `  send 1: ${link('reply1', r.id)}`);
     }
     T.push('');
+  }
+
+  /* ── 1c. CADENIC — OUTREACH ──────────────────────────────────────────────
+   *
+   * The agency's sales queue, in the same email as the product's post queue,
+   * because there is one person and one morning. Drafts first (a decision),
+   * follow-ups second (a decision), then the money line — sent, replied,
+   * converted — because this beat is judged on invoices, not on volume.
+   *
+   * Every send is a signed link. The reason each draft passed the linter is
+   * NOT printed; the reason it failed is, because a blocked draft is a fact
+   * the owner needs and a passed one is just a draft. */
+  const drafted = prospects.filter((x) => x.status === 'drafted').sort((a, b) => (a.draftedAt < b.draftedAt ? 1 : -1));
+  const followUps = prospects.filter((x) => x.status === 'follow-up-drafted');
+  const blocked = prospects.filter((x) => x.status === 'blocked');
+  const awaiting = prospects.filter((x) => x.status === 'sent');
+  const stats = outreachStats(prospectDocs);
+  if (prospects.length) {
+    H.push(h('Cadenic — outreach', drafted.length + followUps.length));
+    T.push(`CADENIC OUTREACH (${drafted.length} to approve, ${followUps.length} follow-ups)`);
+    for (const x of drafted) {
+      const f = (x.found || []).map((y) => y.key).join(', ');
+      H.push(card(`<div style="font:600 11px/1.4 ui-monospace,monospace;letter-spacing:.12em;text-transform:uppercase;color:${C.violet}">first email · ${esc(x.segment || 'prospect')}</div>
+        <div style="font:600 16px/1.4 system-ui,sans-serif;color:${C.ink};margin:6px 0 0">${esc(x.name)} · ${esc(x.company || x.email)}</div>
+        <div style="font:400 12px/1.5 ui-monospace,monospace;color:${C.dim};margin:2px 0 8px">${esc(x.draft?.subject || '')} · found: ${esc(f)}</div>
+        <pre style="white-space:pre-wrap;font:400 13px/1.55 system-ui,sans-serif;color:${C.ink};margin:0 0 10px;padding:10px 12px;background:${C.void};border-radius:6px;max-height:260px;overflow:auto">${esc(x.draft?.body || '')}</pre>
+        ${btn(link('outreach', x.id), 'Send')} ${btn(link('outreach-skip', x.id), 'Skip', C.dim)}`, C.violet));
+      T.push(`- ${x.name} · ${x.company || x.email} · ${x.draft?.subject || ''}`, `  found: ${f}`, `  send: ${link('outreach', x.id)}`, `  skip: ${link('outreach-skip', x.id)}`);
+    }
+    for (const x of followUps) {
+      H.push(card(`<div style="font:600 11px/1.4 ui-monospace,monospace;letter-spacing:.12em;text-transform:uppercase;color:${C.gold}">follow-up · the only one</div>
+        <div style="font:600 16px/1.4 system-ui,sans-serif;color:${C.ink};margin:6px 0 0">${esc(x.name)} · ${esc(x.company || x.email)}</div>
+        <div style="font:400 12px/1.5 ui-monospace,monospace;color:${C.dim};margin:2px 0 8px">sent ${esc(String(x.sentAt || '').slice(0, 10))} · no reply marked</div>
+        ${btn(link('outreach-follow', x.id), 'Send follow-up', C.gold)} ${btn(link('outreach-replied', x.id), 'They replied', C.go)} ${btn(link('outreach-skip', x.id), 'Drop', C.dim)}`, C.gold));
+      T.push(`- FOLLOW-UP ${x.name} · ${x.company || x.email} (sent ${String(x.sentAt || '').slice(0, 10)})`, `  send: ${link('outreach-follow', x.id)}`, `  replied: ${link('outreach-replied', x.id)}`);
+    }
+    if (awaiting.length) {
+      H.push(`<div style="font:400 13px/1.6 system-ui,sans-serif;color:${C.dim};margin:4px 0 10px">Waiting on a reply: ${awaiting.map((x) => `${esc(x.name)} <a href="${link('outreach-replied', x.id)}" style="color:${C.go}">replied</a> · <a href="${link('outreach-converted', x.id)}" style="color:${C.gold}">client</a> · <a href="${link('outreach-declined', x.id)}" style="color:${C.dim}">no</a>`).join(' &nbsp;·&nbsp; ')}</div>`);
+      T.push(`  awaiting reply: ${awaiting.map((x) => x.name).join(', ')}`);
+    }
+    if (blocked.length) {
+      H.push(`<div style="font:400 13px/1.6 ui-monospace,monospace;color:${C.alert};margin:4px 0 10px">${blocked.length} draft(s) refused by the linter: ${blocked.map((x) => `${esc(x.name)} — ${esc((x.problems || []).join('; '))}`).join(' · ')}</div>`);
+      T.push(...blocked.map((x) => `  REFUSED ${x.name}: ${(x.problems || []).join('; ')}`));
+    }
+    H.push(`<div style="font:400 14px/1.6 system-ui,sans-serif;color:${C.ink};margin:6px 0 14px">${stats.sent} sent · ${stats.replied} replied${stats.replyRate !== null ? ` (${stats.replyRate}%)` : ''} · <span style="color:${C.gold};font-weight:700">${stats.converted} client${stats.converted === 1 ? '' : 's'}</span> · ${stats.by.new || 0} queued</div>`);
+    T.push(`  ${stats.sent} sent · ${stats.replied} replied${stats.replyRate !== null ? ` (${stats.replyRate}%)` : ''} · ${stats.converted} clients · ${stats.by.new || 0} queued`, '');
   }
 
   /* ── 2. NUMBERS ── */

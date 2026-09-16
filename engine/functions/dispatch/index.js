@@ -58,6 +58,7 @@ import { recordSpend, PLAN } from './budget.js';
 import { toDiscord, findOpportunities, newsletterHtml, newsletterText, unsubscribeToken } from './channels.js';
 import { supabaseClient } from './supabase.js';
 import { fetchFacts } from './facts.js';
+import { prospectsTick, sendOutreach, PROSPECTS, normalizeProspect } from './prospects.js';
 import { localParts, clock, LEAGUE_BY_ID } from './leagues.js';
 import { teamName } from './draft.js';
 
@@ -73,6 +74,9 @@ const SECRET_NAMES = [
   // The product's database, read-only, aggregates only. ENGINE_KEY unlocks the
   // consented newsletter list and signs its unsubscribe links.
   'SUPABASE_URL', 'SUPABASE_ANON_KEY', 'ENGINE_KEY',
+  // Cadenic outreach. The postal address is a CASL requirement on every
+  // commercial email; without it the beat drafts and refuses to send.
+  'CADENIC_POSTAL', 'CADENIC_FROM',
 ];
 
 /**
@@ -203,6 +207,19 @@ export const optimizeTick = onSchedule(opts({ schedule: '40 3 * * *' }), async (
   logger.info('optimizeTick', { chosen: p.chosen, sample: p.sampleSize, findings: p.findings.length });
 });
 
+/**
+ * CADENIC — the outreach beat. Twice a day is plenty: enrichment reads two
+ * public endpoints per prospect and drafting is one model call, and a prospect
+ * added in the morning is drafted by lunch and waiting in tomorrow's digest.
+ * It never sends; sends happen only through a signed approval below.
+ */
+export const prospectsBeat = onSchedule(opts({ schedule: '30 6,18 * * *', timeoutSeconds: 240 }), async () => {
+  const { s, store } = await deps();
+  const settings = await loadSettings(store);
+  if (!settings.enabled) return;
+  logger.info('prospectsBeat', await prospectsTick({ store, secrets: s, settings, log }));
+});
+
 export const reviewsTick = onSchedule(opts({ schedule: '0 4 * * *' }), async () => {
   const { s, store, sa } = await deps();
   const settings = await loadSettings(store);
@@ -287,14 +304,40 @@ export const dispatchOps = onRequest({ secrets: secretList, cors: false, timeout
   const action = String(req.query.action || '');
   const id = String(req.query.id || '');
 
+  /* ── CADENIC: import prospects ──────────────────────────────────────────
+     A POST with the console secret and a JSON body of rows. Rows are keyed
+     by email, so re-sending a CSV updates the people already in it rather
+     than duplicating them — and a person who has already been sent to, has
+     replied, or has declined is NEVER reset to 'new' by a re-import. Their
+     status is the record of a real interaction; a spreadsheet does not get
+     to overwrite it. */
+  if (action === 'prospects' && String(req.method).toUpperCase() === 'POST') {
+    if (!s.OPS_SECRET || String(req.get('x-ops-secret') || '') !== s.OPS_SECRET) { res.status(401).json({ error: 'unauthorized' }); return; }
+    const rows = Array.isArray(req.body?.rows) ? req.body.rows : [];
+    const FROZEN = new Set(['sent', 'follow-up-drafted', 'followed-up', 'replied', 'converted', 'declined', 'skipped']);
+    let added = 0, updated = 0, kept = 0, invalid = 0;
+    for (const row of rows.slice(0, 500)) {
+      const p = normalizeProspect(row);
+      if (!p) { invalid++; continue; }
+      const existing = await store.get(PROSPECTS + p.id);
+      if (!existing) { await store.set(PROSPECTS + p.id, p); added++; continue; }
+      if (FROZEN.has(existing.status)) { kept++; continue; }
+      await store.update(PROSPECTS + p.id, { name: p.name || existing.name, company: p.company || existing.company, site: p.site || existing.site, discordInvite: p.discordInvite || existing.discordInvite, segment: p.segment || existing.segment, status: 'new' });
+      updated++;
+    }
+    res.json({ ok: true, added, updated, kept, invalid });
+    return;
+  }
+
   // The console reads with the secret in a HEADER, never a URL.
   if (action === 'status') {
     if (!s.OPS_SECRET || String(req.get('x-ops-secret') || '') !== s.OPS_SECRET) { res.status(401).json({ error: 'unauthorized' }); return; }
-    const [settings, events, replies, reviews, metrics, policy, budget, newsletters, digests, slots, facts] = await Promise.all([
+    const [settings, events, replies, reviews, metrics, policy, budget, newsletters, digests, slots, facts, prospects] = await Promise.all([
       loadSettings(store), store.list('dispatch/state/events/'), store.list('dispatch/state/replies/'),
       store.list('dispatch/state/reviews/'), store.list('dispatch/state/metrics/'), store.get('dispatch/state/meta/policy'),
       store.get('dispatch/state/meta/budget'), store.list('dispatch/state/newsletters/'), store.list('dispatch/state/digests/'),
       store.get('dispatch/state/meta/slots'), store.get('dispatch/state/meta/facts'),
+      store.list(PROSPECTS),
     ]);
     res.json({
       settings, policy: policy || null, budget: { plan: PLAN, ...(budget || {}) }, health: health(s, publishers), facts: facts || null,
@@ -303,6 +346,7 @@ export const dispatchOps = onRequest({ secrets: secretList, cors: false, timeout
       metrics: metrics.map((d) => d.data).sort((a, b) => (a.day < b.day ? 1 : -1)).slice(0, 30),
       newsletters: newsletters.map((d) => d.data), digests: digests.map((d) => ({ day: d.data.day, counts: d.data.counts })),
       slots: (slots && slots.fired) || {}, slotNotes: (slots && slots.notes) || {},
+      prospects: prospects.map((d) => d.data).sort((a, b) => (a.addedAt < b.addedAt ? 1 : -1)),
     });
     return;
   }
@@ -381,6 +425,38 @@ export const dispatchOps = onRequest({ secrets: secretList, cors: false, timeout
         res.send(page('Reply posted to the Play listing.'));
         break;
       }
+      /* ── CADENIC OUTREACH ─────────────────────────────────────────────
+         Signed-link actions, like every other send here. sendOutreach does its
+         own refusing — dry run, missing postal address, linter failure, daily
+         cap — and says which, so the page can print the reason rather than a
+         generic error. Marking a reply is an action too, because it is the
+         one thing that must stop a follow-up going out. */
+      case 'outreach': {
+        const r = await sendOutreach({ store, id, secrets: s, settings, kind: 'first', sendEmail });
+        res.status(r.ok ? 200 : 409).send(page(r.ok ? 'Sent. The follow-up is queued for ten days from now unless you mark a reply.' : `Not sent: ${r.reason}.`));
+        break;
+      }
+      case 'outreach-follow': {
+        const r = await sendOutreach({ store, id, secrets: s, settings, kind: 'follow', sendEmail });
+        res.status(r.ok ? 200 : 409).send(page(r.ok ? 'Follow-up sent. That is the last message this person gets.' : `Not sent: ${r.reason}.`));
+        break;
+      }
+      case 'outreach-skip':
+        await store.update(PROSPECTS + id, { status: 'skipped', decidedAt: new Date().toISOString() });
+        res.send(page('Skipped. They will not be contacted.'));
+        break;
+      case 'outreach-replied':
+        await store.update(PROSPECTS + id, { status: 'replied', repliedAt: new Date().toISOString() });
+        res.send(page('Marked as replied. No follow-up will go out.'));
+        break;
+      case 'outreach-converted':
+        await store.update(PROSPECTS + id, { status: 'converted', convertedAt: new Date().toISOString() });
+        res.send(page('Marked as a client. Well done.'));
+        break;
+      case 'outreach-declined':
+        await store.update(PROSPECTS + id, { status: 'declined', declinedAt: new Date().toISOString() });
+        res.send(page('Marked as declined. They will never be contacted again.'));
+        break;
       case 'dismiss-review':
         await store.update(`dispatch/state/reviews/${id}`, { status: 'dismissed' });
         res.send(page('Left alone.'));

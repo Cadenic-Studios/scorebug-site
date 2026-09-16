@@ -246,6 +246,10 @@ const SECRET_NAMES = [
   'GA4_PROPERTY_ID', 'INDEXNOW_KEY',
   'DISPATCH_KEY', 'SITE_BASE_URL', 'DISCORD_WEBHOOK_URL',
   'SUPABASE_URL', 'SUPABASE_ANON_KEY', 'ENGINE_KEY',
+  // Cadenic outreach. Both optional to deploy; the beat refuses to SEND
+  // without CADENIC_POSTAL, because CASL puts a mailing address in every
+  // commercial email and 'we will add it later' is how that gets skipped.
+  'CADENIC_POSTAL', 'CADENIC_FROM',
 ];
 
 /** The eight without which turning it on is not worth doing. */

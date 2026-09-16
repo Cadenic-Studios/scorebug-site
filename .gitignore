@@ -91,3 +91,7 @@ _to_delete/
 # — which matched nothing and was committable. It is a private key.
 *-firebase-adminsdk-*.json
 *firebase-adminsdk*
+
+# Outreach lists carry real names and addresses. The example is the only one committed.
+engine/prospects*.csv
+!engine/prospects.example.csv
