@@ -23,6 +23,7 @@ import { PROSPECTS, outreachStats } from './prospects.js';
 import { INBOX, inboxStats } from './inbox.js';
 import { TEARDOWNS, teardownStats } from './teardown.js';
 import { conversionStats } from './convert.js';
+import { deliveryHealth, DELIVERY, BREAKER, COMPLAINT_LIMIT, BOUNCE_LIMIT } from './deliverability.js';
 import { CANDIDATES, discoveryStats } from './discover.js';
 
 const EV = 'dispatch/state/events/';
@@ -92,6 +93,8 @@ export async function buildDigest({ store, publishers = {}, upcoming = [], now =
   const prospectDocs = await store.list(PROSPECTS);
   const prospects = prospectDocs.map((d) => d.data);
   const discovery = (await store.get('dispatch/state/meta/discovery')) || {};
+  const delivery = deliveryHealth(await store.list(DELIVERY), now);
+  const breaker = await store.get(BREAKER);
   const inboxDocs = await store.list(INBOX);
   const teardownDocs = await store.list(TEARDOWNS);
   const teardowns = teardownDocs.map((d) => d.data);
@@ -211,6 +214,19 @@ export async function buildDigest({ store, publishers = {}, upcoming = [], now =
    * Every send is a signed link. The reason each draft passed the linter is
    * NOT printed; the reason it failed is, because a blocked draft is a fact
    * the owner needs and a passed one is just a draft. */
+  /* ── THE BREAKER ─────────────────────────────────────────────────────────
+     Above everything, including a live reply, because while this is open no
+     outreach leaves the building and every other section is describing work
+     that is not going anywhere. It is the one thing in this email that is
+     both urgent and cannot be fixed by pressing a button in it. */
+  if (breaker && breaker.open) {
+    H.push(card(`<div style="font:600 11px/1.4 ui-monospace,monospace;letter-spacing:.12em;text-transform:uppercase;color:${C.alert}">outreach has stopped itself</div>
+      <div style="font:600 16px/1.45 system-ui,sans-serif;color:${C.ink};margin:6px 0 6px">${esc(breaker.why || 'a sending threshold was crossed')}</div>
+      <div style="font:400 13px/1.6 system-ui,sans-serif;color:${C.dim};margin:0 0 10px">Nothing has been sent since ${esc(String(breaker.at || '').slice(0, 16).replace('T', ' '))}. Look at what went out before you clear this — the rate falls the moment sending stops, so a reset on its own proves nothing.</div>
+      ${btn(link('breaker-reset', 'breaker'), 'I have looked — turn it back on', C.alert)}`, C.alert));
+    T.push('!! OUTREACH HAS STOPPED ITSELF', `   ${breaker.why || ''}`, `   reset: ${link('breaker-reset', 'breaker')}`, '');
+  }
+
   /* ── CADENIC — REPLIES ────────────────────────────────────────────────────
      Above the cold-email queue, deliberately and permanently. A person who
      wrote back is waiting on an answer; a draft to a stranger is waiting on
@@ -394,6 +410,16 @@ export async function buildDigest({ store, publishers = {}, upcoming = [], now =
       const line = feedNotes.map(([k, v]) => `${k}: ${v}`).join(' · ');
       H.push(`<div style="font:400 12px/1.6 ui-monospace,monospace;color:${C.dim};margin:0 0 8px">sources — ${esc(line)}</div>`);
       T.push(`  sources: ${line}`);
+    }
+    /* Deliverability sits with the outreach numbers because it is one of
+       them: mail that does not arrive is not outreach. Printed only once
+       there is enough of it to mean anything. */
+    if (delivery.enough) {
+      const cp = (delivery.complaintRate * 100).toFixed(2);
+      const bp = (delivery.bounceRate * 100).toFixed(1);
+      const hot = delivery.complaintsHigh || delivery.bouncesHigh;
+      H.push(`<div style="font:400 13px/1.6 ui-monospace,monospace;color:${hot ? C.alert : C.dim};margin:2px 0 8px">delivery — ${delivery.delivered} landed · ${delivery.bounced} bounced (${bp}%, line ${(BOUNCE_LIMIT * 100).toFixed(0)}%) · ${delivery.complained} marked spam (${cp}%, line ${(COMPLAINT_LIMIT * 100).toFixed(1)}%)</div>`);
+      T.push(`  delivery: ${delivery.delivered} landed, ${delivery.bounced} bounced (${bp}%), ${delivery.complained} spam (${cp}%)`);
     }
     H.push(`<div style="font:400 14px/1.6 system-ui,sans-serif;color:${C.ink};margin:6px 0 14px">${stats.sent} sent · ${stats.replied} replied${stats.replyRate !== null ? ` (${stats.replyRate}%)` : ''} · <span style="color:${C.gold};font-weight:700">${stats.converted} client${stats.converted === 1 ? '' : 's'}</span> · ${stats.by.new || 0} queued</div>`);
     T.push(`  ${stats.sent} sent · ${stats.replied} replied${stats.replyRate !== null ? ` (${stats.replyRate}%)` : ''} · ${stats.converted} clients · ${stats.by.new || 0} queued`, '');

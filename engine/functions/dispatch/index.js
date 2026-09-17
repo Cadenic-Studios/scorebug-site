@@ -61,6 +61,7 @@ import { fetchFacts } from './facts.js';
 import { prospectsTick, sendOutreach, PROSPECTS, normalizeProspect } from './prospects.js';
 import { discoverTick, suppress, CANDIDATES } from './discover.js';
 import { verifyWebhook, handleInbound, sendAnswer, INBOX } from './inbox.js';
+import { isDeliveryEvent, recordDelivery, isHardBounce, resetBreaker, deliveryHealth, DELIVERY, BREAKER } from './deliverability.js';
 import { teardownTick, sendTeardown, teardownId, TEARDOWNS } from './teardown.js';
 import { convertTick, sendConversion } from './convert.js';
 import { SECRET_NAMES, UNSET_SENTINEL } from './secretNames.js';
@@ -382,6 +383,28 @@ export const cadenicInbox = onRequest({ secrets: secretList, cors: false, timeou
 
   let event;
   try { event = JSON.parse(raw); } catch { res.status(400).json({ error: 'not json' }); return; }
+  /* ── THE OUTBOUND EVENTS ────────────────────────────────────────────────
+     The same signed endpoint carries deliveries, bounces and complaints, so
+     one webhook and one secret cover both directions. These are what the
+     circuit breaker in deliverability.js reads, and a hard bounce suppresses
+     the address on the spot: writing again to a mailbox that does not exist
+     is pointless and costs the sending domain reputation it cannot spare. */
+  if (isDeliveryEvent(event.type)) {
+    try {
+      const out = await recordDelivery({ store, event });
+      if (event.type === 'email.bounced' && isHardBounce(event)) {
+        const to = (event.data?.to || [])[0];
+        if (to) await suppress(store, { email: String(to).toLowerCase(), reason: 'hard bounce' });
+      }
+      logger.info('delivery', { type: event.type, ...out });
+      res.json({ ok: true, ...out });
+    } catch (e) {
+      logger.error('delivery', String(e.message || e));
+      res.status(500).json({ error: 'handler failed' });
+    }
+    return;
+  }
+
   if (event.type !== 'email.received') { res.json({ ok: true, ignored: event.type }); return; }
 
   try {
@@ -466,7 +489,9 @@ export const dispatchOps = onRequest({ secrets: secretList, cors: false, timeout
       store.get('dispatch/state/meta/slots'), store.get('dispatch/state/meta/facts'),
       store.list(PROSPECTS), store.list(CANDIDATES),
     ]);
-    const [inbox, teardowns] = await Promise.all([store.list(INBOX), store.list(TEARDOWNS)]);
+    const [inbox, teardowns, delivery, breaker] = await Promise.all([
+      store.list(INBOX), store.list(TEARDOWNS), store.list(DELIVERY), store.get(BREAKER),
+    ]);
     res.json({
       settings, policy: policy || null, budget: { plan: PLAN, ...(budget || {}) }, health: health(s, publishers), facts: facts || null,
       events: events.map((d) => d.data).sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1)).slice(0, 200),
@@ -478,6 +503,7 @@ export const dispatchOps = onRequest({ secrets: secretList, cors: false, timeout
       candidates: candidates.map((d) => d.data).sort((a, b) => (a.seenAt < b.seenAt ? 1 : -1)).slice(0, 300),
       inbox: inbox.map((d) => ({ id: d.id, ...d.data })).sort((a, b) => (a.at < b.at ? 1 : -1)).slice(0, 200),
       teardowns: teardowns.map((d) => d.data).sort((a, b) => (a.askedAt < b.askedAt ? 1 : -1)).slice(0, 100),
+      delivery: deliveryHealth(delivery), breaker: breaker || null,
     });
     return;
   }
@@ -588,6 +614,13 @@ export const dispatchOps = onRequest({ secrets: secretList, cors: false, timeout
          engine deciding on its own. Everything else about an inbound message
          — cancelling the follow-up, honouring a stop, marking a bounce — has
          already happened automatically by the time this link is pressed. */
+      /* The breaker never clears itself — see the header in
+         deliverability.js. This is the only way it opens again. */
+      case 'breaker-reset': {
+        const r = await resetBreaker({ store });
+        res.status(r.ok ? 200 : 409).send(page(r.ok ? `Outreach is on again. It had stopped because ${r.was}.` : `Nothing to reset: ${r.reason}.`));
+        break;
+      }
       case 'convert-send': {
         const r = await sendConversion({ store, id, secrets: s, settings, sendEmail });
         res.status(r.ok ? 200 : 409).send(page(r.ok ? 'Sent. That is the only one they get.' : `Not sent: ${r.reason}.`));

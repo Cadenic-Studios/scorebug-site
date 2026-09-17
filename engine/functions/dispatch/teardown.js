@@ -409,6 +409,14 @@ export async function sendTeardown({ store, id, secrets = {}, settings = {}, now
   if (!r.draft) return { ok: false, reason: 'no draft to send' };
   if ((r.problems || []).length) return { ok: false, reason: `the draft did not pass the linter: ${r.problems.join('; ')}` };
   if (settings.dryRun) return { ok: false, reason: 'the engine is in dry run — nothing reaches a stranger until it ends' };
+
+  /* ── THE CIRCUIT BREAKER ────────────────────────────────────────────────
+     Checked here, in the send path, on every single message — not on a
+     schedule. A breaker evaluated once a night is a breaker that lets a bad
+     batch finish before anybody notices. */
+  const { sendingAllowed } = await import('./deliverability.js');
+  const gate = await sendingAllowed({ store, now });
+  if (!gate.allowed) return { ok: false, reason: gate.reason };
   const postal = secrets.CADENIC_POSTAL || '';
   if (!postal) return { ok: false, reason: 'CADENIC_POSTAL is not set; nothing can be sent without a mailing address' };
 
