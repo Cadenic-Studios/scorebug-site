@@ -571,6 +571,29 @@ async function main() {
       ok(`ops endpoint ${opsUrl}`);
       say(`  ${C.dim}already correct — no second deploy needed${C.r}`);
     }
+
+    /* ── EVERY HTTP ENDPOINT, PRINTED ────────────────────────────────────
+       The inbox webhook has to be pasted into Resend's dashboard, and the
+       only way to find its address was `firebase functions:list`, whose
+       box-drawing output arrives as mojibake in both cmd and PowerShell on a
+       Windows console that is not in UTF-8 — the column with the URL in it
+       is the one that gets truncated. Ten minutes of hunting for a string
+       this script already had in its own deploy log.
+
+       So: any https endpoint the deploy printed, listed plainly, with the
+       one that needs pasting somewhere called out. */
+    const urls = [...new Set([...(dep.out + dep.err).matchAll(/https:\/\/[a-z0-9-]+(?:-[a-z0-9]+)?[-.](?:uc\.a\.run\.app|cloudfunctions\.net)[^\s"']*/gi)].map((m) => m[0].replace(/[).,]+$/, '')))];
+    const inbox = urls.find((u) => /cadenicinbox/i.test(u));
+    if (urls.length) {
+      say(`\n  ${C.b}HTTP endpoints${C.r}`);
+      for (const u of urls) say(`  ${C.dim}·${C.r} ${u}`);
+    }
+    if (inbox) {
+      say(`\n  ${C.b}${C.y}Paste this into Resend → Webhooks → Endpoint URL:${C.r}`);
+      say(`  ${C.b}${inbox}${C.r}`);
+      say(`  ${C.dim}event: email.received · then put its whsec_ signing secret in .secrets.local${C.r}`);
+      say(`  ${C.dim}check it is answering: curl ${inbox}  →  should say "POST only"${C.r}`);
+    }
   }
 
   /* ── 5. Switch on, in dry run ───────────────────────────────────── */

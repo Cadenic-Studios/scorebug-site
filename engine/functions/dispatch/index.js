@@ -62,6 +62,7 @@ import { prospectsTick, sendOutreach, PROSPECTS, normalizeProspect } from './pro
 import { discoverTick, suppress, CANDIDATES } from './discover.js';
 import { verifyWebhook, handleInbound, sendAnswer, INBOX } from './inbox.js';
 import { teardownTick, sendTeardown, teardownId, TEARDOWNS } from './teardown.js';
+import { convertTick, sendConversion } from './convert.js';
 import { SECRET_NAMES, UNSET_SENTINEL } from './secretNames.js';
 import { localParts, clock, LEAGUE_BY_ID } from './leagues.js';
 import { teamName } from './draft.js';
@@ -253,6 +254,21 @@ export const teardownBeat = onSchedule(opts({ schedule: '0 8,20 * * *', timeoutS
   const settings = await loadSettings(store);
   if (!settings.enabled) return;
   logger.info('teardownBeat', await teardownTick({ store, secrets: s, settings, log }));
+});
+
+/**
+ * CADENIC — the note that asks for the work.
+ *
+ * Runs once a day, after the teardown beat, because everything it looks at is
+ * at least four days old and nothing about it is urgent. Drafts only; the note
+ * goes out on a signed approval like every other message that reaches a
+ * stranger. There is only ever one per teardown.
+ */
+export const convertBeat = onSchedule(opts({ schedule: '0 9 * * *', timeoutSeconds: 240 }), async () => {
+  const { s, store } = await deps();
+  const settings = await loadSettings(store);
+  if (!settings.enabled) return;
+  logger.info('convertBeat', await convertTick({ store, secrets: s, settings, log }));
 });
 
 export const reviewsTick = onSchedule(opts({ schedule: '0 4 * * *' }), async () => {
@@ -572,6 +588,15 @@ export const dispatchOps = onRequest({ secrets: secretList, cors: false, timeout
          engine deciding on its own. Everything else about an inbound message
          — cancelling the follow-up, honouring a stop, marking a bounce — has
          already happened automatically by the time this link is pressed. */
+      case 'convert-send': {
+        const r = await sendConversion({ store, id, secrets: s, settings, sendEmail });
+        res.status(r.ok ? 200 : 409).send(page(r.ok ? 'Sent. That is the only one they get.' : `Not sent: ${r.reason}.`));
+        break;
+      }
+      case 'convert-skip':
+        await store.update(TEARDOWNS + id, { convertStatus: 'skipped', convertDecidedAt: new Date().toISOString() });
+        res.send(page('Left. They will not be asked.'));
+        break;
       case 'teardown-send': {
         const r = await sendTeardown({ store, id, secrets: s, settings, sendEmail });
         res.status(r.ok ? 200 : 409).send(page(r.ok ? 'Teardown sent. That is the whole of what was promised, delivered.' : `Not sent: ${r.reason}.`));

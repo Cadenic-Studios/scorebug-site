@@ -419,6 +419,26 @@ export async function handleInbound({ store, event, secrets = {}, settings = {},
     await store.update(PROSPECTS + hit.id, { repliedAt: stamp, followUpAt: null, followUp: null });
   }
 
+  /* ── AND THE TEARDOWN, WHICH IS A SEPARATE TIMER ─────────────────────────
+     Somebody who filled in the form on /teardown may never have been a
+     prospect at all, and a teardown carries its own four-day clock toward the
+     note that asks for the work. Marking only the prospect would leave that
+     clock running, and the machine would ask a person for the job while they
+     were already mid-conversation with Wyatt about it — talking over its own
+     owner, which is the worst thing a sales automation can do.
+
+     Matched on the address rather than an id, because the two records are not
+     linked and a teardown request often arrives from a different inbox than
+     the one that was written to. */
+  if (isReply) {
+    const { TEARDOWNS } = await import('./teardown.js');
+    for (const { id: tid, data: t } of await store.list(TEARDOWNS)) {
+      if (bareAddress(t.email) === from && !t.repliedAt) {
+        await store.update(TEARDOWNS + tid, { repliedAt: stamp });
+      }
+    }
+  }
+
   const record = {
     emailId, from, subject, at: stamp,
     prospectId: hit ? hit.id : null,

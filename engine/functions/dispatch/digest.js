@@ -22,6 +22,7 @@ import { SITE } from './facts.js';
 import { PROSPECTS, outreachStats } from './prospects.js';
 import { INBOX, inboxStats } from './inbox.js';
 import { TEARDOWNS, teardownStats } from './teardown.js';
+import { conversionStats } from './convert.js';
 import { CANDIDATES, discoveryStats } from './discover.js';
 
 const EV = 'dispatch/state/events/';
@@ -311,7 +312,32 @@ export async function buildDigest({ store, publishers = {}, upcoming = [], now =
       H.push(`<div style="font:400 13px/1.6 ui-monospace,monospace;color:${C.dim};margin:2px 0 10px">${tdWorking.length} being read and written now</div>`);
       T.push(`  ${tdWorking.length} in progress`);
     }
+    /* ── THE ONE THAT ASKS FOR THE WORK ────────────────────────────────
+       Printed inside the teardown section rather than beside it, because it
+       is the same conversation four days on and splitting them would make it
+       read as a separate campaign — which is exactly what it must never be.
+       There is only ever one of these per teardown. */
+    const convertReady = teardowns.filter((x) => x.convertStatus === 'drafted');
+    const convertBlocked = teardowns.filter((x) => x.convertStatus === 'blocked');
+    for (const x of convertReady) {
+      H.push(card(`<div style="font:600 11px/1.4 ui-monospace,monospace;letter-spacing:.12em;text-transform:uppercase;color:${C.violet}">asking for the work · the only one</div>
+        <div style="font:600 16px/1.4 system-ui,sans-serif;color:${C.ink};margin:6px 0 0">${esc(x.company || x.email)}</div>
+        <div style="font:400 12px/1.5 ui-monospace,monospace;color:${C.dim};margin:2px 0 8px">teardown sent ${esc(String(x.sentAt || '').slice(0, 10))} · no reply · leading on ${esc(x.convertNote?.leadKey || '')}</div>
+        <pre style="white-space:pre-wrap;font:400 13px/1.55 system-ui,sans-serif;color:${C.ink};margin:0 0 10px;padding:10px 12px;background:${C.void};border-radius:6px;max-height:240px;overflow:auto">${esc(x.convertNote?.body || '')}</pre>
+        ${btn(link('convert-send', x.id), 'Send', C.violet)} ${btn(link('convert-skip', x.id), 'Leave it', C.dim)}`, C.violet));
+      T.push(`- ASK ${x.company || x.email} (teardown ${String(x.sentAt || '').slice(0, 10)}, leading on ${x.convertNote?.leadKey || ''})`, `  send: ${link('convert-send', x.id)}`, `  skip: ${link('convert-skip', x.id)}`);
+    }
+    if (convertBlocked.length) {
+      H.push(`<div style="font:400 13px/1.6 ui-monospace,monospace;color:${C.alert};margin:2px 0 8px">${convertBlocked.length} ask(s) refused by the linter: ${convertBlocked.map((x) => `${esc(x.company || x.email)} — ${esc((x.convertProblems || []).join('; '))}`).join(' · ')}</div>`);
+      T.push(...convertBlocked.map((x) => `  ASK REFUSED ${x.company || x.email}: ${(x.convertProblems || []).join('; ')}`));
+    }
+
+    const cs = conversionStats(teardownDocs);
     const ts = teardownStats(teardownDocs);
+    if (cs.asked) {
+      H.push(`<div style="font:400 14px/1.6 system-ui,sans-serif;color:${C.ink};margin:4px 0 10px">${cs.delivered} teardown(s) delivered · ${cs.asked} asked for the work · <span style="color:${C.gold};font-weight:700">${cs.answered} answered</span>${cs.rate !== null ? ` (${cs.rate}%)` : ''}</div>`);
+      T.push(`  ${cs.delivered} delivered · ${cs.asked} asked · ${cs.answered} answered${cs.rate !== null ? ` (${cs.rate}%)` : ''}`);
+    }
     if (ts.sent) {
       H.push(`<div style="font:400 14px/1.6 system-ui,sans-serif;color:${C.ink};margin:0 0 14px">${ts.sent} teardown${ts.sent === 1 ? '' : 's'} delivered in total</div>`);
       T.push(`  ${ts.sent} delivered in total`, '');
