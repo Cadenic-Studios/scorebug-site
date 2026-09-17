@@ -62,32 +62,12 @@ import { prospectsTick, sendOutreach, PROSPECTS, normalizeProspect } from './pro
 import { discoverTick, suppress, CANDIDATES } from './discover.js';
 import { verifyWebhook, handleInbound, sendAnswer, INBOX } from './inbox.js';
 import { teardownTick, sendTeardown, teardownId, TEARDOWNS } from './teardown.js';
+import { SECRET_NAMES, UNSET_SENTINEL } from './secretNames.js';
 import { localParts, clock, LEAGUE_BY_ID } from './leagues.js';
 import { teamName } from './draft.js';
 
-const SECRET_NAMES = [
-  'BSKY_HANDLE', 'BSKY_APP_PASSWORD', 'BSKY_DISPLAY_HANDLE', 'MASTODON_BASE', 'MASTODON_TOKEN',
-  'THREADS_USER_ID', 'THREADS_TOKEN', 'IG_USER_ID', 'IG_TOKEN',
-  'X_API_KEY', 'X_API_SECRET', 'X_ACCESS_TOKEN', 'X_ACCESS_SECRET', 'X_HANDLE',
-  'ANTHROPIC_API_KEY', 'RESEND_API_KEY',
-  'OPS_SECRET', 'GOOGLE_SERVICE_ACCOUNT', 'PLAY_BUCKET', 'PLAY_PACKAGE',
-  'GA4_PROPERTY_ID', 'INDEXNOW_KEY',
-  // The site's facts endpoint and card press; our own Discord.
-  'DISPATCH_KEY', 'SITE_BASE_URL', 'DISCORD_WEBHOOK_URL',
-  // The product's database, read-only, aggregates only. ENGINE_KEY unlocks the
-  // consented newsletter list and signs its unsubscribe links.
-  'SUPABASE_URL', 'SUPABASE_ANON_KEY', 'ENGINE_KEY',
-  // Cadenic outreach. The postal address is a CASL requirement on every
-  // commercial email; without it the beat drafts and refuses to send.
-  'CADENIC_POSTAL', 'CADENIC_FROM',
-  // Prospect discovery. Either the Google pair or the Brave key is enough;
-  // with neither, the beat says so in the digest and finds nothing. It never
-  // falls back to scraping a results page.
-  'GOOGLE_CSE_KEY', 'GOOGLE_CSE_CX', 'BRAVE_SEARCH_KEY', 'GITHUB_TOKEN',
-  // Inbound replies. Without it the webhook refuses every request it is sent,
-  // which is the correct behaviour for an unauthenticated public endpoint.
-  'RESEND_WEBHOOK_SECRET',
-];
+/* The one list lives in secretNames.js, imported above — see the note in
+   that file for the deploy failure that put it there. */
 
 /**
  * THE SENTINEL, AND WHY IT EXISTS.
@@ -100,7 +80,9 @@ const SECRET_NAMES = [
  * as absent. (Filtering the declaration list through an env var did NOT work
  * on Delta-V — the discovery subprocess does not reliably see functions/.env.)
  */
-export const UNSET_SENTINEL = '__scorebug_unset__';
+/* Re-exported so existing importers keep working; defined in secretNames.js
+   alongside the list it belongs with. */
+export { UNSET_SENTINEL };
 
 const secrets = Object.fromEntries(SECRET_NAMES.map((n) => [n, defineSecret(n)]));
 const secretList = Object.values(secrets);

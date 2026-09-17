@@ -40,6 +40,7 @@ const readFileSyncUtf8 = (p) => readFileSync(p, 'utf8');
 import { dirname, join, resolve, isAbsolute } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createInterface } from 'node:readline/promises';
+import { SECRET_NAMES, UNSET_SENTINEL } from '../functions/dispatch/secretNames.js';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');      // scorebug-site/engine
 const SITE_DIR = resolve(ROOT, '..');                                        // scorebug-site (the Vercel project)
@@ -49,16 +50,13 @@ const PROJECT = (() => {
   try { return JSON.parse(readFileSyncUtf8(join(ROOT, '.firebaserc'))).projects.default; } catch { return 'scorebug-engine'; }
 })();
 
-/**
- * Must match UNSET_SENTINEL in functions/dispatch/index.js.
- *
- * Firebase refuses to deploy while a DECLARED secret has no value, and
- * `--non-interactive` cannot prompt. Rather than fight that, every name without
- * a real value gets this, so all of them exist and the deploy always proceeds.
- * The runtime treats it as absent, so the capability stays off exactly as if
- * the secret had never been created — and the digest still names it.
- */
-const UNSET_SENTINEL = '__scorebug_unset__';
+/* SECRET_NAMES and UNSET_SENTINEL are imported above, from
+   functions/dispatch/secretNames.js, which is the only place either is
+   defined. They used to be declared here as well as there, and the copies
+   drifted the moment a secret was added to one file and not the other:
+   index.js declared RESEND_WEBHOOK_SECRET, this script never created a
+   placeholder for it, and the deploy stopped with "no value for the secret"
+   after the tests had passed and the other 34 had been written. */
 
 /**
  * The ops endpoint before the first deploy has told us its real address.
@@ -237,24 +235,7 @@ async function resolveServiceAccount(value) {
     : 'GOOGLE_SERVICE_ACCOUNT is not set and no key was found in the project folder' };
 }
 
-const SECRET_NAMES = [
-  'BSKY_HANDLE', 'BSKY_APP_PASSWORD', 'BSKY_DISPLAY_HANDLE', 'MASTODON_BASE', 'MASTODON_TOKEN',
-  'THREADS_USER_ID', 'THREADS_TOKEN', 'IG_USER_ID', 'IG_TOKEN',
-  'X_API_KEY', 'X_API_SECRET', 'X_ACCESS_TOKEN', 'X_ACCESS_SECRET', 'X_HANDLE',
-  'ANTHROPIC_API_KEY', 'RESEND_API_KEY',
-  'OPS_SECRET', 'GOOGLE_SERVICE_ACCOUNT', 'PLAY_BUCKET', 'PLAY_PACKAGE',
-  'GA4_PROPERTY_ID', 'INDEXNOW_KEY',
-  'DISPATCH_KEY', 'SITE_BASE_URL', 'DISCORD_WEBHOOK_URL',
-  'SUPABASE_URL', 'SUPABASE_ANON_KEY', 'ENGINE_KEY',
-  // Cadenic outreach. Both optional to deploy; the beat refuses to SEND
-  // without CADENIC_POSTAL, because CASL puts a mailing address in every
-  // commercial email and 'we will add it later' is how that gets skipped.
-  'CADENIC_POSTAL', 'CADENIC_FROM',
-  // Prospect discovery. Either the Google pair (free, 100/day, no card) or
-  // the Brave key is enough. Without one the beat reports that in the digest
-  // and finds nothing; it never falls back to scraping a results page.
-  'GOOGLE_CSE_KEY', 'GOOGLE_CSE_CX', 'BRAVE_SEARCH_KEY', 'GITHUB_TOKEN',
-];
+/* The list is imported, not defined here. See the note above. */
 
 /** The eight without which turning it on is not worth doing. */
 const CORE = ['BSKY_HANDLE', 'BSKY_APP_PASSWORD', 'DISPATCH_KEY', 'SITE_BASE_URL',
