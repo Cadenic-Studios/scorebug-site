@@ -256,6 +256,7 @@ export async function sendConversion({ store, id, secrets = {}, settings = {}, n
     to: t.email,
     subject: t.convertNote.subject,
     text: t.convertNote.body,
+    replyTo: secrets.CADENIC_REPLY_TO || undefined,
     fetchImpl,
   });
   await store.update(TEARDOWNS + id, { convertStatus: 'sent', convertSentAt: new Date(now).toISOString() });

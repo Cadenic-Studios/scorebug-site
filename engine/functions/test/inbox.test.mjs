@@ -288,3 +288,48 @@ test('feedsForDay rotates so every source is sampled across a week', () => {
   assert.equal(seen.size, FEEDS.length, 'every feed must come up');
   assert.equal(feedsForDay(0, 2).length, 2);
 });
+
+/* ──────────────────────────────────────── REPLIES HAVE TO LAND SOMEWHERE */
+
+/**
+ * Outgoing mail is From hello@cadenic.studio, a Google Workspace inbox. Without
+ * a Reply-To on the receiving subdomain, every reply goes there and this whole
+ * module never sees one. Four send paths, one header, and a test that fails if
+ * any of them drops it.
+ */
+test('every Cadenic send carries the reply-to when it is configured', async () => {
+  const { sendOutreach, PROSPECTS: P } = await import('../dispatch/prospects.js');
+  const { sendTeardown, TEARDOWNS: T } = await import('../dispatch/teardown.js');
+  const { sendConversion } = await import('../dispatch/convert.js');
+
+  const seed = {
+    [P + 'p1']: { id: 'p1', email: 'a@b.co', name: 'A', status: 'drafted', problems: [], draft: { subject: 's', body: 'b' } },
+    [T + 't1']: {
+      id: 't1', email: 'a@b.co', name: 'A', status: 'drafted', problems: [], draft: { subject: 's', body: 'b' },
+      convertStatus: 'drafted', convertProblems: [], convertNote: { subject: 's', body: 'b' },
+    },
+    [INBOX + 'e1']: { from: 'a@b.co', subject: 's', answer: 'hi', problems: [], status: 'drafted' },
+  };
+  const secrets = { CADENIC_POSTAL: 'somewhere', RESEND_API_KEY: 'k', CADENIC_REPLY_TO: 'wyatt@inbound.cadenic.studio' };
+  const settings = { dryRun: false };
+
+  for (const [label, fn, id] of [
+    ['outreach', sendOutreach, 'p1'],
+    ['teardown', sendTeardown, 't1'],
+    ['the ask', sendConversion, 't1'],
+    ['an answer', sendAnswer, 'e1'],
+  ]) {
+    let sent = null;
+    const r = await fn({ store: memoryStore(seed), id, secrets, settings, sendEmail: async (a) => { sent = a; } });
+    assert.equal(r.ok, true, `${label}: ${r.reason || ''}`);
+    assert.equal(sent.replyTo, 'wyatt@inbound.cadenic.studio', `${label} must carry the reply-to or the reply is lost`);
+  }
+});
+
+test('with no reply-to configured, the header is simply absent, not empty', async () => {
+  const { sendOutreach, PROSPECTS: P } = await import('../dispatch/prospects.js');
+  const store = memoryStore({ [P + 'p1']: { id: 'p1', email: 'a@b.co', name: 'A', status: 'drafted', problems: [], draft: { subject: 's', body: 'b' } } });
+  let sent = null;
+  await sendOutreach({ store, id: 'p1', secrets: { CADENIC_POSTAL: 'x', RESEND_API_KEY: 'k' }, settings: { dryRun: false }, sendEmail: async (a) => { sent = a; } });
+  assert.equal(sent.replyTo, undefined, 'an empty Reply-To header is worse than none');
+});

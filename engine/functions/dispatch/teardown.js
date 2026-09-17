@@ -425,7 +425,7 @@ export async function sendTeardown({ store, id, secrets = {}, settings = {}, now
   await sendEmail({
     apiKey: secrets.RESEND_API_KEY,
     from: secrets.CADENIC_FROM || 'Wyatt at Cadenic Studios <hello@cadenic.studio>',
-    to: r.email, subject: r.draft.subject, text, fetchImpl,
+    to: r.email, subject: r.draft.subject, text, replyTo: secrets.CADENIC_REPLY_TO || undefined, fetchImpl,
   });
   await store.update(TEARDOWNS + id, { status: 'sent', sentAt: new Date(now).toISOString() });
   return { ok: true };

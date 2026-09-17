@@ -64,4 +64,9 @@ export const SECRET_NAMES = Object.freeze([
   // Inbound replies. Without it the webhook refuses every request it is sent,
   // which is the correct behaviour for an unauthenticated public endpoint.
   'RESEND_WEBHOOK_SECRET',
+  // Where replies GO. Outgoing mail is From hello@cadenic.studio, which is a
+  // Google Workspace inbox; without a Reply-To on the receiving subdomain every
+  // reply lands there and Resend — and therefore the inbox module — never sees
+  // one. The whole reply-handling side of the engine hangs on this one header.
+  'CADENIC_REPLY_TO',
 ]);

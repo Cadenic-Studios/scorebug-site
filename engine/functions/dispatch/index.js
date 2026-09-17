@@ -157,6 +157,13 @@ function health(s, publishers) {
     'IndexNow': ['INDEXNOW_KEY'],
     'the product facts and the card press': ['DISPATCH_KEY'],
     'the Discord mirror': ['DISCORD_WEBHOOK_URL'],
+    /* Both or neither. The webhook secret lets the engine READ a reply; the
+       reply-to is what makes a reply arrive somewhere it can read. With the
+       first and not the second, the inbox is armed and pointed at an empty
+       room, and the digest would say "reading replies: on" while every
+       answer went to Google Workspace instead. */
+    'reading replies': ['RESEND_WEBHOOK_SECRET', 'CADENIC_REPLY_TO'],
+    'sending outreach': ['CADENIC_POSTAL', 'CADENIC_FROM', 'RESEND_API_KEY'],
   };
   const missing = Object.entries(need).filter(([, keys]) => keys.some((k) => !s[k])).map(([label]) => label);
   return { publishers: Object.keys(publishers), missingSecrets: missing, declaredSecrets: SECRET_NAMES.length, warnings: [] };

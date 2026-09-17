@@ -531,6 +531,7 @@ export async function sendAnswer({ store, id, secrets = {}, settings = {}, now =
     subject,
     text: `${m.answer}\n\n${footer({ postal })}`,
     headers: m.inReplyTo ? { 'In-Reply-To': m.inReplyTo, References: m.inReplyTo } : undefined,
+    replyTo: secrets.CADENIC_REPLY_TO || undefined,
     fetchImpl,
   });
 

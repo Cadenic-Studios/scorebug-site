@@ -415,6 +415,7 @@ export async function sendOutreach({ store, id, secrets = {}, settings = {}, kin
     to: p.email,
     subject: msg.subject,
     text: msg.body,
+    replyTo: secrets.CADENIC_REPLY_TO || undefined,
     fetchImpl,
   });
 
