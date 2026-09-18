@@ -191,11 +191,11 @@ export async function metricsTick({ store, secrets = {}, publishers = {}, now = 
   await soft('play', () => playInstalls({ sa, bucket: secrets.PLAY_BUCKET, packageName: secrets.PLAY_PACKAGE || 'ca.scorebug.sports', now, fetchImpl }));
   await soft('ratings', () => playRatings({ sa, bucket: secrets.PLAY_BUCKET, packageName: secrets.PLAY_PACKAGE || 'ca.scorebug.sports', now, fetchImpl }));
   await soft('site', () => ga4({ sa, propertyId: secrets.GA4_PROPERTY_ID, fetchImpl }));
-  await soft('product', async () => (supabase ? (await supabase.counts()) || { error: 'no answer from the database' } : { error: 'SUPABASE_URL / SUPABASE_ANON_KEY not set' }));
+  await soft('product', async () => (supabase ? (await supabase.counts({ key: secrets.ENGINE_KEY })) || { error: 'no answer from the database' } : { error: 'SUPABASE_URL / SUPABASE_ANON_KEY not set' }));
   /* Acquisition, not engagement. The one number that says whether any of this
      is working: how many people reached the waitlist on a link this engine
      posted, split by the network and the closing line that brought them. */
-  await soft('acquisition', async () => (supabase ? (await supabase.signupSources({ sinceDays: 30 })) || { error: 'no answer from the database' } : { error: 'SUPABASE_URL / SUPABASE_ANON_KEY not set' }));
+  await soft('acquisition', async () => (supabase ? (await supabase.signupSources({ key: secrets.ENGINE_KEY, sinceDays: 30 })) || { error: 'no answer from the database' } : { error: 'SUPABASE_URL / SUPABASE_ANON_KEY not set' }));
   /* WHERE THE MONEY WENT. Which campaign each real account arrived on, as
      opposed to the waitlist tags above. This is the number that decides
      whether paid spend continues, and it can only ever answer for accounts

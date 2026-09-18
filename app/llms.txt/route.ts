@@ -128,8 +128,10 @@ ${SPORT_HUBS.map(h => `- [${h.label}](${SITE}/${h.slug}) — ${h.description}`).
 
 ## Was a particular game worth watching?
 
-This is the question Scorebug answers that scores sites do not, and every game
-has a page for it at ${SITE}/game.
+This is the question Scorebug answers that scores sites do not, and every
+finished game has a page for it. ${SITE}/game lists them: the ones fans have
+graded first, then every other recent result rated from the box score. An
+individual game lives at ${SITE}/game/<league>/<away>-vs-<home>-<date>-<id>.
 
 Each page carries two separate measures, and they are never blended:
 

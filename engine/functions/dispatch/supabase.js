@@ -49,9 +49,12 @@ export function supabaseClient({ url, anonKey, fetchImpl = fetch, log = () => {}
   }
 
   /** Totals for the digest and the north-star metric: logs, active loggers, signups by platform. */
-  async function counts() {
+  async function counts({ key } = {}) {
     try {
-      const rows = await rpc('engine_counts', {});
+      /* Keyed as of database-v57. These are the business's own numbers —
+         accounts, premium, active loggers — and they were readable by anyone
+         holding the publishable key, which ships in the app bundle. */
+      const rows = await rpc('engine_counts', { p_key: key });
       const r = Array.isArray(rows) ? rows[0] : rows;
       if (!r) return null;
       return {
@@ -71,9 +74,9 @@ export function supabaseClient({ url, anonKey, fetchImpl = fetch, log = () => {}
    * is the readout: per network, per beat, per closing-line variant, how many
    * people reached the waitlist and how many of them have been invited.
    */
-  async function signupSources({ sinceDays = 30 } = {}) {
+  async function signupSources({ key, sinceDays = 30 } = {}) {
     try {
-      const rows = await rpc('engine_signup_sources', { p_since_days: sinceDays });
+      const rows = await rpc('engine_signup_sources', { p_key: key, p_since_days: sinceDays });
       if (!Array.isArray(rows)) return null;
       return rows.map((r) => ({
         source: String(r.source || ''),
