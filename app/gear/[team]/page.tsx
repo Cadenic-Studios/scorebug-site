@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { safeJsonLd } from '../../lib/seo'
 import { notFound } from 'next/navigation'
 import { SITE } from '../../config'
 import { GEAR_TEAMS, getGearTeam } from '../../lib/teams'
@@ -115,7 +116,7 @@ export default function TeamGearPage({ params }: { params: { team: string } }) {
         { name: 'Gear', url: `${SITE}/gear` },
         { name: t.name },
       ]} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(jsonLd) }} />
       <SiteHeader />
       <main id="main" className="lit-blue floodlights relative overflow-hidden">
       <div className="relative z-10 mx-auto max-w-4xl px-5 pb-24 pt-14">

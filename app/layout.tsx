@@ -201,6 +201,26 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             rather than relying on placement or on `defer`, which an inline
             script ignores. */}
         <script dangerouslySetInnerHTML={{ __html: CAMPAIGN_BOOT_SCRIPT }} />
+
+        {/* ── THE ONLY MEASUREMENT ON THIS SITE ────────────────────────────
+            There was none. Not GA, not Plausible, nothing — while app/campaign.ts
+            carefully carries utm parameters across the origin boundary and
+            app/r/[...path] rebuilds full tagging server-side "so Analytics sees
+            precisely what it would have seen". Something downstream was being
+            fed by machinery upstream of nothing. The hero's primary call to
+            action, on the site that is the entire SEO play, was unmeasured.
+
+            Vercel Web Analytics rather than a package: this is the script
+            Vercel serves once the toggle is on in the project's Analytics tab,
+            so it needs no dependency and no build change. It is cookieless and
+            stores no cross-site identifier, which is why no consent banner is
+            required and why it does not contradict the privacy policy — Vercel
+            was already a named processor there for hosting, and the policy now
+            names this purpose too.
+
+            Until that dashboard toggle is flipped the script 404s and nothing
+            breaks; `defer` keeps it out of the critical path either way. */}
+        <script defer src="/_vercel/insights/script.js" />
         <script
           type="application/ld+json"
           // Serialized once at build; '<' is escaped so schema text can never

@@ -1,10 +1,10 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
-import { SITE, WEB_APP } from '../../config'
+import { SITE, WEB_APP, freeOnPlatforms, platformsSentence } from '../../config'
 import { MATCHUPS, getMatchup } from '../../matchups'
 import { LEAGUES } from '../../leagues'
-import { organizationSchema, applicationSchema, faqSchema, graph, type Faq } from '../../lib/seo'
+import { organizationSchema, applicationSchema, faqSchema, graph, type Faq, safeJsonLd } from '../../lib/seo'
 import { SiteHeader, SiteFooter, Breadcrumbs, BreadcrumbNav, AppCta } from '../../components/SiteChrome'
 
 /**
@@ -39,7 +39,7 @@ export async function generateMetadata(
   const title = `Where to track ${m.a.name} vs ${m.b.name} live scores without gambling ads`
   const description =
     `Follow ${m.a.name} vs ${m.b.name} live on Scorebug, then grade the game out of 5.0 and keep `
-    + `it in your logbook forever. No odds, no spreads, no sportsbook ads. Free on web and Android.`
+    + `it in your logbook forever. No odds, no spreads, no sportsbook ads. ${freeOnPlatforms()}`
   return {
     title,
     description,
@@ -63,7 +63,7 @@ export default function MatchupPage({ params }: { params: { matchup: string } })
     {
       q: `Where can I watch the ${m.a.name} vs ${m.b.name} score live without betting ads?`,
       a: `Scorebug carries live ${full} scores including ${m.a.name} vs ${m.b.name}, with no odds, `
-        + `no spreads and no sportsbook sponsorships. It is free in any browser and on Android.`,
+        + `no spreads and no sportsbook sponsorships. ${platformsSentence()}`,
     },
     {
       q: `Can I rate and save a ${m.a.short} vs ${m.b.short} game?`,
@@ -92,7 +92,7 @@ export default function MatchupPage({ params }: { params: { matchup: string } })
         { name: 'Matchups', url: `${SITE}/matchups` },
         { name: `${m.a.name} vs ${m.b.name}` },
       ]} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(jsonLd) }} />
       <SiteHeader />
 
       <main id="main" className="lit-red floodlights relative overflow-hidden">

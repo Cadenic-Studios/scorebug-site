@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { safeJsonLd } from '../lib/seo'
 import Image from 'next/image'
 import Link from 'next/link'
 import { SITE, WEB_APP } from '../config'
@@ -200,7 +201,7 @@ export default async function ShopPage() {
       {jsonLd && (
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+          dangerouslySetInnerHTML={{ __html: safeJsonLd(jsonLd) }}
         />
       )}
 

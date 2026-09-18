@@ -13,7 +13,7 @@ import { LEAGUE_COUNT } from './leagues'
 // Prices are INTERPOLATED, never typed twice. This answer is rendered both
 // visibly and inside the FAQPage schema, so a stale figure here becomes a
 // machine-readable wrong price. It drifted once already (CAD $5/$20).
-import { PRICING } from './config'
+import { PRICING, freeOnPlatforms } from './config'
 
 /**
  * THE COUNT IS DERIVED, NOT TYPED. Two answers in this file used to spell the
@@ -50,7 +50,7 @@ export const FAQS: { q: string; a: string }[] = [
   },
   {
     q: 'Is Scorebug free?',
-    a: `Scorebug is free to use, on the web and on Android. The Front Office is an optional subscription that raises the Starting Lineup from 5 teams to 25, lifts the caps on the Docket and Clippings, adds the full Analytics Desk and Vault export, and removes the ads from The Bleachers feed. It is ${PRICING.us.monthly} a month or ${PRICING.us.yearly} a year, billed in your own currency (${PRICING.us.currency} in the United States, ${PRICING.ca.currency} in Canada) — about ${PRICING.perMonthEquivalent} a month on the annual plan. You can cancel any time, and your local price including tax is confirmed at checkout.`,
+    a: `Scorebug is free to use — ${freeOnPlatforms().replace(/^Free on /, 'on ').replace(/\.$/, '')}. The Front Office is an optional subscription that raises the Starting Lineup from 5 teams to 25, lifts the caps on the Docket and Clippings, adds the full Analytics Desk and Vault export, and removes the ads from The Bleachers feed. It is ${PRICING.us.monthly} a month or ${PRICING.us.yearly} a year, billed in your own currency (${PRICING.us.currency} in the United States, ${PRICING.ca.currency} in Canada) — about ${PRICING.perMonthEquivalent} a month on the annual plan. You can cancel any time, and your local price including tax is confirmed at checkout.`,
   },
   {
     q: 'What platforms is Scorebug available on?',

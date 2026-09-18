@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { SITE, WEB_APP } from '../config'
-import { organizationSchema, applicationSchema, faqSchema, graph, type Faq } from '../lib/seo'
+import { organizationSchema, applicationSchema, faqSchema, graph, type Faq, safeJsonLd } from '../lib/seo'
 import { SiteHeader, SiteFooter, BreadcrumbNav, AppCta } from '../components/SiteChrome'
 import { DISCORD_INVITE, DISCORD_BOT_INVITE, DISCORD_USER_INSTALL, DISCORD_CHANNELS, DISCORD_COMMANDS } from '../lib/discord/public'
 import { signedCardUrl } from '../lib/gamepage'
@@ -125,7 +125,7 @@ export default function Page() {
 
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(jsonLd) }} />
       <SiteHeader />
 
       <main id="main" className="lit-red floodlights relative overflow-hidden">

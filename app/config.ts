@@ -86,6 +86,35 @@ export function appPlatforms(): string {
 }
 
 /**
+ * ─── THE PLATFORM CLAIM, IN PROSE, IN ONE PLACE ─────────────────────────────
+ *
+ * appPlatforms() derives the machine-readable claim and has done its job
+ * correctly the whole time. The prose version did not exist here, so six pages
+ * wrote their own — and every one of them said "and on Android" while the
+ * Android test was closed to everyone not already on a tester list.
+ *
+ * That is not a cosmetic slip. Those strings ship into FAQPage JSON-LD on
+ * nineteen league pages, sixty-odd matchup pages and every game page, so the
+ * exact claim LAUNCH_STAGE exists to prevent was machine-readable on the
+ * majority of this site's URLs, asserted to search engines as fact.
+ *
+ * Two shapes because the sentences around them differ; both derive, neither is
+ * typed. The day LAUNCH_STAGE flips to 'live', every one of them changes.
+ */
+export function platformsSentence(): string {
+  return appPlatforms().includes('Android')
+    ? 'Free to use in any browser and on Android.'
+    : 'Free to use in any browser, with Android early access open.'
+}
+
+/** The short form, for the end of a sentence that already said what it is. */
+export function freeOnPlatforms(): string {
+  return appPlatforms().includes('Android')
+    ? 'Free on web and Android.'
+    : 'Free on the web, with Android early access open.'
+}
+
+/**
  * Resolve the Android CTA for the current stage — one place, so the nav and the
  * footer can never disagree with the hero about whether the app is out.
  */
@@ -266,7 +295,11 @@ export const REFUNDS_UPDATED = 'August 31, 2026'
 export const REFUNDS_UPDATED_ISO = '2026-08-31'
 
 export const LEGAL_UPDATED = 'August 24, 2026'
-export const LEGAL_UPDATED_ISO = '2026-08-24'
+/* Moved when the privacy policy's wording changed — today, to name Vercel's
+   cookieless page analytics as a processing purpose rather than only hosting.
+   A legal document's date is the day its words changed, which is why this is a
+   constant and not a build clock. */
+export const LEGAL_UPDATED_ISO = '2026-09-18'
 
 /**
  * ─── THE VANITY DOMAINS ──────────────────────────────────────────────────────

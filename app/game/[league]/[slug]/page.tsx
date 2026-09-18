@@ -1,8 +1,8 @@
 import type { Metadata } from 'next'
 import { notFound, redirect } from 'next/navigation'
 import Link from 'next/link'
-import { SITE } from '../../../config'
-import { organizationSchema, applicationSchema, faqSchema, graph, type Faq } from '../../../lib/seo'
+import { SITE, freeOnPlatforms } from '../../../config'
+import { organizationSchema, applicationSchema, faqSchema, graph, type Faq, safeJsonLd } from '../../../lib/seo'
 import { SiteHeader, SiteFooter, BreadcrumbNav, AppCta } from '../../../components/SiteChrome'
 import { loadGame, loadCommunity, parseSlug, leagueFromSlug, shareCardUrl, type GamePage } from '../../../lib/gamepage'
 
@@ -129,7 +129,7 @@ export default async function Page({ params }: Params) {
     {
       q: `Where can I rate ${fixture(g)}?`,
       a: 'On Scorebug. Log the game, grade it out of 5.0, write what it meant, and it stays in your '
-        + 'logbook for good. Free on the web and on Android, with no odds, spreads or sportsbook ads anywhere in it.',
+        + `logbook for good. ${freeOnPlatforms()} No odds, spreads or sportsbook ads anywhere in it.`,
     },
   ]
 
@@ -161,7 +161,7 @@ export default async function Page({ params }: Params) {
 
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(jsonLd) }} />
       <SiteHeader />
 
       <main id="main" className="lit-red floodlights relative overflow-hidden">

@@ -1,7 +1,8 @@
 import type { Metadata } from 'next'
+import { pageMeta } from '../lib/meta'
 import Link from 'next/link'
-import { SITE } from '../config'
-import { organizationSchema, applicationSchema, faqSchema, graph, type Faq } from '../lib/seo'
+import { SITE, freeOnPlatforms } from '../config'
+import { organizationSchema, applicationSchema, faqSchema, graph, type Faq, safeJsonLd } from '../lib/seo'
 import { SiteHeader, SiteFooter, BreadcrumbNav, AppCta } from '../components/SiteChrome'
 import { loadRecent } from '../lib/gamepage'
 import { harvestRecent } from '../lib/harvest'
@@ -18,13 +19,18 @@ import { harvestRecent } from '../lib/harvest'
 
 export const revalidate = 1800
 
-export const metadata: Metadata = {
+/* pageMeta, not a hand-built object. This page set `title` and `canonical`
+   correctly and no openGraph at all, so it inherited the layout's — meaning
+   every share of /game carried og:url = the home page and the home page's
+   title. It was the only content route on the site with that defect; the
+   helper exists precisely so a route cannot have it. */
+export const metadata: Metadata = pageMeta({
+  path: '/game',
   title: 'Was it a good game? Fan-graded results across 19 leagues',
   description:
     'Every scores site tells you who won. Scorebug tells you whether the game was worth watching — '
     + 'rated from the box score, and graded out of 5.0 by the fans who actually watched it.',
-  alternates: { canonical: `${SITE}/game` },
-}
+})
 
 const faqs: Faq[] = [
   {
@@ -37,7 +43,7 @@ const faqs: Faq[] = [
   {
     q: 'Can I rate a game myself?',
     a: 'Yes. Log it on Scorebug, grade it out of 5.0 and write what it meant. It stays in your logbook '
-      + 'for good, and it counts towards the grade shown on that game’s page. Free on web and Android.',
+      + `for good, and it counts towards the grade shown on that game’s page. ${freeOnPlatforms()}`,
   },
 ]
 
@@ -64,7 +70,7 @@ export default async function Page() {
 
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(jsonLd) }} />
       <SiteHeader />
 
       <main id="main" className="lit-red floodlights relative overflow-hidden">

@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
-import { SITE, WEB_APP, appPlatforms } from '../../config'
+import { SITE, WEB_APP, appPlatforms, platformsSentence } from '../../config'
 import { LEAGUES, LEAGUE_COUNT, type SiteLeague } from '../../leagues'
 import { GEAR_TEAMS } from '../../lib/teams'
 import { clubsInLeague } from '../../clubs'
@@ -8,7 +8,7 @@ import { leagueGearLink, advertiserName } from '../../lib/affiliates'
 import Sponsored, { AffiliateLink } from '../../components/Sponsored'
 import { MATCHUPS } from '../../matchups'
 import { hubForSport } from '../../sports'
-import { organizationSchema, applicationSchema, faqSchema, graph, type Faq } from '../../lib/seo'
+import { organizationSchema, applicationSchema, faqSchema, graph, type Faq, safeJsonLd } from '../../lib/seo'
 import { SiteHeader, SiteFooter, Breadcrumbs, BreadcrumbNav, AppCta } from '../../components/SiteChrome'
 import Link from 'next/link'
 
@@ -40,17 +40,9 @@ function getLeague(slug: string): SiteLeague | undefined {
   return LEAGUES.find(l => slugOf(l) === slug.toLowerCase())
 }
 
-/**
- * The platform claim, DERIVED from LAUNCH_STAGE through appPlatforms() and
- * never typed. This page said "free to use on web and Android" in its meta
- * description and its body on all nineteen league pages while the Android
- * test was closed — exactly the claim appPlatforms() exists to prevent.
- */
-function platformsSentence(): string {
-  return appPlatforms().includes('Android')
-    ? 'Free to use in any browser and on Android.'
-    : 'Free to use in any browser, with Android early access open.'
-}
+/* The platform claim lives in app/config.ts now. This file had the only
+   correct implementation of it while five other pages hardcoded "and on
+   Android"; moving it there is what stopped that being possible. */
 
 export async function generateMetadata(
   { params }: { params: { league: string } },
@@ -116,7 +108,7 @@ export default function LeaguePage({ params }: { params: { league: string } }) {
     {
       q: `Where can I track live ${l.full} scores without gambling ads?`,
       a: `Scorebug shows live ${l.full} scores with no betting odds, no spreads and no sportsbook `
-        + `sponsorships anywhere in the product. It is free to use in any browser and on Android.`,
+        + `sponsorships anywhere in the product. ${platformsSentence()}`,
     },
     {
       q: `Can I log and rate ${l.label} games I have watched?`,
@@ -150,7 +142,7 @@ export default function LeaguePage({ params }: { params: { league: string } }) {
         { name: 'Leagues', url: `${SITE}/leagues` },
         { name: l.full },
       ]} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(jsonLd) }} />
       <SiteHeader />
 
       <main id="main" className="lit-blue floodlights relative overflow-hidden">

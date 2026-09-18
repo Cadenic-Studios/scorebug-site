@@ -1,4 +1,5 @@
 import Image from 'next/image'
+import { safeJsonLd } from './lib/seo'
 import Link from 'next/link'
 import { FAQS } from './faqs'
 import { SITE, androidCta, WEB_APP, PRICING, PRICE_NOTE, APP_LINKS } from './config'
@@ -629,7 +630,12 @@ export default async function Home() {
             at all. */}
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify({
+          /* safeJsonLd, not JSON.stringify(...).replace(/</g, '\u003c').
+             That replacement swapped '<' for '<': in a JS string literal
+             '\u003c' IS the less-than character, so the line was a no-op that
+             read like a control. app/layout.tsx got the same idea right with a
+             doubled backslash two hundred lines away. */
+          dangerouslySetInnerHTML={{ __html: safeJsonLd({
             '@context': 'https://schema.org',
             '@type': 'FAQPage',
             '@id': `${SITE}/#faq`,
@@ -640,7 +646,7 @@ export default async function Home() {
               name: f.q,
               acceptedAnswer: { '@type': 'Answer', text: f.a },
             })),
-          }).replace(/</g, '\u003c') }}
+          }) }}
         />
         <section className="mx-auto max-w-3xl px-5 py-14 sm:py-20" id="faq">
           {/* The kicker used to say "Questions" above a heading that says

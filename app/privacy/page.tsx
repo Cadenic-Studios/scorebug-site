@@ -347,7 +347,11 @@ export default function PrivacyPolicy() {
                 </LI>
                 <LI><Term>Google Play Billing</Term> — subscription payments made inside the Android app.</LI>
                 <LI><Term>RevenueCat</Term> — matching a subscription from either storefront to your account.</LI>
-                <LI><Term>Vercel</Term> — hosting for Scorebug Online and this site.</LI>
+                <LI><Term>Vercel</Term> — hosting for Scorebug Online and this site, and
+                  cookieless page analytics on this site. It counts page views and
+                  where they came from. It sets no cookie, stores no identifier that
+                  follows you between sites, and cannot be used to recognise you on a
+                  later visit.</LI>
                 <LI>
                   Sports scores, schedules and news come from third-party data providers. Those are
                   requests for public sports data — no account information travels with them.

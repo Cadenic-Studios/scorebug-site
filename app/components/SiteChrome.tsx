@@ -1,4 +1,5 @@
 import Image from 'next/image'
+import { safeJsonLd } from '../lib/seo'
 import { LEGAL_PATHS, androidCta, WEB_APP, APP_LINKS, SOCIAL_LINKS } from '../config'
 
 /**
@@ -358,7 +359,7 @@ export function Breadcrumbs({ trail }: { trail: { name: string; url?: string }[]
     })),
   }
   return (
-    <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(json) }} />
+    <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(json) }} />
   )
 }
 

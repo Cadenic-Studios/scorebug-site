@@ -11,7 +11,7 @@ import {
   advertiserName, SOCCERGARAGE_PIXEL,
 } from '../lib/affiliates'
 import Sponsored, { AffiliateLink } from './Sponsored'
-import { organizationSchema, applicationSchema, faqSchema, graph } from '../lib/seo'
+import { organizationSchema, applicationSchema, faqSchema, graph, safeJsonLd } from '../lib/seo'
 import { SiteHeader, SiteFooter, Breadcrumbs, BreadcrumbNav, AppCta } from './SiteChrome'
 
 /**
@@ -265,7 +265,7 @@ export default function SportHubPage({ hub }: { hub: SportHub }) {
   return (
     <>
       <Breadcrumbs trail={[{ name: 'Scorebug', url: SITE }, { name: hub.label }]} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(jsonLd) }} />
       <SiteHeader />
 
       <main id="main" className="lit-blue floodlights relative overflow-hidden">

@@ -83,3 +83,31 @@ export function faqSchema(faqs: Faq[]) {
 export function graph(nodes: object[]) {
   return { '@context': 'https://schema.org', '@graph': nodes }
 }
+
+/**
+ * JSON that is safe to sit inside a <script> element.
+ *
+ * ─── WHY THIS IS SHARED NOW ─────────────────────────────────────────────────
+ *
+ * This lived as a private helper in app/slate/[week]/page.tsx with a long and
+ * correct note explaining the risk, and its nine sibling pages each shipped a
+ * bare JSON.stringify. Two of those interpolate genuinely untrusted strings:
+ * the shop pages carry Shopify product titles and descriptions, which are
+ * vendor-controlled, and the game pages carry ESPN team and venue names, whose
+ * entire sanitiser upstream is `String(v)`.
+ *
+ * A `</script>` inside any of them ends the block early and everything after it
+ * is parsed as markup. U+2028 and U+2029 survive JSON.stringify and are line
+ * terminators to a JavaScript parser, so they go too.
+ *
+ * A control that exists in one file and not its nine siblings is a note, not a
+ * control. This is the control.
+ */
+export function safeJsonLd(value: unknown): string {
+  return JSON.stringify(value)
+    .replace(/</g, '\\u003c')
+    .replace(/>/g, '\\u003e')
+    .replace(/&/g, '\\u0026')
+    .replace(/\u2028/g, '\\u2028')
+    .replace(/\u2029/g, '\\u2029')
+}

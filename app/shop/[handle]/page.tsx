@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { safeJsonLd } from '../../lib/seo'
 import { notFound } from 'next/navigation'
 import { SITE } from '../../config'
 import { getProduct, getProductHandles } from '../../lib/shopify'
@@ -175,7 +176,7 @@ export default async function ProductPage({ params }: { params: { handle: string
         { name: 'Pro Shop', url: `${SITE}/shop` },
         { name: p.title },
       ]} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(jsonLd) }} />
 
       <SiteHeader />
       <main className="lit-red floodlights relative overflow-hidden">
