@@ -350,8 +350,45 @@ function LeagueChips({ w, max, tail }: { w: number; max: number; tail?: string }
 
 /* ─────────────────────────────────────────────────────────────── ROUTE */
 
+/**
+ * ─── THE COST CEILING ───────────────────────────────────────────────────────
+ *
+ * Rendering a card is the most expensive thing this deployment does — measured
+ * at 4.7 seconds of function time for a cold one — and the response is cached
+ * `immutable` for a year. Those two facts are correct on their own and
+ * dangerous together: a card is a pure function of its query string, so every
+ * DISTINCT query string is a fresh 4.7-second render AND a year-long edge
+ * object. `clean()` bounds each individual value; nothing bounded how many
+ * values there could be, so the space of distinct URLs was effectively
+ * infinite and a stranger with a for-loop could bill it.
+ *
+ * This does NOT require a signature. That was considered and rejected: the
+ * long note above explains why an unsigned card still renders — the engine,
+ * the owner and anyone making a story graphic by hand all compose these
+ * freely, and the claim parameters are already dropped when unsigned. The
+ * exposure was never authorship, it was arithmetic.
+ *
+ * So: a request carrying more parameters than any real card uses, or a query
+ * string longer than any real card needs, is refused before a single pixel is
+ * drawn. Every legitimate caller is far under both. The refusal is cheap,
+ * uncached, and says what it wants.
+ */
+const MAX_PARAMS = 14
+const MAX_QUERY_CHARS = 1200
+
 export async function GET(req: Request) {
-  const q = await verifiedParams(new URL(req.url).searchParams)
+  const url = new URL(req.url)
+  const raw = url.searchParams
+  let count = 0
+  raw.forEach(() => { count += 1 })
+  if (count > MAX_PARAMS || url.search.length > MAX_QUERY_CHARS) {
+    return new Response('too many parameters for a card', {
+      status: 400,
+      headers: { 'cache-control': 'private, no-store', 'content-type': 'text/plain; charset=utf-8' },
+    })
+  }
+
+  const q = await verifiedParams(raw)
   const kind = clean(q.get('k'), 12).toLowerCase()
   const sizeKey: SizeKey = (['wide', 'square', 'portrait', 'story'] as const).includes(q.get('size') as SizeKey) ? (q.get('size') as SizeKey) : 'wide'
   const { w, h } = SIZES[sizeKey]

@@ -335,11 +335,39 @@ export const weeklyDispatch = onSchedule(opts({ schedule: '0 9 * * 1' }), async 
   const recipients = await supabase.newsletterRecipients({ key: s.ENGINE_KEY });
   if (!recipients || !recipients.length) { logger.info('weeklyDispatch: no consented recipients'); return; }
   const site = s.SITE_BASE_URL || 'https://getscorebug.app';
-  let sent = 0;
-  for (let i = 0; i < recipients.length; i += 100) {
+
+  /* ── CASL, ON THE SEND THAT ACTUALLY NEEDS IT ────────────────────────────
+     The outreach beat refuses to send a single cold email without a mailing
+     address, and lints every draft for one. This — the mass commercial send,
+     to hundreds of addresses at once — carried a working unsubscribe and no
+     address and no sender identification at all. s.6(2) requires all three on
+     every commercial electronic message, and the unsubscribe is only the one
+     of the three that anybody remembers.
+
+     Cadenic Studios publishes Scorebug, so it is the same address the
+     outreach footer uses and needs no new secret. Refusing to send without it
+     is the same discipline: "we will add the address later" is how a company
+     ends up having sent four hundred messages without one. */
+  const postal = s.CADENIC_POSTAL || '';
+  if (!postal) {
+    logger.error('weeklyDispatch: CADENIC_POSTAL is not set — a commercial broadcast needs a mailing address (CASL s.6(2)). Nothing sent.');
+    return;
+  }
+  const identification = `Scorebug is published by Cadenic Studios · ${postal}\nYou are receiving this because you asked for the weekly slate at ${site}.`;
+
+  /* ── RESUMING, RATHER THAN RE-SENDING ────────────────────────────────────
+     `sentAt` was written only after every batch succeeded, and a failed batch
+     threw. So a Resend hiccup on batch three of five left batches one and two
+     delivered, nothing recorded, and the next run started again from zero —
+     mailing the first two hundred people twice. At five recipients that never
+     fires. At two hundred and fifty it is one bad response away, and the
+     people who get it twice are the ones most likely to press "spam". */
+  const already = Number((await store.get(`dispatch/state/newsletters/${n.week}`))?.batchesSent) || 0;
+  let sent = already * 100;
+  for (let i = already * 100; i < recipients.length; i += 100) {
     const batch = recipients.slice(i, i + 100).map((r) => {
       const unsub = `${site}/newsletter/unsubscribe?e=${encodeURIComponent(r.email)}&t=${unsubscribeToken(s.ENGINE_KEY, r.email)}`;
-      const text = `${n.body}\n\nUnsubscribe: ${unsub}`;
+      const text = `${n.body}\n\n—\n${identification}\nUnsubscribe: ${unsub}`;
       return { from: FROM_EMAIL.value(), to: [r.email], subject: n.subject, text, html: `<pre style="white-space:pre-wrap;font-family:system-ui,sans-serif;font-size:15px;line-height:1.6;color:#E6EDF3;background:#0A0B0E;padding:20px">${String(text).replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]))}</pre>`, headers: {
         'List-Unsubscribe': `<${unsub}>`,
         // RFC 8058. Without this the mail client treats the header as a plain
@@ -351,6 +379,9 @@ export const weeklyDispatch = onSchedule(opts({ schedule: '0 9 * * 1' }), async 
     const res = await fetch('https://api.resend.com/emails/batch', { method: 'POST', headers: { authorization: `Bearer ${s.RESEND_API_KEY}`, 'content-type': 'application/json' }, body: JSON.stringify(batch) });
     if (!res.ok) throw new Error(`resend batch ${res.status}: ${(await res.text()).slice(0, 200)}`);
     sent += batch.length;
+    /* Written per batch, before the next one goes out, so a throw below this
+       line resumes rather than repeats. */
+    await store.update(`dispatch/state/newsletters/${n.week}`, { batchesSent: Math.floor(i / 100) + 1, recipients: sent });
   }
   await store.update(`dispatch/state/newsletters/${n.week}`, { sentAt: new Date().toISOString(), recipients: sent });
   logger.info('weeklyDispatch sent', n.week, sent);
