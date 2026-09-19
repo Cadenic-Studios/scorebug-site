@@ -22,7 +22,8 @@
  *
  * ─── DISCLOSURE IS NOT OPTIONAL ──────────────────────────────────────────────
  * Every rendered link built here must sit under a visible "Sponsored" label and
- * carry rel="sponsored noopener noreferrer". See <Sponsored /> in
+ * carry rel="sponsored noopener" (never `noreferrer`, which would hide the
+ * referring domain from the network). See <Sponsored /> in
  * app/components/Sponsored.tsx — it is the only disclosure component, it takes
  * no props, and that is deliberate so no surface can water the wording down.
  */

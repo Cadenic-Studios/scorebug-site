@@ -38,7 +38,15 @@ export default function Sponsored({ className = '' }: { className?: string }) {
  * search, an undeclared affiliate link is the one thing most likely to cost the
  * domain its ranking.
  *
- * `noopener noreferrer` is the standard tabnabbing guard for any _blank target.
+ * `noopener` is the tabnabbing guard for any _blank target. It is deliberately
+ * NOT `noreferrer`: `noreferrer` strips the Referer header, and the affiliate
+ * networks (Impact, CJ) use that header to record the referring domain. With it
+ * stripped every click from this site arrived at the network as "no referrer",
+ * which is what a bot or a link-spam click looks like, and the network's own
+ * dashboard could not show getscorebug.app as the source. The browser's default
+ * referrer policy already trims a cross-site Referer to the bare origin, so
+ * dropping `noreferrer` sends the network exactly `https://getscorebug.app/`
+ * and nothing more. Found 2026-09-19 reading Impact's click report.
  */
 export function AffiliateLink({
   href, children, className = '', ariaLabel, style,
@@ -54,7 +62,7 @@ export function AffiliateLink({
     <a
       href={href}
       target="_blank"
-      rel="sponsored noopener noreferrer"
+      rel="sponsored noopener"
       aria-label={ariaLabel}
       className={className}
       style={style}

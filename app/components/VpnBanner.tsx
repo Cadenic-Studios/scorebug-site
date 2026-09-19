@@ -25,7 +25,8 @@ import Sponsored from './Sponsored'
  *
  * ─── DISCLOSURE ─────────────────────────────────────────────────────────────
  * A visible SPONSORED badge (the shared <Sponsored/>, which takes no props so
- * it cannot be softened per-callsite) plus rel="sponsored noopener noreferrer".
+ * it cannot be softened per-callsite) plus rel="sponsored noopener" (no
+ * `noreferrer` — see Sponsored.tsx for why the networks need the Referer).
  * The badge is for the reader, the rel is for the crawler; both are required
  * and neither substitutes for the other.
  *
@@ -99,7 +100,7 @@ export default function VpnBanner({ className = '' }: { className?: string }) {
         <a
           href={NORDVPN_CLICK}
           target="_blank"
-          rel="sponsored noopener noreferrer"
+          rel="sponsored noopener"
           aria-label="Get NordVPN (sponsored, opens in a new tab)"
           className="sb-cta inline-flex flex-shrink-0 items-center justify-center whitespace-nowrap rounded-xl px-5 py-3 text-[14px] font-black"
           style={{
